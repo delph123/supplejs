@@ -40,7 +40,11 @@ export function render(component: RWRComponent, element: HTMLElement): void {
   } else {
     const child = document.createElement(component.name);
     Object.entries(component.attributes).forEach(([name, value]) => {
-      child.setAttribute(name, value);
+      if (!name.startsWith("on")) {
+        child.setAttribute(name, value);
+      } else {
+        child.addEventListener(name.substring(2), value);
+      }
     });
     element.appendChild(child);
     render(component.childNodes, child);

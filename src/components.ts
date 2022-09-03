@@ -13,6 +13,20 @@ function Footer() {
   ]);
 }
 
+function Counter() {
+  return h(
+    "div",
+    {
+      class: "card",
+    },
+    [
+      "Counter has value 0.",
+      h("button", { onclick: () => console.log("clicked +") }, ["+"]),
+      h("button", { onclick: () => console.log("clicked -") }, ["-"]),
+    ]
+  );
+}
+
 export function App() {
-  return [Header, Footer];
+  return [Header, Counter, Footer];
 }
