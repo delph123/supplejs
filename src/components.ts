@@ -1,9 +1,9 @@
-import { h, useState, version } from "./rwr";
+import { h, useEffect, useState, version } from "./rwr";
 
 function Header() {
   return h("div", undefined, [
     h("h2", undefined, ["Hello!"]),
-    h("h5", undefined, ["This is", " ", "a cool subtitle."]),
+    h("h5", undefined, ["It is ", Clock]),
   ]);
 }
 
@@ -11,6 +11,17 @@ function Footer() {
   return h("p", { class: "read-the-docs" }, [
     `This page was created with React-Without-React v${version}`,
   ]);
+}
+
+function Clock() {
+  const [counter, setCounter] = useState(10);
+  useEffect(() => {
+    let a = setTimeout(() => setCounter(counter + 1), 1000);
+    return () => {
+      clearTimeout(a);
+    };
+  }, [counter]);
+  return new Date().toLocaleTimeString();
 }
 
 function Counter() {
@@ -36,5 +47,5 @@ function Counter() {
 }
 
 export function App() {
-  return [Header, Counter, Counter, Footer];
+  return [Header, Counter, Footer];
 }

@@ -1,19 +1,17 @@
 export interface RWRElement {
   name: string;
   attributes: Record<string, any>;
-  childNodes: RWRNode[];
+  childNodes: RWRNode;
 }
 
-type RWRNode = RWRElement | string | null;
-
-export type RWRComponent = RWRNode | RWRComponent[] | (() => RWRComponent);
+type RWRNode = (() => RWRNode) | RWRNode[] | RWRElement | string | null;
 
 export const version = "0.1";
 
 export function h(
   tagName: string,
   props?: Record<string, any>,
-  children?: any[]
+  children?: RWRNode
 ) {
   const childNodes = props?.children || children || [];
   let attributes = props || {};
@@ -35,13 +33,13 @@ let numberOfStates = 0;
 const stateSetters = [] as ((v: any) => void)[];
 const stateGetters = [] as (() => any)[];
 
-export function useState<T>(initialValue: T) {
+export function useState<T>(initialValue: T, noRerender = false) {
   let stateNb = numberOfStates++;
   if (stateSetters.length < numberOfStates) {
     let state = initialValue;
     stateSetters[stateNb] = (newState: T) => {
       state = newState;
-      rerender();
+      noRerender || rerender();
     };
     stateGetters[stateNb] = () => state;
   }
@@ -51,8 +49,36 @@ export function useState<T>(initialValue: T) {
   ];
 }
 
+export function useEffect(
+  effect: () => (() => void) | undefined,
+  deps?: any[]
+) {
+  let [oldEffect, setEffect] = useState(
+    {} as {
+      deps?: any[];
+      onUnmount?: () => void;
+    },
+    true
+  );
+  if (
+    !deps ||
+    !oldEffect.deps ||
+    oldEffect.deps.length !== deps.length ||
+    oldEffect.deps.some((d, i) => d !== deps[i])
+  ) {
+    if (typeof oldEffect.onUnmount === "function") {
+      oldEffect.onUnmount();
+    }
+    const onUnmount = effect();
+    setEffect({
+      deps,
+      onUnmount,
+    });
+  }
+}
+
 export function render(
-  component: RWRComponent,
+  component: RWRNode,
   element: HTMLElement,
   top = true
 ): void {
