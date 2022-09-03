@@ -1,6 +1,6 @@
-import { header } from "./components";
+import { App } from "./components";
 import { render } from "./rwr";
 
 import "./style.css";
 
-render(header, document.getElementById("app")!);
+render(App, document.getElementById("app")!);
