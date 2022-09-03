@@ -2,7 +2,7 @@ import { h, version } from "./rwr";
 
 function Header() {
   return h("div", undefined, [
-    h("h1", undefined, ["Hello!"]),
+    h("h2", undefined, ["Hello!"]),
     h("h5", undefined, ["This is", " ", "a cool subtitle."]),
   ]);
 }

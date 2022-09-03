@@ -39,6 +39,9 @@ export function render(component: RWRComponent, element: HTMLElement): void {
     component.forEach((rwrchild) => render(rwrchild, element));
   } else {
     const child = document.createElement(component.name);
+    Object.entries(component.attributes).forEach(([name, value]) => {
+      child.setAttribute(name, value);
+    });
     element.appendChild(child);
     render(component.childNodes, child);
   }
