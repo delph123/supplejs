@@ -47,5 +47,15 @@ function Counter() {
 }
 
 export function App() {
-  return [Header, Counter, Footer];
+  const [nbCounter, setNbCounter] = useState(0);
+  const counters = new Array(nbCounter).fill(Counter);
+  let btns = h("div", undefined, [
+    h("button", { onclick: () => setNbCounter(nbCounter + 1) }, [
+      "Add Counter",
+    ]),
+    h("button", { onclick: () => setNbCounter(nbCounter - 1) }, [
+      "Remove Counter",
+    ]),
+  ]);
+  return [Header, btns, ...counters, Footer];
 }
