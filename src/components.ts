@@ -1,4 +1,4 @@
-import { h, version } from "./rwr";
+import { h, useState, version } from "./rwr";
 
 function Header() {
   return h("div", undefined, [
@@ -14,19 +14,27 @@ function Footer() {
 }
 
 function Counter() {
-  return h(
-    "div",
-    {
-      class: "card",
-    },
-    [
-      "Counter has value 0.",
-      h("button", { onclick: () => console.log("clicked +") }, ["+"]),
-      h("button", { onclick: () => console.log("clicked -") }, ["-"]),
-    ]
-  );
+  const [counter, setCounter] = useState(10);
+
+  return h("div", { class: "card" }, [
+    `Counter has value ${counter}.`,
+    h(
+      "button",
+      {
+        onclick: () => setCounter(counter + 1),
+      },
+      ["+"]
+    ),
+    h(
+      "button",
+      {
+        onclick: () => setCounter(counter - 1),
+      },
+      ["-"]
+    ),
+  ]);
 }
 
 export function App() {
-  return [Header, Counter, Footer];
+  return [Header, Counter, Counter, Footer];
 }
