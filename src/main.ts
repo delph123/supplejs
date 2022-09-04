@@ -3,4 +3,4 @@ import { render } from "./rwr";
 
 import "./style.css";
 
-render(App, document.getElementById("app")!);
+render(App(), document.getElementById("app")!);

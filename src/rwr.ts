@@ -74,44 +74,27 @@ export function createRenderEffect(renderEffect: () => RWRNode) {
   return node;
 }
 
-function addToDom(
-  container: HTMLElement,
-  domComponent: DOMComponent | DOMComponent[]
-) {
-  if (domComponent == null) {
-    return;
-  } else if (Array.isArray(domComponent)) {
-    domComponent.forEach(addToDom.bind(null, container));
-  } else {
-    container.appendChild(domComponent);
-  }
-}
-
-export function render(component: () => DOMComponent, container: HTMLElement) {
-  addToDom(container, component());
+export function render(component: DOMComponent, container: HTMLElement) {
+  container.appendChild(component);
 }
 
 function createDOMComponent(component: RWRNode): DOMComponent {
   if (typeof component === "string") {
     return document.createTextNode(component);
-    // } else if (component == null) {
-    //   return null;
-    // } else if (typeof component === "function") {
-    //   createDOMComponent(component());
-    // } else if (typeof component === "object" && Array.isArray(component)) {
-    //   return component.map(createDOMComponent);
   } else if (component instanceof Node) {
     return component;
   } else {
-    const child = document.createElement(component.name);
+    const element = document.createElement(component.name);
     Object.entries(component.attributes).forEach(([name, value]) => {
       if (!name.startsWith("on")) {
-        child.setAttribute(name, value);
+        element.setAttribute(name, value);
       } else {
-        child.addEventListener(name.substring(2), value);
+        element.addEventListener(name.substring(2), value);
       }
     });
-    addToDom(child, component.childNodes.map(createDOMComponent));
-    return child;
+    component.childNodes.forEach((child) => {
+      element.appendChild(createDOMComponent(child));
+    });
+    return element;
   }
 }
