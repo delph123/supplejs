@@ -1,5 +1,6 @@
 import {
   createEffect,
+  createMemo,
   createRenderEffect,
   createSignal,
   h,
@@ -39,15 +40,17 @@ function Clock() {
 function Counter(props: { index: number; total: number }) {
   const [counter, setCounter] = createSignal(10);
 
+  const label = createMemo(() => {
+    return `Counter ${props.index + 1} / ${props.total} >> ${counter()}.`;
+  });
+
   createEffect(() => {
-    console.log(
-      `Counter ${props.index + 1} / ${props.total} changed to ${counter()}.`
-    );
+    console.log(label());
   });
 
   return createRenderEffect(() => {
     return h("div", { class: "card" }, [
-      `Counter ${props.index + 1} / ${props.total} - with value ${counter()}.`,
+      label(),
       h(
         "button",
         {

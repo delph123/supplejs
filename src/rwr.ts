@@ -33,6 +33,14 @@ export function createEffect(effect: () => void) {
   contextStack.pop();
 }
 
+export function createMemo<T>(memo: () => T) {
+  let [memoizedValue, setMemoizedValue] = createSignal<T>();
+  createEffect(() => {
+    setMemoizedValue(memo());
+  });
+  return memoizedValue;
+}
+
 export function createSignal<T>(initialValue?: T) {
   let state = initialValue;
   const observers = [] as (() => void)[];
