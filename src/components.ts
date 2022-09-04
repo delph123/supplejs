@@ -1,4 +1,4 @@
-import { createRenderEffect, h, useEffect, useState, version } from "./rwr";
+import { createRenderEffect, createSignal, h, version } from "./rwr";
 
 function Header() {
   return createRenderEffect(() => {
@@ -18,14 +18,14 @@ function Footer() {
 }
 
 function Clock() {
-  const [counter, setCounter] = useState(10);
+  // const [counter, setCounter] = useState(10);
 
-  useEffect(() => {
-    let a = setTimeout(() => setCounter(counter + 1), 1000);
-    return () => {
-      clearTimeout(a);
-    };
-  }, [counter]);
+  // useEffect(() => {
+  //   let a = setTimeout(() => setCounter(counter + 1), 1000);
+  //   return () => {
+  //     clearTimeout(a);
+  //   };
+  // }, [counter]);
 
   return createRenderEffect(() => {
     return new Date().toLocaleTimeString();
@@ -33,22 +33,22 @@ function Clock() {
 }
 
 function Counter(props: { index: number; total: number }) {
-  const [counter, setCounter] = useState(10);
+  const [counter, setCounter] = createSignal(10);
 
   return createRenderEffect(() => {
     return h("div", { class: "card" }, [
-      `Counter ${props.index + 1} / ${props.total} - with value ${counter}.`,
+      `Counter ${props.index + 1} / ${props.total} - with value ${counter()}.`,
       h(
         "button",
         {
-          onclick: () => setCounter(counter + 1),
+          onclick: () => setCounter(counter() + 1),
         },
         ["+"]
       ),
       h(
         "button",
         {
-          onclick: () => setCounter(counter - 1),
+          onclick: () => setCounter(counter() - 1),
         },
         ["-"]
       ),
@@ -57,20 +57,20 @@ function Counter(props: { index: number; total: number }) {
 }
 
 export function App() {
-  const [nbCounter, setNbCounter] = useState(0);
+  const [nbCounter, setNbCounter] = createSignal(0);
 
   return createRenderEffect(() => {
-    const counters = new Array(nbCounter)
+    const counters = new Array(nbCounter())
       .fill(0)
-      .map((_, i) => Counter({ index: i, total: nbCounter }));
+      .map((_, i) => Counter({ index: i, total: nbCounter() }));
     let btns = h("div", undefined, [
-      h("button", { onclick: () => setNbCounter(nbCounter + 1) }, [
+      h("button", { onclick: () => setNbCounter(nbCounter() + 1) }, [
         "Add Counter",
       ]),
-      h("button", { onclick: () => setNbCounter(nbCounter - 1) }, [
+      h("button", { onclick: () => setNbCounter(nbCounter() - 1) }, [
         "Remove Counter",
       ]),
     ]);
-    return [Header(), btns, ...counters, Footer()];
+    return h("div", undefined, [Header(), btns, ...counters, Footer()]);
   });
 }
