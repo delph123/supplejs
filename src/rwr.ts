@@ -8,7 +8,7 @@ type RWRNode = Node | RWRElement | string;
 
 type DOMComponent = Node;
 
-export const version = "0.1";
+export const version = "0.2";
 
 export function h(
   tagName: string,
@@ -25,58 +25,6 @@ export function h(
     attributes,
     childNodes,
   } as RWRElement;
-}
-
-let rerender = () => {
-  console.error("This page hasn't been rendered yet.");
-};
-
-let numberOfStates = 0;
-const stateSetters = [] as ((v: any) => void)[];
-const stateGetters = [] as (() => any)[];
-
-export function useState<T>(initialValue: T, noRerender = false) {
-  let stateNb = numberOfStates++;
-  if (stateSetters.length < numberOfStates) {
-    let state = initialValue;
-    stateSetters[stateNb] = (newState: T) => {
-      state = newState;
-      noRerender || rerender();
-    };
-    stateGetters[stateNb] = () => state;
-  }
-  return [stateGetters[stateNb](), stateSetters[stateNb]] as [
-    T,
-    (v: T) => void
-  ];
-}
-
-export function useEffect(
-  effect: () => (() => void) | undefined,
-  deps?: any[]
-) {
-  let [oldEffect, setEffect] = useState(
-    {} as {
-      deps?: any[];
-      onUnmount?: () => void;
-    },
-    true
-  );
-  if (
-    !deps ||
-    !oldEffect.deps ||
-    oldEffect.deps.length !== deps.length ||
-    oldEffect.deps.some((d, i) => d !== deps[i])
-  ) {
-    if (typeof oldEffect.onUnmount === "function") {
-      oldEffect.onUnmount();
-    }
-    const onUnmount = effect();
-    setEffect({
-      deps,
-      onUnmount,
-    });
-  }
 }
 
 export function createEffect(effect: () => void) {
@@ -140,12 +88,6 @@ function addToDom(
 }
 
 export function render(component: () => DOMComponent, container: HTMLElement) {
-  numberOfStates = 0;
-  rerender = () => render(component, container);
-  while (container.firstChild) {
-    container.firstChild.remove();
-  }
-
   addToDom(container, component());
 }
 
