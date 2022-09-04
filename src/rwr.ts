@@ -79,10 +79,16 @@ export function useEffect(
   }
 }
 
-export function createSignal<T>(initialValue: T) {
+export function createEffect(effect: () => void) {
+  contextStack.push(effect);
+  effect();
+  contextStack.pop();
+}
+
+export function createSignal<T>(initialValue?: T) {
   let state = initialValue;
   const observers = [] as (() => void)[];
-  const set = (newState: T) => {
+  const set = (newState?: T) => {
     state = newState;
     observers.forEach((o) => o());
   };
@@ -93,7 +99,7 @@ export function createSignal<T>(initialValue: T) {
     }
     return state;
   };
-  return [get, set] as [() => T, (v: T) => void];
+  return [get, set] as [() => T, (v?: T) => void];
 }
 
 const contextStack = [] as (() => void)[];
@@ -115,9 +121,7 @@ export function createRenderEffect(renderEffect: () => RWRNode) {
   contextStack.push(() => {
     replaceNode(createDOMComponent(renderEffect()));
   });
-  console.log("before", contextStack);
   node = createDOMComponent(renderEffect());
-  console.log("after", node);
   contextStack.pop();
   return node;
 }

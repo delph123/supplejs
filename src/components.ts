@@ -1,4 +1,10 @@
-import { createRenderEffect, createSignal, h, version } from "./rwr";
+import {
+  createEffect,
+  createRenderEffect,
+  createSignal,
+  h,
+  version,
+} from "./rwr";
 
 function Header() {
   return createRenderEffect(() => {
@@ -18,22 +24,26 @@ function Footer() {
 }
 
 function Clock() {
-  // const [counter, setCounter] = useState(10);
+  const [subscribe, notify] = createSignal();
 
-  // useEffect(() => {
-  //   let a = setTimeout(() => setCounter(counter + 1), 1000);
-  //   return () => {
-  //     clearTimeout(a);
-  //   };
-  // }, [counter]);
+  setInterval(() => {
+    notify();
+  }, 1000);
 
   return createRenderEffect(() => {
+    subscribe();
     return new Date().toLocaleTimeString();
   });
 }
 
 function Counter(props: { index: number; total: number }) {
   const [counter, setCounter] = createSignal(10);
+
+  createEffect(() => {
+    console.log(
+      `Counter ${props.index + 1} / ${props.total} changed to ${counter()}.`
+    );
+  });
 
   return createRenderEffect(() => {
     return h("div", { class: "card" }, [
