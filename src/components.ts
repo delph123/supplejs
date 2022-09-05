@@ -113,26 +113,18 @@ function getPreviousLast(chain: Chain): Chain {
   }
 }
 
-function counter(chain: () => Chain): () => number {
-  function count(chain: () => Chain): number {
-    if (chain().next) {
-      return count(chain().next!) + 1;
-    } else {
-      return 0;
-    }
-  }
-  return count.bind(null, chain);
-}
-
 export function App() {
   const [total, setTotal] = createSignal(0);
-  const [root, setRoot] = createSignal<Chain>({});
-  root().setNext = setRoot;
+
+  const rootValue: Chain = {};
+  const [root, setRoot] = createSignal(rootValue);
+  rootValue.setNext = setRoot;
 
   const addCounter = () => {
-    let [next, setNext] = createSignal<Chain>({});
-    next().setNext = setNext;
-    let last = getLast(root());
+    const nextValue: Chain = {};
+    const [next, setNext] = createSignal<Chain>(nextValue);
+    nextValue.setNext = setNext;
+    const last = getLast(root());
     last.setNext?.({
       next,
       setNext: last.setNext,
@@ -159,5 +151,11 @@ export function App() {
       h("button", { onclick: removeCounter }, ["Remove Counter"]),
     ]);
     return h("div", undefined, [Header(), btns, counters, Footer()]);
+  });
+}
+
+export function MultiApp() {
+  return createRenderEffect(() => {
+    return h("div", undefined, [App(), App()]);
   });
 }
