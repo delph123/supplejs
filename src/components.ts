@@ -2,6 +2,7 @@ import {
   createEffect,
   createRenderEffect,
   createSignal,
+  DOMComponent,
   h,
   version,
 } from "./rwr";
@@ -36,18 +37,20 @@ function Clock() {
   });
 }
 
-function Counter(props: { index: number; total: number }) {
+function Counter(props: { index: number; total: () => number }) {
   const [counter, setCounter] = createSignal(10);
 
   createEffect(() => {
     console.log(
-      `Counter ${props.index + 1} / ${props.total} changed to ${counter()}.`
+      `Counter ${props.index + 1} / ${props.total()} changed to ${counter()}.`
     );
   });
 
   return createRenderEffect(() => {
     return h("div", { class: "card" }, [
-      `Counter ${props.index + 1} / ${props.total} - with value ${counter()}.`,
+      `Counter ${
+        props.index + 1
+      } / ${props.total()} - with value ${counter()}.`,
       h(
         "button",
         {
@@ -66,21 +69,95 @@ function Counter(props: { index: number; total: number }) {
   });
 }
 
+function ChainedList(props: {
+  tag: string;
+  attributes?: Record<string, any>;
+  component: () => DOMComponent;
+  children: () => Chain;
+}): Node {
+  return createRenderEffect(() => {
+    if (props.children().next) {
+      return h(props.tag, props.attributes, [
+        props.component(),
+        ChainedList({
+          tag: props.tag,
+          attributes: props.attributes,
+          component: props.component,
+          children: props.children().next!,
+        }),
+      ]);
+    } else {
+      return h(props.tag, props.attributes, []);
+    }
+  });
+}
+
+interface Chain {
+  next?: () => Chain;
+  setNext?: (c: Chain) => void;
+}
+
+function getLast(chain: Chain): Chain {
+  if (chain.next) {
+    return getLast(chain.next());
+  } else {
+    return chain;
+  }
+}
+
+function getPreviousLast(chain: Chain): Chain {
+  if (chain.next && chain.next().next) {
+    return getPreviousLast(chain.next());
+  } else {
+    return chain;
+  }
+}
+
+function counter(chain: () => Chain): () => number {
+  function count(chain: () => Chain): number {
+    if (chain().next) {
+      return count(chain().next!) + 1;
+    } else {
+      return 0;
+    }
+  }
+  return count.bind(null, chain);
+}
+
 export function App() {
-  const [nbCounter, setNbCounter] = createSignal(0);
+  const [total, setTotal] = createSignal(0);
+  const [root, setRoot] = createSignal<Chain>({});
+  root().setNext = setRoot;
+
+  const addCounter = () => {
+    let [next, setNext] = createSignal<Chain>({});
+    next().setNext = setNext;
+    let last = getLast(root());
+    last.setNext?.({
+      next,
+      setNext: last.setNext,
+    });
+    setTotal(total() + 1);
+  };
+
+  const removeCounter = () => {
+    let previousLast = getPreviousLast(root());
+    previousLast.setNext?.({
+      setNext: previousLast.setNext,
+    });
+    setTotal(total() - 1);
+  };
 
   return createRenderEffect(() => {
-    const counters = new Array(nbCounter())
-      .fill(0)
-      .map((_, i) => Counter({ index: i, total: nbCounter() }));
-    let btns = h("div", undefined, [
-      h("button", { onclick: () => setNbCounter(nbCounter() + 1) }, [
-        "Add Counter",
-      ]),
-      h("button", { onclick: () => setNbCounter(nbCounter() - 1) }, [
-        "Remove Counter",
-      ]),
+    const counters = ChainedList({
+      tag: "div",
+      component: () => Counter({ index: total(), total }),
+      children: root,
+    });
+    const btns = h("div", undefined, [
+      h("button", { onclick: addCounter }, ["Add Counter"]),
+      h("button", { onclick: removeCounter }, ["Remove Counter"]),
     ]);
-    return h("div", undefined, [Header(), btns, ...counters, Footer()]);
+    return h("div", undefined, [Header(), btns, counters, Footer()]);
   });
 }

@@ -4,9 +4,9 @@ export interface RWRElement {
   childNodes: RWRNode[];
 }
 
-type RWRNode = Node | RWRElement | string;
+export type RWRNode = Node | RWRElement | string;
 
-type DOMComponent = Node;
+export type DOMComponent = Node;
 
 export const version = "0.2";
 
