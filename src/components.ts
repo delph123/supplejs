@@ -1,8 +1,8 @@
+import { createChainedList } from "./chain";
 import {
   createEffect,
   createRenderEffect,
   createSignal,
-  DOMComponent,
   h,
   version,
 } from "./rwr";
@@ -69,88 +69,23 @@ function Counter(props: { index: number; total: () => number }) {
   });
 }
 
-function ChainedList(props: {
-  tag: string;
-  attributes?: Record<string, any>;
-  component: () => DOMComponent;
-  children: () => Chain;
-}): Node {
-  return createRenderEffect(() => {
-    if (props.children().next) {
-      return h(props.tag, props.attributes, [
-        props.component(),
-        ChainedList({
-          tag: props.tag,
-          attributes: props.attributes,
-          component: props.component,
-          children: props.children().next!,
-        }),
-      ]);
-    } else {
-      return h(props.tag, props.attributes, []);
-    }
-  });
-}
-
-interface Chain {
-  next?: () => Chain;
-  setNext?: (c: Chain) => void;
-}
-
-function getLast(chain: Chain): Chain {
-  if (chain.next) {
-    return getLast(chain.next());
-  } else {
-    return chain;
-  }
-}
-
-function getPreviousLast(chain: Chain): Chain {
-  if (chain.next && chain.next().next) {
-    return getPreviousLast(chain.next());
-  } else {
-    return chain;
-  }
-}
-
 export function App() {
-  const [total, setTotal] = createSignal(0);
-
-  const rootValue: Chain = {};
-  const [root, setRoot] = createSignal(rootValue);
-  rootValue.setNext = setRoot;
-
-  const addCounter = () => {
-    const nextValue: Chain = {};
-    const [next, setNext] = createSignal<Chain>(nextValue);
-    nextValue.setNext = setNext;
-    const last = getLast(root());
-    last.setNext?.({
-      next,
-      setNext: last.setNext,
-    });
-    setTotal(total() + 1);
-  };
-
-  const removeCounter = () => {
-    let previousLast = getPreviousLast(root());
-    previousLast.setNext?.({
-      setNext: previousLast.setNext,
-    });
-    setTotal(total() - 1);
-  };
+  const [ChainedList, push, pop, size] = createChainedList();
 
   return createRenderEffect(() => {
-    const counters = ChainedList({
-      tag: "div",
-      component: () => Counter({ index: total(), total }),
-      children: root,
-    });
     const btns = h("div", undefined, [
-      h("button", { onclick: addCounter }, ["Add Counter"]),
-      h("button", { onclick: removeCounter }, ["Remove Counter"]),
+      h(
+        "button",
+        {
+          onclick: () => {
+            push(() => Counter({ index: size(), total: size }));
+          },
+        },
+        ["Add Counter"]
+      ),
+      h("button", { onclick: pop }, ["Remove Counter"]),
     ]);
-    return h("div", undefined, [Header(), btns, counters, Footer()]);
+    return h("div", undefined, [Header(), btns, ChainedList(), Footer()]);
   });
 }
 
