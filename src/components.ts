@@ -38,15 +38,29 @@ function Clock() {
   });
 }
 
+function withPrevious<T>(variable: () => T, initialValue: T) {
+  let current = initialValue;
+  return createMemo(() => {
+    const previous = current;
+    current = variable();
+    return {
+      current,
+      previous,
+    };
+  });
+}
+
 function Counter(props: { index: number; total: () => number }) {
   const [counter, setCounter] = createSignal(10);
 
-  const label = createMemo(() => {
+  const label = () => {
     return `Counter ${props.index + 1} / ${props.total()} >> ${counter()}.`;
-  });
+  };
+
+  const counterMemo = withPrevious(counter, 0);
 
   createEffect(() => {
-    console.log(label());
+    setSum((s) => s! + counterMemo().current - counterMemo().previous);
   });
 
   return createRenderEffect(() => {
@@ -70,6 +84,14 @@ function Counter(props: { index: number; total: () => number }) {
   });
 }
 
+const [sum, setSum] = createSignal(0);
+
+function Total() {
+  return createRenderEffect(() => {
+    return h("p", undefined, ["TOTAL = ", String(sum())]);
+  });
+}
+
 export function App() {
   const [ChainedList, push, pop, size] = createChainedList();
 
@@ -86,12 +108,34 @@ export function App() {
       ),
       h("button", { onclick: pop }, ["Remove Counter"]),
     ]);
-    return h("div", undefined, [Header(), btns, ChainedList(), Footer()]);
+    return h("div", undefined, [
+      Header(),
+      btns,
+      ChainedList(),
+      Total(),
+      Footer(),
+    ]);
   });
 }
 
 export function MultiApp() {
+  return App();
+  const [ChainedList, push, pop] = createChainedList();
+
+  const btns = h("div", undefined, [
+    h(
+      "button",
+      {
+        onclick: () => {
+          push(App);
+        },
+      },
+      ["+"]
+    ),
+    h("button", { onclick: pop }, ["-"]),
+  ]);
+
   return createRenderEffect(() => {
-    return h("div", undefined, [App(), App()]);
+    return h("div", undefined, [ChainedList(), btns]);
   });
 }

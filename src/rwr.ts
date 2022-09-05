@@ -43,19 +43,26 @@ export function createMemo<T>(memo: () => T) {
 
 export function createSignal<T>(initialValue?: T) {
   let state = initialValue;
+  let untrack = false;
   const observers = [] as (() => void)[];
-  const set = (newState?: T) => {
-    state = newState;
+  const set = (newState?: T | ((s?: T) => T)) => {
+    if (typeof newState === "function") {
+      state = (newState as (s?: T) => T)(state);
+    } else {
+      state = newState;
+    }
+    untrack = true;
     observers.forEach((o) => o());
+    untrack = false;
   };
   const get = () => {
     const currentObserver = getReactContext();
-    if (currentObserver && !observers.includes(currentObserver)) {
+    if (!untrack && currentObserver && !observers.includes(currentObserver)) {
       observers.push(currentObserver);
     }
     return state;
   };
-  return [get, set] as [() => T, (v?: T) => void];
+  return [get, set] as [() => T, (v?: T | ((s?: T) => T)) => void];
 }
 
 const contextStack = [] as (() => void)[];
