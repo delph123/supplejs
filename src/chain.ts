@@ -43,6 +43,10 @@ export function createChainedList({
   };
 
   const pop = () => {
+    if (size() === 0) {
+      return;
+    }
+
     const previousLast = getLast(root(), (c) => !!(c.next && c.next().next));
     previousLast.setItem?.({
       setItem: previousLast.setItem,
