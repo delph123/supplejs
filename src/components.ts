@@ -1,3 +1,4 @@
+import { createChainedList } from "./chain";
 import {
   createEffect,
   createMemo,
@@ -37,11 +38,11 @@ function Clock() {
   });
 }
 
-function Counter(props: { index: number; total: number }) {
+function Counter(props: { index: number; total: () => number }) {
   const [counter, setCounter] = createSignal(10);
 
   const label = createMemo(() => {
-    return `Counter ${props.index + 1} / ${props.total} >> ${counter()}.`;
+    return `Counter ${props.index + 1} / ${props.total()} >> ${counter()}.`;
   });
 
   createEffect(() => {
@@ -70,20 +71,27 @@ function Counter(props: { index: number; total: number }) {
 }
 
 export function App() {
-  const [nbCounter, setNbCounter] = createSignal(0);
+  const [ChainedList, push, pop, size] = createChainedList();
 
   return createRenderEffect(() => {
-    const counters = new Array(nbCounter())
-      .fill(0)
-      .map((_, i) => Counter({ index: i, total: nbCounter() }));
-    let btns = h("div", undefined, [
-      h("button", { onclick: () => setNbCounter(nbCounter() + 1) }, [
-        "Add Counter",
-      ]),
-      h("button", { onclick: () => setNbCounter(nbCounter() - 1) }, [
-        "Remove Counter",
-      ]),
+    const btns = h("div", undefined, [
+      h(
+        "button",
+        {
+          onclick: () => {
+            push(() => Counter({ index: size(), total: size }));
+          },
+        },
+        ["Add Counter"]
+      ),
+      h("button", { onclick: pop }, ["Remove Counter"]),
     ]);
-    return h("div", undefined, [Header(), btns, ...counters, Footer()]);
+    return h("div", undefined, [Header(), btns, ChainedList(), Footer()]);
+  });
+}
+
+export function MultiApp() {
+  return createRenderEffect(() => {
+    return h("div", undefined, [App(), App()]);
   });
 }
