@@ -87,7 +87,7 @@ export function App() {
     <div>
       <button
         onclick={() => {
-          push(() => Counter({ index: size(), total: size }));
+          push(() => <Counter index={size()} total={size} />);
         }}
       >
         Add Counter
@@ -117,7 +117,7 @@ export function MultiApp() {
       <ChainedList />
       <button
         onclick={() => {
-          push(App);
+          push(() => <App />);
         }}
       >
         +
