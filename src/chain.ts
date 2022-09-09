@@ -77,16 +77,18 @@ export function ChainedList(props: {
 }): Node {
   return createRenderEffect(() => {
     if (props.children().next) {
-      return h(props.tag, props.attributes, [
+      return h(
+        props.tag,
+        props.attributes,
         props.children().current!(),
         ChainedList({
           tag: props.tag,
           attributes: props.attributes,
           children: props.children().next!,
-        }),
-      ]);
+        })
+      );
     } else {
-      return h(props.tag, props.attributes, []);
+      return h(props.tag, props.attributes);
     }
   });
 }

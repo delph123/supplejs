@@ -4,27 +4,36 @@ export interface RWRElement {
   childNodes: RWRNode[];
 }
 
-export type RWRNode = Node | RWRElement | string;
+export type RWRNode = Node | RWRElement | string | number;
 
 export type DOMComponent = Node;
 
 export const version = "0.2";
 
 export function h(
-  tagName: string,
+  tagName: string | ((props: any) => DOMComponent),
   props?: Record<string, any>,
-  children?: RWRNode[]
+  ...children: RWRNode[]
 ) {
-  const childNodes = props?.children || children || [];
-  let attributes = props || {};
-  if ("children" in attributes) {
-    delete attributes.children;
+  if (typeof tagName === "function") {
+    return tagName(props);
+  } else {
+    let childNodes = props?.children || children || [];
+    if (!Array.isArray(childNodes) && childNodes != null) {
+      childNodes = [childNodes];
+    } else if (childNodes == null) {
+      console.error("not an array!");
+    }
+    let attributes = props || {};
+    if ("children" in attributes) {
+      delete attributes.children;
+    }
+    return {
+      name: tagName,
+      attributes,
+      childNodes,
+    } as RWRElement;
   }
-  return {
-    name: tagName,
-    attributes,
-    childNodes,
-  } as RWRElement;
 }
 
 export function createEffect(effect: () => void) {
@@ -94,8 +103,8 @@ export function render(component: DOMComponent, container: HTMLElement) {
 }
 
 function createDOMComponent(component: RWRNode): DOMComponent {
-  if (typeof component === "string") {
-    return document.createTextNode(component);
+  if (typeof component === "string" || typeof component === "number") {
+    return document.createTextNode(component.toString());
   } else if (component instanceof Node) {
     return component;
   } else {
