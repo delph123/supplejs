@@ -1,6 +1,7 @@
+import { createChainedList } from "./chain";
 import { h, createRenderEffect, createResource } from "./rwr";
 
-export function AsyncApp() {
+function Dog() {
   const [dog, { mutate, refetch }] = createResource(() => {
     return new Promise((resolve, reject) => {
       setTimeout(async () => {
@@ -11,7 +12,7 @@ export function AsyncApp() {
         } catch (e) {
           reject(e);
         }
-      }, 1000);
+      }, 3000);
     });
   });
 
@@ -26,7 +27,7 @@ export function AsyncApp() {
 
     const imgBlock = createRenderEffect(() => {
       if (dog()) {
-        return <img src={dog()} height="300" />;
+        return <img src={dog()} height="100" />;
       } else {
         return null;
       }
@@ -42,22 +43,36 @@ export function AsyncApp() {
 
     if (dog.loading) return "Loading...";
     return (
-      <div>
+      <div class="card">
         {errorBlock}
         {imgBlock}
-        <div>
-          {refreshingBlock}
-          <button
-            onclick={() =>
-              mutate(
-                "https://images.dog.ceo/breeds/hound-plott/hhh_plott002.JPG"
-              )
-            }
-          >
-            Jose
-          </button>
-        </div>
+        {refreshingBlock}
+        <button
+          onclick={() =>
+            mutate("https://images.dog.ceo/breeds/hound-plott/hhh_plott002.JPG")
+          }
+        >
+          Jose
+        </button>
       </div>
     );
   });
+}
+
+export function AsyncApp() {
+  const [ChainedList, push, pop] = createChainedList();
+
+  return createRenderEffect(() => (
+    <div>
+      <ChainedList />
+      <button
+        onclick={() => {
+          push(() => <Dog />);
+        }}
+      >
+        +
+      </button>
+      <button onclick={pop}>-</button>
+    </div>
+  ));
 }
