@@ -37,7 +37,7 @@ function Dog() {
       if (dog.state === "refreshing") {
         return <button disabled>Refreshing...</button>;
       } else {
-        return <button onclick={refetch}>New dog!</button>;
+        return <button onclick={refetch}>Another dog?</button>;
       }
     });
 
@@ -70,9 +70,9 @@ export function AsyncApp() {
           push(() => <Dog />);
         }}
       >
-        +
+        More dogs!
       </button>
-      <button onclick={pop}>-</button>
+      <button onclick={pop}>Less dogs!</button>
     </div>
   ));
 }
