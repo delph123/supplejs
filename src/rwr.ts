@@ -59,10 +59,10 @@ export function createResource<R, P>(
     | ((p: P) => R | Promise<R>),
   fetcher?: (p: P) => R | Promise<R>
 ) {
-  let params = source;
+  let params = typeof source === "function" ? source : () => source;
   let fetch = fetcher;
   if (fetcher == null) {
-    params = undefined as P;
+    params = (() => undefined) as () => P;
     fetch = source as (p: P) => R | Promise<R>;
   }
 
@@ -82,13 +82,9 @@ export function createResource<R, P>(
   });
 
   createEffect(() => {
-    if (
-      params === undefined ||
-      (params && (typeof params !== "function" || (params as () => any)()))
-    ) {
-      const r = fetch!(
-        typeof params === "function" ? (params as () => P)() : params
-      );
+    let paramValue = (params as () => P | false | null)();
+    if (paramValue !== null && paramValue !== false) {
+      const r = fetch!(paramValue);
       if (r instanceof Promise) {
         setResult({
           loading: !loaded,

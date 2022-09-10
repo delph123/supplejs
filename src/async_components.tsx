@@ -1,7 +1,8 @@
 import { h, createRenderEffect, createResource, createSignal } from "./rwr";
 
 export function AsyncApp() {
-  const [subscribe, refetch] = createSignal(true);
+  const [subscribe, refetch] = createSignal();
+
   const { data, loading, error, state } = createResource(subscribe, () => {
     return new Promise((resolve, reject) => {
       setTimeout(async () => {
