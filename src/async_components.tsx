@@ -35,7 +35,7 @@ export function AsyncApp() {
 
     const refreshingBlock = createRenderEffect(() => {
       if (state() === "refreshing") {
-        return "refreshing...";
+        return <button disabled>Refreshing...</button>;
       } else {
         return <button onclick={refetch}>New dog!</button>;
       }
