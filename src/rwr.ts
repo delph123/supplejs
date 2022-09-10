@@ -36,20 +36,25 @@ export function h(
   }
 }
 
-type Resource<R> = {
-  data: () => R | undefined;
-  loading: () => boolean;
-  error: () => any;
-  state: () => "unresolved" | "pending" | "ready" | "refreshing" | "errored";
-};
+type Resource<R, P> = [
+  {
+    data: () => R | undefined;
+    loading: () => boolean;
+    error: () => any;
+    state: () => "unresolved" | "pending" | "ready" | "refreshing" | "errored";
+  },
+  {
+    refetch: (p?: P) => void;
+  }
+];
 
 export function createResource<R, P>(
   fetcher: (p: P) => R | Promise<R>
-): Resource<R>;
+): Resource<R, P>;
 export function createResource<R, P>(
   source: P | false | null | (() => P | false | null),
   fetcher: (p: P) => R | Promise<R>
-): Resource<R>;
+): Resource<R, P>;
 export function createResource<R, P>(
   source:
     | P
@@ -68,6 +73,12 @@ export function createResource<R, P>(
 
   let loaded = false;
   let previousData: R | undefined = undefined;
+  let paramValue: P | null | false = null;
+
+  const [refresh, setRefresh] = createSignal({
+    refresh: false,
+    value: undefined as P | null | false,
+  });
 
   const [result, setResult] = createSignal({
     data: undefined as R | undefined,
@@ -82,7 +93,11 @@ export function createResource<R, P>(
   });
 
   createEffect(() => {
-    let paramValue = (params as () => P | false | null)();
+    const refreshing = refresh();
+    paramValue = refreshing.refresh
+      ? refreshing.value
+      : (params as () => P | false | null)();
+    refreshing.refresh = false;
     if (paramValue !== null && paramValue !== false) {
       const r = fetch!(paramValue);
       if (r instanceof Promise) {
@@ -130,12 +145,22 @@ export function createResource<R, P>(
     }
   });
 
-  return {
-    data: createMemo(() => result().data),
-    loading: createMemo(() => result().loading),
-    error: createMemo(() => result().error),
-    state: createMemo(() => result().state),
-  };
+  return [
+    {
+      data: createMemo(() => result().data),
+      loading: createMemo(() => result().loading),
+      error: createMemo(() => result().error),
+      state: createMemo(() => result().state),
+    },
+    {
+      refetch(p?: P) {
+        setRefresh({
+          refresh: true,
+          value: p ?? paramValue,
+        });
+      },
+    },
+  ];
 }
 
 export function createEffect(effect: () => void) {
