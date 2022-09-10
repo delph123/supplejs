@@ -4,7 +4,7 @@ export interface RWRElement {
   childNodes: RWRNode[];
 }
 
-export type RWRNode = Node | RWRElement | string | number;
+export type RWRNode = Node | RWRElement | string | number | null;
 
 export type DOMComponent = Node;
 
@@ -36,6 +36,112 @@ export function h(
   }
 }
 
+type Resource<R> = {
+  data: () => R | undefined;
+  loading: () => boolean;
+  error: () => any;
+  state: () => "unresolved" | "pending" | "ready" | "refreshing" | "errored";
+};
+
+export function createResource<R, P>(
+  fetcher: (p: P) => R | Promise<R>
+): Resource<R>;
+export function createResource<R, P>(
+  source: P | false | null | (() => P | false | null),
+  fetcher: (p: P) => R | Promise<R>
+): Resource<R>;
+export function createResource<R, P>(
+  source:
+    | P
+    | false
+    | null
+    | (() => P | false | null)
+    | ((p: P) => R | Promise<R>),
+  fetcher?: (p: P) => R | Promise<R>
+) {
+  let params = source;
+  let fetch = fetcher;
+  if (fetcher == null) {
+    params = undefined as P;
+    fetch = source as (p: P) => R | Promise<R>;
+  }
+
+  let loaded = false;
+  let previousData: R | undefined = undefined;
+
+  const [result, setResult] = createSignal({
+    data: undefined as R | undefined,
+    loading: false,
+    error: undefined as any,
+    state: "unresolved" as
+      | "unresolved"
+      | "pending"
+      | "ready"
+      | "refreshing"
+      | "errored",
+  });
+
+  createEffect(() => {
+    if (
+      params === undefined ||
+      (params && (typeof params !== "function" || (params as () => any)()))
+    ) {
+      const r = fetch!(
+        typeof params === "function" ? (params as () => P)() : params
+      );
+      if (r instanceof Promise) {
+        setResult({
+          loading: !loaded,
+          data: previousData,
+          error: undefined,
+          state: loaded ? "refreshing" : "pending",
+        });
+        r.then((value) => {
+          loaded = true;
+          previousData = value;
+          setResult({
+            data: value,
+            loading: false,
+            error: undefined,
+            state: "ready",
+          });
+        }).catch((error) => {
+          previousData = undefined;
+          setResult({
+            data: undefined,
+            loading: false,
+            error: error,
+            state: "errored",
+          });
+        });
+      } else {
+        loaded = true;
+        previousData = r;
+        setResult({
+          data: r,
+          loading: false,
+          error: undefined,
+          state: "ready",
+        });
+      }
+    } else {
+      setResult({
+        data: undefined,
+        loading: false,
+        error: undefined,
+        state: "unresolved",
+      });
+    }
+  });
+
+  return {
+    data: createMemo(() => result().data),
+    loading: createMemo(() => result().loading),
+    error: createMemo(() => result().error),
+    state: createMemo(() => result().state),
+  };
+}
+
 export function createEffect(effect: () => void) {
   contextStack.push(effect);
   effect();
@@ -44,8 +150,13 @@ export function createEffect(effect: () => void) {
 
 export function createMemo<T>(memo: () => T) {
   let [memoizedValue, setMemoizedValue] = createSignal<T>();
+  let memory = Symbol() as T;
   createEffect(() => {
-    setMemoizedValue(memo());
+    const val = memo();
+    if (val !== memory) {
+      memory = val;
+      setMemoizedValue(memory);
+    }
   });
   return memoizedValue;
 }
@@ -105,6 +216,8 @@ export function render(component: DOMComponent, container: HTMLElement) {
 function createDOMComponent(component: RWRNode): DOMComponent {
   if (typeof component === "string" || typeof component === "number") {
     return document.createTextNode(component.toString());
+  } else if (component == null) {
+    return document.createComment("void");
   } else if (component instanceof Node) {
     return component;
   } else {

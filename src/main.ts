@@ -1,6 +1,6 @@
-import { MultiApp } from "./components";
+import { AsyncApp } from "./async_components";
 import { render } from "./rwr";
 
 import "./style.css";
 
-render(MultiApp(), document.getElementById("app")!);
+render(AsyncApp(), document.getElementById("app")!);
