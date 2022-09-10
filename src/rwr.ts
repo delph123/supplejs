@@ -38,12 +38,13 @@ export function h(
 
 type Resource<R, P> = [
   {
-    data: () => R | undefined;
-    loading: () => boolean;
-    error: () => any;
-    state: () => "unresolved" | "pending" | "ready" | "refreshing" | "errored";
+    (): R | undefined;
+    loading: boolean;
+    error: any;
+    state: "unresolved" | "pending" | "ready" | "refreshing" | "errored";
   },
   {
+    mutate: (r?: R) => void;
     refetch: (p?: P) => void;
   }
 ];
@@ -145,14 +146,31 @@ export function createResource<R, P>(
     }
   });
 
-  return [
-    {
-      data: createMemo(() => result().data),
-      loading: createMemo(() => result().loading),
-      error: createMemo(() => result().error),
-      state: createMemo(() => result().state),
+  const resource = createMemo(() => result().data);
+
+  Object.defineProperties(resource, {
+    loading: {
+      get: createMemo(() => result().loading),
     },
+    error: {
+      get: createMemo(() => result().error),
+    },
+    state: {
+      get: createMemo(() => result().state),
+    },
+  });
+
+  return [
+    resource,
     {
+      mutate(r?: R) {
+        setResult({
+          data: r,
+          loading: false,
+          error: undefined,
+          state: "ready",
+        });
+      },
       refetch(p?: P) {
         setRefresh({
           refresh: true,
