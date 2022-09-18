@@ -5,6 +5,7 @@ import {
   createResource,
   createEffect,
   createSignal,
+  onCleanup,
 } from "./rwr";
 
 function Dog() {
@@ -83,35 +84,44 @@ export function AsyncApp() {
   ));
 }
 
-export function RecursiveEffect() {
+export function NestedEffect() {
   const [a, setA] = createSignal(1);
   const [b, setB] = createSignal(10);
   const [c, setC] = createSignal(100);
 
   createEffect(() => {
     console.log(`Effect ${a()}`);
+    onCleanup(() => console.log(`Cleaning-up effect ${a()}`));
 
     createEffect(() => {
       console.log(`Effect ${a()}.${b()}`);
+      onCleanup(() => console.log(`Cleaning-up effect ${a()}.${b()}`));
 
       createEffect(() => {
         console.log(`Effect ${a()}.${b()}.${c()}`);
+        onCleanup(() => console.log(`Cleaning-up effect ${a()}.${b()}.${c()}`));
       });
 
       createEffect(() => {
         console.log(`Effect ${a()}.${b()}.2`);
+        onCleanup(() => console.log(`Cleaning-up effect ${a()}.${b()}.2`));
       });
     });
 
     createEffect(() => {
       console.log(`Effect ${a()}.${b() + 1}`);
+      onCleanup(() => console.log(`Cleaning-up effect ${a()}.${b() + 1}`));
 
       createEffect(() => {
         console.log(`Effect ${a()}.${b() + 1}.${c()}`);
+        onCleanup(() =>
+          console.log(`Cleaning-up effect ${a()}.${b() + 1}.${c()}`)
+        );
       });
 
       createEffect(() => {
         console.log(`Effect ${a()}.${b() + 1}.2`);
+        onCleanup(() => console.log(`Cleaning-up effect ${a()}.${b() + 1}.2`));
       });
     });
   });

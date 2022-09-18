@@ -1,7 +1,7 @@
-import { AsyncApp, MyNameIs, RecursiveEffect } from "./async_components";
+import { AsyncApp, MyNameIs, NestedEffect } from "./async_components";
 import { MultiApp } from "./components";
 import { render } from "./rwr";
 
 import "./style.css";
 
-render(MultiApp(), document.getElementById("app")!);
+render(NestedEffect(), document.getElementById("app")!);
