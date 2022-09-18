@@ -4,4 +4,4 @@ import { render } from "./rwr";
 
 import "./style.css";
 
-render(MyNameIs(), document.getElementById("app")!);
+render(MultiApp(), document.getElementById("app")!);

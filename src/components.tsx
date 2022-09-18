@@ -5,6 +5,7 @@ import {
   createRenderEffect,
   createSignal,
   h,
+  untrack,
   version,
 } from "./rwr";
 
@@ -87,7 +88,7 @@ export function App() {
     <div>
       <button
         onclick={() => {
-          push(() => <Counter index={size()} total={size} />);
+          push(() => <Counter index={untrack(() => size())} total={size} />);
         }}
       >
         Add Counter

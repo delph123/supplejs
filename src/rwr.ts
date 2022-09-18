@@ -247,8 +247,10 @@ interface TrackingContext {
   dependencies: Observer[];
 }
 
+export const untrack = trackingContext.untrack;
+
 function createTrackingContext() {
-  const contextStack = [] as TrackingContext[];
+  const contextStack = [] as (TrackingContext | null)[];
 
   function get() {
     if (contextStack.length > 0) {
@@ -302,10 +304,18 @@ function createTrackingContext() {
     context.dependencies.length = 0;
   }
 
+  function untrack<T>(effect: () => T) {
+    contextStack.push(null);
+    const result = effect();
+    pop();
+    return result;
+  }
+
   return {
     get,
     push,
     pop,
+    untrack,
   };
 }
 
