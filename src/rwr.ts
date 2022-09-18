@@ -209,7 +209,6 @@ export function createSignal<T>(initialValue?: T) {
     } else {
       state = newState;
     }
-    console.log("Observers:", observers);
     const currentObservers = observers;
     observers = [];
     currentObservers.forEach((o) => o.active && o.execute());
@@ -217,6 +216,17 @@ export function createSignal<T>(initialValue?: T) {
   const get = () => {
     const currentObserver = trackingContext.get();
     if (currentObserver && !observers.includes(currentObserver)) {
+      currentObserver.dependencies.push({
+        delete(context) {
+          const idx = observers.indexOf(context);
+          if (idx >= 0) {
+            console.log("deleting", state);
+            observers.splice(idx, 1);
+          } else {
+            console.log("not found", state);
+          }
+        },
+      });
       observers.push(currentObserver);
     }
     return state;
@@ -226,10 +236,15 @@ export function createSignal<T>(initialValue?: T) {
 
 const trackingContext = createTrackingContext();
 
+interface Observer {
+  delete(context: TrackingContext): void;
+}
+
 interface TrackingContext {
   execute: () => void;
   active: boolean;
   children: TrackingContext[];
+  dependencies: Observer[];
 }
 
 function createTrackingContext() {
@@ -247,8 +262,8 @@ function createTrackingContext() {
     const execute = () => {
       console.log("TrackingContext:", get());
       console.log("Children:", context.children);
-      dispose(context.children);
-      context.children.length = 0;
+      console.log("Deps:", context.dependencies);
+      dispose(context);
       contextStack.push(context);
       effect();
       pop();
@@ -258,6 +273,7 @@ function createTrackingContext() {
       execute,
       active: true,
       children: [],
+      dependencies: [],
     };
 
     const parentTrackingContext = get();
@@ -272,12 +288,18 @@ function createTrackingContext() {
     contextStack.pop();
   }
 
-  function dispose(children: TrackingContext[]) {
-    children.forEach((child) => {
-      console.log("disposing of", child);
-      dispose(child.children);
+  function dispose(context: TrackingContext) {
+    context.children.forEach((child) => {
+      console.log("disposing of child", child);
+      dispose(child);
       child.active = false;
     });
+    context.dependencies.forEach((dep) => {
+      dep.delete(context);
+    });
+    // Clear list of children & dependencies
+    context.children.length = 0;
+    context.dependencies.length = 0;
   }
 
   return {

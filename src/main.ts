@@ -4,4 +4,4 @@ import { render } from "./rwr";
 
 import "./style.css";
 
-render(RecursiveEffect(), document.getElementById("app")!);
+render(MyNameIs(), document.getElementById("app")!);

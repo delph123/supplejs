@@ -85,8 +85,8 @@ export function AsyncApp() {
 
 export function RecursiveEffect() {
   const [a, setA] = createSignal(1);
-  const [b, setB] = createSignal(1);
-  const [c, setC] = createSignal(1);
+  const [b, setB] = createSignal(10);
+  const [c, setC] = createSignal(100);
 
   createEffect(() => {
     console.log(`Effect ${a()}`);
@@ -117,28 +117,49 @@ export function RecursiveEffect() {
   });
 
   setTimeout(() => {
+    setC(c() + 5);
+  }, 10);
+
+  setTimeout(() => {
     setA(a() + 1);
   }, 1000);
-
-  setTimeout(() => {
-    setA(a() + 1);
-  }, 3000);
-
-  setTimeout(() => {
-    setA(a() + 1);
-  }, 5000);
 
   setTimeout(() => {
     setB(b() + 2);
   }, 2000);
 
   setTimeout(() => {
+    setA(a() + 1);
+  }, 3000);
+
+  setTimeout(() => {
     setB(b() + 2);
   }, 4000);
 
   setTimeout(() => {
-    setC(c() + 5);
-  }, 10);
+    setA(a() + 1);
+  }, 5000);
+
+  return createRenderEffect(() => "Hello world!");
+}
+
+export function MyNameIs() {
+  const [firstName, setFirstName] = createSignal("John");
+  const [lastName, setLastName] = createSignal("Doe");
+  const [showLastName, setShowLastName] = createSignal(true);
+
+  createEffect(() => {
+    if (showLastName()) {
+      console.log(firstName(), lastName());
+    } else {
+      console.log(firstName());
+    }
+  });
+
+  setLastName("A");
+  setShowLastName(false);
+  setLastName("B");
+  setFirstName("Marc");
 
   return createRenderEffect(() => "Hello world!");
 }
