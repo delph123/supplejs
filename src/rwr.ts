@@ -220,10 +220,10 @@ export function createSignal<T>(initialValue?: T) {
         delete(context) {
           const idx = observers.indexOf(context);
           if (idx >= 0) {
-            console.log("deleting", state);
+            // console.log("deleting", state);
             observers.splice(idx, 1);
           } else {
-            console.log("not found", state);
+            // console.log("not found", state);
           }
         },
       });
@@ -248,6 +248,7 @@ interface TrackingContext {
 }
 
 export const untrack = trackingContext.untrack;
+export const getOwner = trackingContext.get;
 
 function createTrackingContext() {
   const contextStack = [] as (TrackingContext | null)[];
@@ -262,9 +263,9 @@ function createTrackingContext() {
 
   function push(effect: () => void) {
     const execute = () => {
-      console.log("TrackingContext:", get());
-      console.log("Children:", context.children);
-      console.log("Deps:", context.dependencies);
+      // console.log("TrackingContext:", get());
+      // console.log("Children:", context.children);
+      // console.log("Deps:", context.dependencies);
       dispose(context);
       contextStack.push(context);
       effect();
@@ -292,7 +293,7 @@ function createTrackingContext() {
 
   function dispose(context: TrackingContext) {
     context.children.forEach((child) => {
-      console.log("disposing of child", child);
+      // console.log("disposing of child", child);
       dispose(child);
       child.active = false;
     });
@@ -317,6 +318,17 @@ function createTrackingContext() {
     pop,
     untrack,
   };
+}
+
+export function onCleanup(cleanup: () => void) {
+  const context = trackingContext.get();
+  if (context) {
+    context.dependencies.push({
+      delete: cleanup,
+    });
+  } else {
+    console.error("No current tracking context!");
+  }
 }
 
 export function createRenderEffect(renderEffect: () => RWRNode) {

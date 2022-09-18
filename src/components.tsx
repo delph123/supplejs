@@ -4,7 +4,9 @@ import {
   createMemo,
   createRenderEffect,
   createSignal,
+  getOwner,
   h,
+  onCleanup,
   untrack,
   version,
 } from "./rwr";
@@ -31,9 +33,13 @@ function Footer({ version }: { version: string }) {
 function Clock() {
   const [subscribe, notify] = createSignal();
 
-  setInterval(() => {
+  const timer = setInterval(() => {
     notify();
   }, 1000);
+
+  onCleanup(() => {
+    clearInterval(timer);
+  });
 
   return createRenderEffect(() => {
     subscribe();
@@ -66,13 +72,23 @@ function Counter(props: { index: number; total: () => number }) {
     setSum((s) => s! + counterMemo().current - counterMemo().previous);
   });
 
-  return createRenderEffect(() => (
-    <div class="card">
-      {label()}
-      <button onclick={() => setCounter(counter() + 1)}>+</button>
-      <button onclick={() => setCounter(counter() - 1)}>-</button>
-    </div>
-  ));
+  onCleanup(() => {
+    console.log("Disposing of Counter!", counter());
+    setSum(sum() - counter());
+  });
+
+  return createRenderEffect(() => {
+    onCleanup(() =>
+      console.log("Cleanup before rerendering", counter(), getOwner())
+    );
+    return (
+      <div class="card">
+        {label()}
+        <button onclick={() => setCounter(counter() + 1)}>+</button>
+        <button onclick={() => setCounter(counter() - 1)}>-</button>
+      </div>
+    );
+  });
 }
 
 const [sum, setSum] = createSignal(0);
