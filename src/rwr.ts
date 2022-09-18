@@ -182,9 +182,9 @@ export function createResource<R, P>(
 }
 
 export function createEffect(effect: () => void) {
-  contextStack.push(effect);
+  trackingContext.push(effect);
   effect();
-  contextStack.pop();
+  trackingContext.pop();
 }
 
 export function createMemo<T>(memo: () => T) {
@@ -202,21 +202,21 @@ export function createMemo<T>(memo: () => T) {
 
 export function createSignal<T>(initialValue?: T) {
   let state = initialValue;
-  let untrack = false;
-  const observers = [] as (() => void)[];
+  let observers = [] as TrackingContext[];
   const set = (newState?: T | ((s?: T) => T)) => {
     if (typeof newState === "function") {
       state = (newState as (s?: T) => T)(state);
     } else {
       state = newState;
     }
-    untrack = true;
-    observers.forEach((o) => o());
-    untrack = false;
+    console.log("Observers:", observers);
+    const currentObservers = observers;
+    observers = [];
+    currentObservers.forEach((o) => o.active && o.execute());
   };
   const get = () => {
-    const currentObserver = getReactContext();
-    if (!untrack && currentObserver && !observers.includes(currentObserver)) {
+    const currentObserver = trackingContext.get();
+    if (currentObserver && !observers.includes(currentObserver)) {
       observers.push(currentObserver);
     }
     return state;
@@ -224,14 +224,67 @@ export function createSignal<T>(initialValue?: T) {
   return [get, set] as [() => T, (v?: T | ((s?: T) => T)) => void];
 }
 
-const contextStack = [] as (() => void)[];
+const trackingContext = createTrackingContext();
 
-function getReactContext() {
-  if (contextStack.length > 0) {
-    return contextStack[contextStack.length - 1];
-  } else {
-    return null;
+interface TrackingContext {
+  execute: () => void;
+  active: boolean;
+  children: TrackingContext[];
+}
+
+function createTrackingContext() {
+  const contextStack = [] as TrackingContext[];
+
+  function get() {
+    if (contextStack.length > 0) {
+      return contextStack[contextStack.length - 1];
+    } else {
+      return null;
+    }
   }
+
+  function push(effect: () => void) {
+    const execute = () => {
+      console.log("TrackingContext:", get());
+      console.log("Children:", context.children);
+      dispose(context.children);
+      context.children.length = 0;
+      contextStack.push(context);
+      effect();
+      pop();
+    };
+
+    const context: TrackingContext = {
+      execute,
+      active: true,
+      children: [],
+    };
+
+    const parentTrackingContext = get();
+    if (parentTrackingContext) {
+      parentTrackingContext.children.push(context);
+    }
+
+    contextStack.push(context);
+  }
+
+  function pop() {
+    contextStack.pop();
+  }
+
+  function dispose(children: TrackingContext[]) {
+    children.forEach((child) => {
+      console.log("disposing of", child);
+      dispose(child.children);
+      child.active = false;
+    });
+  }
+
+  return {
+    get,
+    push,
+    pop,
+  };
 }
 
 export function createRenderEffect(renderEffect: () => RWRNode) {
@@ -240,11 +293,11 @@ export function createRenderEffect(renderEffect: () => RWRNode) {
     node.parentNode?.replaceChild(newNode, node);
     node = newNode;
   };
-  contextStack.push(() => {
+  trackingContext.push(() => {
     replaceNode(createDOMComponent(renderEffect()));
   });
   node = createDOMComponent(renderEffect());
-  contextStack.pop();
+  trackingContext.pop();
   return node;
 }
 

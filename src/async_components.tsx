@@ -1,5 +1,11 @@
 import { createChainedList } from "./chain";
-import { h, createRenderEffect, createResource } from "./rwr";
+import {
+  h,
+  createRenderEffect,
+  createResource,
+  createEffect,
+  createSignal,
+} from "./rwr";
 
 function Dog() {
   const [dog, { mutate, refetch }] = createResource(() => {
@@ -75,4 +81,64 @@ export function AsyncApp() {
       <button onclick={pop}>Less dogs!</button>
     </div>
   ));
+}
+
+export function RecursiveEffect() {
+  const [a, setA] = createSignal(1);
+  const [b, setB] = createSignal(1);
+  const [c, setC] = createSignal(1);
+
+  createEffect(() => {
+    console.log(`Effect ${a()}`);
+
+    createEffect(() => {
+      console.log(`Effect ${a()}.${b()}`);
+
+      createEffect(() => {
+        console.log(`Effect ${a()}.${b()}.${c()}`);
+      });
+
+      createEffect(() => {
+        console.log(`Effect ${a()}.${b()}.2`);
+      });
+    });
+
+    createEffect(() => {
+      console.log(`Effect ${a()}.${b() + 1}`);
+
+      createEffect(() => {
+        console.log(`Effect ${a()}.${b() + 1}.${c()}`);
+      });
+
+      createEffect(() => {
+        console.log(`Effect ${a()}.${b() + 1}.2`);
+      });
+    });
+  });
+
+  setTimeout(() => {
+    setA(a() + 1);
+  }, 1000);
+
+  setTimeout(() => {
+    setA(a() + 1);
+  }, 3000);
+
+  setTimeout(() => {
+    setA(a() + 1);
+  }, 5000);
+
+  setTimeout(() => {
+    setB(b() + 2);
+  }, 2000);
+
+  setTimeout(() => {
+    setB(b() + 2);
+  }, 4000);
+
+  setTimeout(() => {
+    setC(c() + 5);
+  }, 10);
+
+  return createRenderEffect(() => "Hello world!");
 }
