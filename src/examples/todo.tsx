@@ -55,7 +55,7 @@ export function Counter(): RWRNodeEffect {
   });
   return () => (
     <div>
-      <h1>{createRenderEffect(() => count())}</h1>
+      <h1>{count}</h1>
       <Input value={delay} oninput={(e) => setDelay(e.target.value)} />
     </div>
   );

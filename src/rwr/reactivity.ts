@@ -156,14 +156,14 @@ export function createRenderEffect(renderEffect: RWRNodeEffect) {
 }
 
 function createDOMComponent(component: RWRNode): DOMComponent {
-  if (
+  if (component == null || typeof component === "boolean") {
+    return document.createComment("void");
+  } else if (
     typeof component === "string" ||
     typeof component === "number" ||
     typeof component === "bigint"
   ) {
     return document.createTextNode(component.toString());
-  } else if (component == null) {
-    return document.createComment("void");
   } else if (component instanceof Node) {
     return component;
   } else {

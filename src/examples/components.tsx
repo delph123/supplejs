@@ -63,6 +63,9 @@ function Counter(props: { index: number; total: () => number }): RWRNodeEffect {
   const [counter, setCounter] = createSignal(10);
 
   const label = () => {
+    onCleanup(() =>
+      console.log("Cleanup before rerendering", counter(), getOwner())
+    );
     return `Counter ${props.index + 1} / ${props.total()} >> ${counter()}.`;
   };
 
@@ -78,12 +81,9 @@ function Counter(props: { index: number; total: () => number }): RWRNodeEffect {
   });
 
   return () => {
-    onCleanup(() =>
-      console.log("Cleanup before rerendering", counter(), getOwner())
-    );
     return (
       <div class="card">
-        {label()}
+        {label}
         <button onclick={() => setCounter(counter() + 1)}>+</button>
         <button onclick={() => setCounter(counter() - 1)}>-</button>
       </div>
@@ -92,10 +92,6 @@ function Counter(props: { index: number; total: () => number }): RWRNodeEffect {
 }
 
 const [sum, setSum] = createSignal(0);
-
-function Total(): RWRNodeEffect {
-  return () => <p>TOTAL = {sum()}</p>;
-}
 
 export function App(): RWRNodeEffect {
   const [ChainedList, push, pop, size] = createChainedList();
@@ -113,17 +109,15 @@ export function App(): RWRNodeEffect {
     </div>
   );
 
-  return () => {
-    return (
-      <div>
-        <Header />
-        {btns}
-        <ChainedList />
-        <Total />
-        <Footer version={version} />
-      </div>
-    );
-  };
+  return () => (
+    <div>
+      <Header />
+      {btns}
+      <ChainedList />
+      <p>TOTAL = {sum}</p>
+      <Footer version={version} />
+    </div>
+  );
 }
 
 export function MultiApp(): RWRNodeEffect {

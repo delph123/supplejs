@@ -60,7 +60,7 @@ export function createChainedList({
     ChainedList({
       tag: tag || "div",
       attributes,
-      children: [root],
+      item: root,
     });
 
   return [BoundedChainedList, push, pop, size] as const;
@@ -69,18 +69,18 @@ export function createChainedList({
 export function ChainedList(props: {
   tag: string;
   attributes?: Record<string, any>;
-  children: [() => Chain];
+  item: () => Chain;
 }): RWRNodeEffect {
   return () => {
-    if (props.children[0]().next) {
+    if (props.item().next) {
       return h(
         props.tag,
         props.attributes,
-        props.children[0]().current!(),
+        props.item().current!(),
         h(ChainedList, {
           tag: props.tag,
           attributes: props.attributes,
-          children: [props.children[0]().next!],
+          item: props.item().next!,
         })
       );
     } else {

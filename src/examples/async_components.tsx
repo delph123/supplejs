@@ -1,6 +1,5 @@
 import {
   h,
-  createRenderEffect,
   createResource,
   createEffect,
   createSignal,
@@ -25,29 +24,29 @@ function Dog(): RWRNodeEffect {
   });
 
   return () => {
-    const errorBlock = createRenderEffect(() => {
+    const errorBlock = () => {
       if (dog.error || !dog()) {
         return <p>ERROR!!</p>;
       } else {
         return null;
       }
-    });
+    };
 
-    const imgBlock = createRenderEffect(() => {
+    const imgBlock = () => {
       if (dog()) {
         return <img src={dog()} height="100" />;
       } else {
         return null;
       }
-    });
+    };
 
-    const refreshingBlock = createRenderEffect(() => {
+    const refreshingBlock = () => {
       if (dog.state === "refreshing") {
         return <button disabled>Refreshing...</button>;
       } else {
         return <button onclick={refetch}>Another dog?</button>;
       }
-    });
+    };
 
     if (dog.loading) return "Loading...";
     return (

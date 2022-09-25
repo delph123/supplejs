@@ -24,14 +24,24 @@ export const version = "0.2";
 export function h(
   type: string | RWRComponent,
   props?: Record<string, any>,
-  ...children: RWRNode[]
+  ...children: (RWRNode | RWRNodeEffect)[]
 ): RWRNode {
-  let childNodes = props?.children || children || [];
-  if (!Array.isArray(childNodes) && childNodes != null) {
-    childNodes = [childNodes];
-  } else if (childNodes == null) {
+  let altChildren: (RWRNode | RWRNodeEffect)[] =
+    props?.children || children || [];
+  if (!Array.isArray(altChildren) && altChildren != null) {
+    altChildren = [altChildren];
+  } else if (altChildren == null) {
     console.error("Children should be an array!");
   }
+
+  const childNodes = altChildren.map((c) => {
+    if (typeof c === "function") {
+      return createRenderEffect(c);
+    } else {
+      return c;
+    }
+  });
+
   let attributes = props ? { ...props } : {};
   if ("children" in attributes) {
     delete attributes.children;
