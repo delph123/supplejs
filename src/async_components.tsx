@@ -150,7 +150,7 @@ export function NestedEffect() {
     setA(a() + 1);
   }, 5000);
 
-  return createRenderEffect(() => "Hello world!");
+  return createRenderEffect(() => 123456789012345678901234567890n);
 }
 
 export function MyNameIs() {

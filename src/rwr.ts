@@ -1,39 +1,54 @@
 export interface RWRElement {
-  name: string;
-  attributes: Record<string, any>;
-  childNodes: RWRNode[];
+  type: string;
+  props: Record<string, any>;
+  children: RWRNode[];
 }
 
-export type RWRNode = Node | RWRElement | string | number | null;
+export type RWRNode =
+  | DOMComponent
+  | RWRElement
+  | string
+  | number
+  | bigint
+  | null;
 
 export type DOMComponent = Node;
 
 export const version = "0.2";
 
 export function h(
-  tagName: string | ((props: any) => DOMComponent),
+  type: string | ((props: any) => DOMComponent),
   props?: Record<string, any>,
   ...children: RWRNode[]
 ) {
-  if (typeof tagName === "function") {
-    return tagName(props);
+  let childNodes = props?.children || children || [];
+  if (!Array.isArray(childNodes) && childNodes != null) {
+    childNodes = [childNodes];
+  } else if (childNodes == null) {
+    console.error("Children should be an array!");
+  }
+  let attributes = props ? { ...props } : {};
+  if ("children" in attributes) {
+    delete attributes.children;
+  }
+
+  if (typeof type === "function") {
+    return createComponent(type, attributes, children);
   } else {
-    let childNodes = props?.children || children || [];
-    if (!Array.isArray(childNodes) && childNodes != null) {
-      childNodes = [childNodes];
-    } else if (childNodes == null) {
-      console.error("not an array!");
-    }
-    let attributes = props || {};
-    if ("children" in attributes) {
-      delete attributes.children;
-    }
     return {
-      name: tagName,
-      attributes,
-      childNodes,
+      type,
+      props: attributes,
+      children: childNodes,
     } as RWRElement;
   }
+}
+
+function createComponent(
+  Component: (props: any) => DOMComponent,
+  props: Record<string, any>,
+  children: RWRNode[]
+) {
+  return Component({ ...props, children });
 }
 
 type Resource<R, P> = [
@@ -350,22 +365,26 @@ export function render(component: DOMComponent, container: HTMLElement) {
 }
 
 function createDOMComponent(component: RWRNode): DOMComponent {
-  if (typeof component === "string" || typeof component === "number") {
+  if (
+    typeof component === "string" ||
+    typeof component === "number" ||
+    typeof component === "bigint"
+  ) {
     return document.createTextNode(component.toString());
   } else if (component == null) {
     return document.createComment("void");
   } else if (component instanceof Node) {
     return component;
   } else {
-    const element = document.createElement(component.name);
-    Object.entries(component.attributes).forEach(([name, value]) => {
+    const element = document.createElement(component.type);
+    Object.entries(component.props).forEach(([name, value]) => {
       if (!name.startsWith("on")) {
         element.setAttribute(name, value);
       } else {
         element.addEventListener(name.substring(2), value);
       }
     });
-    component.childNodes.forEach((child) => {
+    component.children.forEach((child) => {
       element.appendChild(createDOMComponent(child));
     });
     return element;

@@ -62,12 +62,7 @@ export function createChainedList({
       children: root,
     });
 
-  return [BoundedChainedList, push, pop, size] as [
-    () => DOMComponent,
-    (component: () => DOMComponent) => void,
-    () => void,
-    () => number
-  ];
+  return [BoundedChainedList, push, pop, size] as const;
 }
 
 export function ChainedList(props: {
