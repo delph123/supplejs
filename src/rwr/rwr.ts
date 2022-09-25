@@ -1,3 +1,5 @@
+import { createRenderEffect } from "./reactivity";
+
 export interface RWRElement {
   type: string;
   props: Record<string, any>;
@@ -14,13 +16,16 @@ export type RWRNode =
 
 export type DOMComponent = Node;
 
+export type RWRNodeEffect = () => RWRNode;
+export type RWRComponent = (props?: any) => RWRNodeEffect;
+
 export const version = "0.2";
 
 export function h(
-  type: string | ((props: any) => DOMComponent),
+  type: string | RWRComponent,
   props?: Record<string, any>,
   ...children: RWRNode[]
-) {
+): RWRNode {
   let childNodes = props?.children || children || [];
   if (!Array.isArray(childNodes) && childNodes != null) {
     childNodes = [childNodes];
@@ -33,7 +38,7 @@ export function h(
   }
 
   if (typeof type === "function") {
-    return createComponent(type, attributes, children);
+    return createComponent(type, attributes, childNodes);
   } else {
     return {
       type,
@@ -44,13 +49,14 @@ export function h(
 }
 
 function createComponent(
-  Component: (props: any) => DOMComponent,
+  Component: RWRComponent,
   props: Record<string, any>,
   children: RWRNode[]
 ) {
-  return Component({ ...props, children });
+  return createRenderEffect(Component({ ...props, children }));
 }
 
-export function render(component: DOMComponent, container: HTMLElement) {
-  container.appendChild(component);
+export function render(renderEffect: RWRNodeEffect, container: HTMLElement) {
+  const node = createRenderEffect(renderEffect);
+  container.appendChild(node);
 }

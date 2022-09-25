@@ -6,9 +6,10 @@ import {
   createSignal,
   onCleanup,
   createChainedList,
+  RWRNodeEffect,
 } from "../rwr";
 
-function Dog() {
+function Dog(): RWRNodeEffect {
   const [dog, { mutate, refetch }] = createResource(() => {
     return new Promise((resolve, reject) => {
       setTimeout(async () => {
@@ -23,7 +24,7 @@ function Dog() {
     });
   });
 
-  return createRenderEffect(() => {
+  return () => {
     const errorBlock = createRenderEffect(() => {
       if (dog.error || !dog()) {
         return <p>ERROR!!</p>;
@@ -63,13 +64,13 @@ function Dog() {
         </button>
       </div>
     );
-  });
+  };
 }
 
-export function AsyncApp() {
+export function AsyncApp(): RWRNodeEffect {
   const [ChainedList, push, pop] = createChainedList();
 
-  return createRenderEffect(() => (
+  return () => (
     <div>
       <ChainedList />
       <button
@@ -81,10 +82,10 @@ export function AsyncApp() {
       </button>
       <button onclick={pop}>Less dogs!</button>
     </div>
-  ));
+  );
 }
 
-export function NestedEffect() {
+export function NestedEffect(): RWRNodeEffect {
   const [a, setA] = createSignal(1);
   const [b, setB] = createSignal(10);
   const [c, setC] = createSignal(100);
@@ -150,10 +151,10 @@ export function NestedEffect() {
     setA(a() + 1);
   }, 5000);
 
-  return createRenderEffect(() => 123456789012345678901234567890n);
+  return () => 123456789012345678901234567890n;
 }
 
-export function MyNameIs() {
+export function MyNameIs(): RWRNodeEffect {
   const [firstName, setFirstName] = createSignal("John");
   const [lastName, setLastName] = createSignal("Doe");
   const [showLastName, setShowLastName] = createSignal(true);
@@ -171,5 +172,5 @@ export function MyNameIs() {
   setLastName("B");
   setFirstName("Marc");
 
-  return createRenderEffect(() => "Hello world!");
+  return () => "Hello world!";
 }

@@ -1,5 +1,5 @@
-import { DOMComponent, h } from "./rwr";
-import { createRenderEffect, createSignal } from "./reactivity";
+import { DOMComponent, h, RWRNodeEffect } from "./rwr";
+import { createSignal } from "./reactivity";
 
 interface Chain {
   current?: () => DOMComponent;
@@ -60,7 +60,7 @@ export function createChainedList({
     ChainedList({
       tag: tag || "div",
       attributes,
-      children: root,
+      children: [root],
     });
 
   return [BoundedChainedList, push, pop, size] as const;
@@ -69,22 +69,22 @@ export function createChainedList({
 export function ChainedList(props: {
   tag: string;
   attributes?: Record<string, any>;
-  children: () => Chain;
-}): DOMComponent {
-  return createRenderEffect(() => {
-    if (props.children().next) {
+  children: [() => Chain];
+}): RWRNodeEffect {
+  return () => {
+    if (props.children[0]().next) {
       return h(
         props.tag,
         props.attributes,
-        props.children().current!(),
-        ChainedList({
+        props.children[0]().current!(),
+        h(ChainedList, {
           tag: props.tag,
           attributes: props.attributes,
-          children: props.children().next!,
+          children: [props.children[0]().next!],
         })
       );
     } else {
       return h(props.tag, props.attributes);
     }
-  });
+  };
 }

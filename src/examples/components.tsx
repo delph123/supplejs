@@ -1,7 +1,6 @@
 import {
   createEffect,
   createMemo,
-  createRenderEffect,
   createSignal,
   getOwner,
   h,
@@ -9,28 +8,29 @@ import {
   untrack,
   version,
   createChainedList,
+  RWRNodeEffect,
 } from "../rwr";
 
-function Header() {
-  return createRenderEffect(() => (
+function Header(): RWRNodeEffect {
+  return () => (
     <div>
       <h2>Hello!</h2>
       <h5>
         It is <Clock />
       </h5>
     </div>
-  ));
+  );
 }
 
-function Footer({ version }: { version: string }) {
-  return createRenderEffect(() => (
+function Footer({ version }: { version: string }): RWRNodeEffect {
+  return () => (
     <p class="read-the-docs">
       This page was created with React-Without-React v{version}
     </p>
-  ));
+  );
 }
 
-function Clock() {
+function Clock(): RWRNodeEffect {
   const [subscribe, notify] = createSignal();
 
   const timer = setInterval(() => {
@@ -41,10 +41,10 @@ function Clock() {
     clearInterval(timer);
   });
 
-  return createRenderEffect(() => {
+  return () => {
     subscribe();
     return new Date().toLocaleTimeString();
-  });
+  };
 }
 
 function withPrevious<T>(variable: () => T, initialValue: T) {
@@ -59,7 +59,7 @@ function withPrevious<T>(variable: () => T, initialValue: T) {
   });
 }
 
-function Counter(props: { index: number; total: () => number }) {
+function Counter(props: { index: number; total: () => number }): RWRNodeEffect {
   const [counter, setCounter] = createSignal(10);
 
   const label = () => {
@@ -77,7 +77,7 @@ function Counter(props: { index: number; total: () => number }) {
     setSum(sum() - counter());
   });
 
-  return createRenderEffect(() => {
+  return () => {
     onCleanup(() =>
       console.log("Cleanup before rerendering", counter(), getOwner())
     );
@@ -88,16 +88,16 @@ function Counter(props: { index: number; total: () => number }) {
         <button onclick={() => setCounter(counter() - 1)}>-</button>
       </div>
     );
-  });
+  };
 }
 
 const [sum, setSum] = createSignal(0);
 
-function Total() {
-  return createRenderEffect(() => <p>TOTAL = {sum()}</p>);
+function Total(): RWRNodeEffect {
+  return () => <p>TOTAL = {sum()}</p>;
 }
 
-export function App() {
+export function App(): RWRNodeEffect {
   const [ChainedList, push, pop, size] = createChainedList();
 
   const btns = (
@@ -113,7 +113,7 @@ export function App() {
     </div>
   );
 
-  return createRenderEffect(() => {
+  return () => {
     return (
       <div>
         <Header />
@@ -123,13 +123,13 @@ export function App() {
         <Footer version={version} />
       </div>
     );
-  });
+  };
 }
 
-export function MultiApp() {
+export function MultiApp(): RWRNodeEffect {
   const [ChainedList, push, pop] = createChainedList();
 
-  return createRenderEffect(() => (
+  return () => (
     <div>
       <ChainedList />
       <button
@@ -141,5 +141,5 @@ export function MultiApp() {
       </button>
       <button onclick={pop}>-</button>
     </div>
-  ));
+  );
 }

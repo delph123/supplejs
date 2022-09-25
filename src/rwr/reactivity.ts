@@ -1,4 +1,4 @@
-import { DOMComponent, RWRNode } from "./rwr";
+import { DOMComponent, RWRNode, RWRNodeEffect } from "./rwr";
 
 interface Disposable {
   cleanup: () => void;
@@ -141,7 +141,7 @@ export function createMemo<T>(memo: () => T) {
   return memoizedValue;
 }
 
-export function createRenderEffect(renderEffect: () => RWRNode) {
+export function createRenderEffect(renderEffect: RWRNodeEffect) {
   let node: Node;
   const replaceNode = (newNode: Node) => {
     node.parentNode?.replaceChild(newNode, node);
