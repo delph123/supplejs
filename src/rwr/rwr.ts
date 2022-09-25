@@ -58,12 +58,20 @@ export function h(
   }
 }
 
+export function Fragment() {
+  // TODO
+}
+
 function createComponent(
   Component: RWRComponent,
   props: Record<string, any>,
   children: RWRNode[]
 ) {
   return createRenderEffect(Component({ ...props, children }));
+}
+
+export function createRoot() {
+  // TODO
 }
 
 export function render(renderEffect: RWRNodeEffect, container: HTMLElement) {
