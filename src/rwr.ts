@@ -217,7 +217,7 @@ export function createMemo<T>(memo: () => T) {
 
 export function createSignal<T>(initialValue?: T) {
   let state = initialValue;
-  let observers = [] as TrackingContext[];
+  let observers = new Set<TrackingContext>();
   const set = (newState?: T | ((s?: T) => T)) => {
     if (typeof newState === "function") {
       state = (newState as (s?: T) => T)(state);
@@ -225,24 +225,18 @@ export function createSignal<T>(initialValue?: T) {
       state = newState;
     }
     const currentObservers = observers;
-    observers = [];
+    observers = new Set<TrackingContext>();
     currentObservers.forEach((o) => o.active && o.execute());
   };
   const get = () => {
     const currentObserver = trackingContext.get();
-    if (currentObserver && !observers.includes(currentObserver)) {
+    if (currentObserver) {
       currentObserver.dependencies.push({
-        delete(context) {
-          const idx = observers.indexOf(context);
-          if (idx >= 0) {
-            // console.log("deleting", state);
-            observers.splice(idx, 1);
-          } else {
-            // console.log("not found", state);
-          }
+        cleanup() {
+          observers.delete(currentObserver);
         },
       });
-      observers.push(currentObserver);
+      observers.add(currentObserver);
     }
     return state;
   };
@@ -251,15 +245,15 @@ export function createSignal<T>(initialValue?: T) {
 
 const trackingContext = createTrackingContext();
 
-interface Observer {
-  delete(context: TrackingContext): void;
+interface Disposable {
+  cleanup: () => void;
 }
 
 interface TrackingContext {
   execute: () => void;
   active: boolean;
   children: TrackingContext[];
-  dependencies: Observer[];
+  dependencies: Disposable[];
 }
 
 export const untrack = trackingContext.untrack;
@@ -313,7 +307,7 @@ function createTrackingContext() {
       child.active = false;
     });
     context.dependencies.forEach((dep) => {
-      dep.delete(context);
+      dep.cleanup();
     });
     // Clear list of children & dependencies
     context.children.length = 0;
@@ -339,7 +333,7 @@ export function onCleanup(cleanup: () => void) {
   const context = trackingContext.get();
   if (context) {
     context.dependencies.push({
-      delete: cleanup,
+      cleanup,
     });
   } else {
     console.error("No current tracking context!");
