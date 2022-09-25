@@ -1,4 +1,5 @@
-import { createRenderEffect, createSignal, DOMComponent, h } from "./rwr";
+import { DOMComponent, h } from "./rwr";
+import { createRenderEffect, createSignal } from "./reactivity";
 
 interface Chain {
   current?: () => DOMComponent;
@@ -69,7 +70,7 @@ export function ChainedList(props: {
   tag: string;
   attributes?: Record<string, any>;
   children: () => Chain;
-}): Node {
+}): DOMComponent {
   return createRenderEffect(() => {
     if (props.children().next) {
       return h(

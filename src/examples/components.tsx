@@ -1,4 +1,3 @@
-import { createChainedList } from "./chain";
 import {
   createEffect,
   createMemo,
@@ -9,7 +8,8 @@ import {
   onCleanup,
   untrack,
   version,
-} from "./rwr";
+  createChainedList,
+} from "../rwr";
 
 function Header() {
   return createRenderEffect(() => (

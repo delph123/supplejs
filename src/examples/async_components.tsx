@@ -1,4 +1,3 @@
-import { createChainedList } from "./chain";
 import {
   h,
   createRenderEffect,
@@ -6,7 +5,8 @@ import {
   createEffect,
   createSignal,
   onCleanup,
-} from "./rwr";
+  createChainedList,
+} from "../rwr";
 
 function Dog() {
   const [dog, { mutate, refetch }] = createResource(() => {
