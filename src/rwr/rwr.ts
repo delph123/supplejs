@@ -1,4 +1,4 @@
-import { createRenderEffect } from "./reactivity";
+import { createRenderEffect, createRoot } from "./reactivity";
 
 export interface RWRElement {
   type: string;
@@ -75,6 +75,14 @@ function createComponent(
 }
 
 export function render(renderEffect: RWRNodeEffect, container: HTMLElement) {
-  const node = createRenderEffect(renderEffect);
-  container.appendChild(node);
+  return createRoot((dispose) => {
+    const node = createRenderEffect(renderEffect);
+    container.appendChild(node);
+    return () => {
+      // XXX use the first child since the node above may have been replaced.
+      // This isn't perfect but for now it will do!
+      container.removeChild(container.firstChild!);
+      dispose();
+    };
+  });
 }

@@ -83,9 +83,11 @@ function createTrackingContext() {
   }
 
   function executeAsRoot<T>(effect: (dispose: () => void) => T) {
+    // Create an inactive context (which won't be notified) to
+    // track children and dependent contexts
     const context: TrackingContext = {
       execute: () => console.error("Executing Root Context!!"),
-      active: true,
+      active: false,
       children: [],
       dependencies: [],
     };

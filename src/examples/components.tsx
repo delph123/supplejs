@@ -144,3 +144,17 @@ export function MultiApp(): RWRNodeEffect {
     </div>
   );
 }
+
+export function GoodBye({ onexit }): RWRNodeEffect {
+  const [c, setC] = createSignal(true);
+  setInterval(() => setC((c) => !c), 1000);
+  return () =>
+    c() ? (
+      <div>
+        Hello!
+        <button onclick={onexit}>GoodBye!</button>
+      </div>
+    ) : (
+      <p>Too late!</p>
+    );
+}
