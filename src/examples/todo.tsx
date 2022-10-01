@@ -13,15 +13,21 @@ interface TodoItem {
   done: () => boolean;
   label: string;
   setDone: (b: boolean) => void;
+  edit: () => boolean;
+  setEdit: (b: boolean) => void;
 }
 
 function createItem(label, completed = false) {
   const [done, setDone] = createSignal(completed);
+  const [edit, setEdit] = createSignal(false);
+
   return {
     key: Math.random().toString(),
     label,
     done,
     setDone,
+    edit,
+    setEdit,
   };
 }
 
@@ -58,19 +64,38 @@ export function Todo(): RWRNodeEffect {
                   {...(item.done() && { checked: "checked" })}
                 />
               )}
-              {() => (
-                <span
-                  style={item.done() ? "text-decoration: line-through;" : ""}
-                >
-                  {item.label}
-                </span>
-              )}
+              {() =>
+                !item.edit() && (
+                  <span
+                    style={item.done() ? "text-decoration: line-through;" : ""}
+                  >
+                    {item.label}
+                  </span>
+                )
+              }
+              {() =>
+                item.edit() && (
+                  <Input
+                    value={() => item.label}
+                    oninput={(e) => {
+                      item.label = e.target.value;
+                    }}
+                  />
+                )
+              }
               <button
                 onclick={() => {
                   setList((l) => l!.filter((it) => it.key !== item.key));
                 }}
               >
                 Delete
+              </button>
+              <button
+                onclick={() => {
+                  item.setEdit(!item.edit());
+                }}
+              >
+                {() => (item.edit() ? "Update" : "Edit")}
               </button>
             </li>
           );
