@@ -1,30 +1,66 @@
 import {
   h,
-  createRenderEffect,
   createSignal,
   createEffect,
   onCleanup,
   RWRNodeEffect,
+  For,
+  RWRNode,
+  untrack,
 } from "../rwr";
+import { Counter as CounterItem } from "./components";
+
+interface TodoItem {
+  key: string;
+  done: boolean;
+  label: string;
+}
 
 export function Todo(): RWRNodeEffect {
   const [value, setValue] = createSignal("");
-
-  const list = createRenderEffect(() => <ul></ul>);
+  const [list, setList] = createSignal<TodoItem[]>([]);
 
   return () => (
     <section>
       <Input value={value} oninput={(e) => setValue(e.target.value)} />
       <button
         onclick={() => {
-          const val = value();
-          list.appendChild(createRenderEffect(() => <li>{val}</li>));
+          setList((l) => [
+            ...l!,
+            {
+              key: Date.now().toString(),
+              label: value(),
+              done: false,
+            },
+          ]);
           setValue("");
         }}
       >
         Add
       </button>
-      {list}
+      <For
+        anchor="ul"
+        each={list}
+        children={(item: TodoItem): RWRNode => {
+          console.log("item", item);
+          return (
+            <li>
+              <CounterItem
+                index={untrack(() => list().length - 1)}
+                total={value}
+              />
+              <button
+                onclick={() => {
+                  console.log("delete", item);
+                  setList((l) => l!.filter((it) => it.key !== item.key));
+                }}
+              >
+                Delete
+              </button>
+            </li>
+          );
+        }}
+      ></For>
     </section>
   );
 }

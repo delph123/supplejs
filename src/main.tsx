@@ -5,4 +5,4 @@ import { Counter, Todo } from "./examples/todo";
 
 import "./style.css";
 
-render(() => <MultiApp />, document.getElementById("app")!);
+render(() => <Todo />, document.getElementById("app")!);

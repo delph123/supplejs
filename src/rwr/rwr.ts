@@ -35,12 +35,16 @@ export function h(
   }
 
   const childNodes = altChildren.map((c) => {
-    if (typeof c === "function") {
+    // If the function has no parameter we want to automatically
+    // wrap it in a render effect, but for the purpose of iterator
+    // or other control flow constructs we want to avoid doing so
+    // in case it has any parameter.
+    if (typeof c === "function" && c.length === 0) {
       return createRenderEffect(c);
     } else {
       return c;
     }
-  });
+  }) as RWRNode[];
 
   let attributes = props ? { ...props } : {};
   if ("children" in attributes) {

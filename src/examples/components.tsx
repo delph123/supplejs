@@ -59,7 +59,10 @@ function withPrevious<T>(variable: () => T, initialValue: T) {
   });
 }
 
-function Counter(props: { index: number; total: () => number }): RWRNodeEffect {
+export function Counter(props: {
+  index: number;
+  total: () => string | number;
+}): RWRNodeEffect {
   const [counter, setCounter] = createSignal(10);
 
   const label = () => {
