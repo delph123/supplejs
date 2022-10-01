@@ -27,9 +27,13 @@ a:hover {
 body {
   margin: 0;
   display: flex;
-  place-items: center;
+  align-items: center;
   min-width: 320px;
   min-height: 100vh;
+}
+
+body > div {
+  flex: 1 1 0px;
 }
 
 h1 {
@@ -37,23 +41,10 @@ h1 {
   line-height: 1.1;
 }
 
-#app {
-  max-width: 1280px;
+#app > *, #app2 > *, #app3 > * {
   margin: 0 auto;
   padding: 2rem;
   text-align: center;
-}
-
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.vanilla:hover {
-  filter: drop-shadow(0 0 2em #3178c6aa);
 }
 
 .card {

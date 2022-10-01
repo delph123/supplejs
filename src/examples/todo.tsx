@@ -6,33 +6,41 @@ import {
   RWRNodeEffect,
   For,
   RWRNode,
-  untrack,
 } from "../rwr";
-import { Counter as CounterItem, Total } from "./components";
 
 interface TodoItem {
   key: string;
-  done: boolean;
+  done: () => boolean;
   label: string;
+  setDone: (b: boolean) => void;
 }
+
+function createItem(label, completed = false) {
+  const [done, setDone] = createSignal(completed);
+  return {
+    key: Math.random().toString(),
+    label,
+    done,
+    setDone,
+  };
+}
+
+const DEFAULT_TODO_LIST = [
+  createItem("react-without-react", true),
+  createItem("solidjs", false),
+  createItem("vue + Mobx", false),
+] as TodoItem[];
 
 export function Todo(): RWRNodeEffect {
   const [value, setValue] = createSignal("");
-  const [list, setList] = createSignal<TodoItem[]>([]);
+  const [list, setList] = createSignal(DEFAULT_TODO_LIST);
 
   return () => (
-    <section>
+    <section style="text-align: left">
       <Input value={value} oninput={(e) => setValue(e.target.value)} />
       <button
         onclick={() => {
-          setList((l) => [
-            ...l!,
-            {
-              key: Date.now().toString(),
-              label: value(),
-              done: false,
-            },
-          ]);
+          setList((l) => [...l!, createItem(value())]);
           setValue("");
         }}
       >
@@ -43,13 +51,22 @@ export function Todo(): RWRNodeEffect {
           console.log("item", item);
           return (
             <li>
-              <CounterItem
-                index={untrack(() => list().length - 1)}
-                total={value}
-              />
+              {() => (
+                <input
+                  type="checkbox"
+                  onchange={(e) => item.setDone(e.target.checked)}
+                  {...(item.done() && { checked: "checked" })}
+                />
+              )}
+              {() => (
+                <span
+                  style={item.done() ? "text-decoration: line-through;" : ""}
+                >
+                  {item.label}
+                </span>
+              )}
               <button
                 onclick={() => {
-                  console.log("delete", item);
                   setList((l) => l!.filter((it) => it.key !== item.key));
                 }}
               >
@@ -59,7 +76,6 @@ export function Todo(): RWRNodeEffect {
           );
         }}
       </For>
-      <Total />
     </section>
   );
 }
