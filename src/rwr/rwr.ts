@@ -74,10 +74,6 @@ function createComponent(
   return createRenderEffect(Component({ ...props, children }));
 }
 
-export function createRoot() {
-  // TODO
-}
-
 export function render(renderEffect: RWRNodeEffect, container: HTMLElement) {
   const node = createRenderEffect(renderEffect);
   container.appendChild(node);

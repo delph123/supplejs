@@ -50,17 +50,29 @@ function createTrackingContext() {
   }
 
   function dispose(context: TrackingContext) {
-    context.children.forEach((child) => {
-      // console.log("disposing of child", child);
-      dispose(child);
-      child.active = false;
-    });
-    context.dependencies.forEach((dep) => {
-      dep.cleanup();
-    });
-    // Clear list of children & dependencies
-    context.children.length = 0;
-    context.dependencies.length = 0;
+    /**
+     * Recursively dispose of the context and it's children,
+     * while calling all cleanup functions.
+     */
+    function disposeRec(ctx: TrackingContext) {
+      ctx.children.forEach((child) => {
+        // console.log("disposing of child", child);
+        dispose(child);
+        child.active = false;
+      });
+      ctx.dependencies.forEach((dep) => {
+        dep.cleanup();
+      });
+      // Clear list of children & dependencies
+      ctx.children.length = 0;
+      ctx.dependencies.length = 0;
+    }
+
+    // Call the recursive dispose in a non-tracking context,
+    // so as to avoid subscribing to a signal while cleaning
+    // up its dependencies in case the cleanup function uses
+    // a signal.
+    untrack(() => disposeRec(context));
   }
 
   function untrack<T>(effect: () => T) {
@@ -70,11 +82,26 @@ function createTrackingContext() {
     return result;
   }
 
+  function executeAsRoot<T>(effect: (dispose: () => void) => T) {
+    const context: TrackingContext = {
+      execute: () => console.error("Executing Root Context!!"),
+      active: true,
+      children: [],
+      dependencies: [],
+    };
+
+    contextStack.push(context);
+    const result = effect(() => dispose(context));
+    pop();
+    return result;
+  }
+
   return {
     get,
     push,
     pop,
     untrack,
+    executeAsRoot,
   };
 }
 
@@ -82,6 +109,7 @@ const trackingContext = createTrackingContext();
 
 export const untrack = trackingContext.untrack;
 export const getOwner = trackingContext.get;
+export const createRoot = trackingContext.executeAsRoot;
 
 export function onCleanup(cleanup: () => void) {
   const context = trackingContext.get();

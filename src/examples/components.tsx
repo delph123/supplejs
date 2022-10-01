@@ -96,6 +96,10 @@ export function Counter(props: {
 
 const [sum, setSum] = createSignal(0);
 
+export function Total() {
+  return () => <p>TOTAL = {sum}</p>;
+}
+
 export function App(): RWRNodeEffect {
   const [ChainedList, push, pop, size] = createChainedList();
 
@@ -117,7 +121,7 @@ export function App(): RWRNodeEffect {
       <Header />
       {btns}
       <ChainedList />
-      <p>TOTAL = {sum}</p>
+      <Total />
       <Footer version={version} />
     </div>
   );

@@ -8,7 +8,7 @@ import {
   RWRNode,
   untrack,
 } from "../rwr";
-import { Counter as CounterItem } from "./components";
+import { Counter as CounterItem, Total } from "./components";
 
 interface TodoItem {
   key: string;
@@ -38,10 +38,8 @@ export function Todo(): RWRNodeEffect {
       >
         Add
       </button>
-      <For
-        anchor="ul"
-        each={list}
-        children={(item: TodoItem): RWRNode => {
+      <For anchor="ul" each={list}>
+        {(item: TodoItem): RWRNode => {
           console.log("item", item);
           return (
             <li>
@@ -60,7 +58,8 @@ export function Todo(): RWRNodeEffect {
             </li>
           );
         }}
-      ></For>
+      </For>
+      <Total />
     </section>
   );
 }
