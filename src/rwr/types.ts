@@ -7,6 +7,7 @@ export interface RWRElement {
 export type RWRNode =
     | DOMComponent
     | RWRElement
+    | (() => DOMComponent)
     | string
     | number
     | bigint

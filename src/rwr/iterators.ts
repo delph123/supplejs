@@ -6,7 +6,7 @@ import { createRenderEffect } from "./dom";
 interface Entry {
     key: string;
     index: number;
-    node: Node;
+    node: () => Node;
     dispose: () => void;
 }
 
@@ -31,7 +31,7 @@ export function For({ anchor, each, children }: ForProps): RWRNodeEffect {
             root.firstChild.remove();
         }
         for (const [i, element] of nextList.entries()) {
-            let node: Node;
+            let node: () => Node;
             let dispose: () => void;
             if (previous.has(element.key)) {
                 const previousEntry = previous.get(element.key)!;
@@ -56,12 +56,10 @@ export function For({ anchor, each, children }: ForProps): RWRNodeEffect {
                 node,
                 dispose,
             });
-            root.appendChild(node);
+            root.appendChild(node());
         }
-        previous.forEach(({ index, node, dispose }) => {
+        previous.forEach(({ index, dispose }) => {
             if (index >= 0) {
-                // dispose?
-                console.log("Dispose", node);
                 dispose();
             }
         });

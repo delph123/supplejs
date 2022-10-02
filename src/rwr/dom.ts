@@ -4,11 +4,9 @@ import { createChildContext, createRoot, runEffectInContext } from "./context";
 export function render(renderEffect: RWRNodeEffect, container: HTMLElement) {
     return createRoot((dispose) => {
         const node = createRenderEffect(renderEffect);
-        container.appendChild(node);
+        container.appendChild(node());
         return () => {
-            // XXX use the first child since the node above may have been replaced.
-            // This isn't perfect but for now it will do!
-            container.removeChild(container.firstChild!);
+            container.removeChild(node());
             dispose();
         };
     });
@@ -31,7 +29,7 @@ export function createRenderEffect(renderEffect: RWRNodeEffect) {
         return createDOMComponent(renderEffect());
     });
 
-    return node;
+    return () => node;
 }
 
 function createDOMComponent(component: RWRNode): DOMComponent {
@@ -43,6 +41,8 @@ function createDOMComponent(component: RWRNode): DOMComponent {
         typeof component === "bigint"
     ) {
         return document.createTextNode(component.toString());
+    } else if (typeof component === "function") {
+        return component();
     } else if (component instanceof Node) {
         return component;
     } else {

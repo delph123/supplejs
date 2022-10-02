@@ -1,160 +1,165 @@
 import {
-  createEffect,
-  createMemo,
-  createSignal,
-  getOwner,
-  h,
-  onCleanup,
-  untrack,
-  version,
-  createChainedList,
-  RWRNodeEffect,
+    createEffect,
+    createMemo,
+    createSignal,
+    getOwner,
+    h,
+    onCleanup,
+    untrack,
+    version,
+    createChainedList,
+    RWRNodeEffect,
 } from "../rwr";
 
 function Header(): RWRNodeEffect {
-  return () => (
-    <div>
-      <h2>Hello!</h2>
-      <h5>
-        It is <Clock />
-      </h5>
-    </div>
-  );
+    return () => (
+        <div>
+            <h2>Hello!</h2>
+            <h5>
+                It is <Clock />
+            </h5>
+        </div>
+    );
 }
 
 function Footer({ version }: { version: string }): RWRNodeEffect {
-  return () => (
-    <p class="read-the-docs">
-      This page was created with React-Without-React v{version}
-    </p>
-  );
+    return () => (
+        <p class="read-the-docs">
+            This page was created with React-Without-React v{version}
+        </p>
+    );
 }
 
 function Clock(): RWRNodeEffect {
-  const [subscribe, notify] = createSignal();
+    const [subscribe, notify] = createSignal();
 
-  const timer = setInterval(() => {
-    notify();
-  }, 1000);
+    const timer = setInterval(() => {
+        notify();
+    }, 1000);
 
-  onCleanup(() => {
-    clearInterval(timer);
-  });
+    onCleanup(() => {
+        console.log("stoping timer");
+        clearInterval(timer);
+    });
 
-  return () => {
-    subscribe();
-    return new Date().toLocaleTimeString();
-  };
+    return () => {
+        subscribe();
+        return new Date().toLocaleTimeString();
+    };
 }
 
 function withPrevious<T>(variable: () => T, initialValue: T) {
-  let current = initialValue;
-  return createMemo(() => {
-    const previous = current;
-    current = variable();
-    return {
-      current,
-      previous,
-    };
-  });
+    let current = initialValue;
+    return createMemo(() => {
+        const previous = current;
+        current = variable();
+        return {
+            current,
+            previous,
+        };
+    });
 }
 
 export function Counter(props: {
-  index: number;
-  total: () => string | number;
+    index: number;
+    total: () => string | number;
 }): RWRNodeEffect {
-  const [counter, setCounter] = createSignal(10);
+    const [counter, setCounter] = createSignal(10);
 
-  const label = () => {
-    onCleanup(() =>
-      console.log("Cleanup before rerendering", counter(), getOwner())
-    );
-    return `Counter ${props.index + 1} / ${props.total()} >> ${counter()}.`;
-  };
+    const label = () => {
+        onCleanup(() =>
+            console.log("Cleanup before rerendering", counter(), getOwner())
+        );
+        return `Counter ${props.index + 1} / ${props.total()} >> ${counter()}.`;
+    };
 
-  const counterMemo = withPrevious(counter, 0);
+    const counterMemo = withPrevious(counter, 0);
 
-  createEffect(() => {
-    setSum((s) => s! + counterMemo().current - counterMemo().previous);
-  });
+    createEffect(() => {
+        setSum((s) => s! + counterMemo().current - counterMemo().previous);
+    });
 
-  onCleanup(() => {
-    console.log("Disposing of Counter!", counter());
-    setSum(sum() - counter());
-  });
+    onCleanup(() => {
+        console.log("Disposing of Counter!", counter());
+        setSum(sum() - counter());
+    });
 
-  return () => {
-    return (
-      <div class="card">
-        {label}
-        <button onclick={() => setCounter(counter() + 1)}>+</button>
-        <button onclick={() => setCounter(counter() - 1)}>-</button>
-      </div>
-    );
-  };
+    return () => {
+        return (
+            <div class="card">
+                {label}
+                <button onclick={() => setCounter(counter() + 1)}>+</button>
+                <button onclick={() => setCounter(counter() - 1)}>-</button>
+            </div>
+        );
+    };
 }
 
 const [sum, setSum] = createSignal(0);
 
 export function Total() {
-  return () => <p>TOTAL = {sum}</p>;
+    return () => <p>TOTAL = {sum}</p>;
 }
 
 export function App(): RWRNodeEffect {
-  const [ChainedList, push, pop, size] = createChainedList();
+    const [ChainedList, push, pop, size] = createChainedList();
 
-  const btns = (
-    <div>
-      <button
-        onclick={() => {
-          push(() => <Counter index={untrack(() => size())} total={size} />);
-        }}
-      >
-        Add Counter
-      </button>
-      <button onclick={pop}>Remove Counter</button>
-    </div>
-  );
+    const btns = (
+        <div>
+            <button
+                onclick={() => {
+                    push(() => (
+                        <Counter index={untrack(() => size())} total={size} />
+                    ));
+                }}
+            >
+                Add Counter
+            </button>
+            <button onclick={pop}>Remove Counter</button>
+        </div>
+    );
 
-  return () => (
-    <div>
-      <Header />
-      {btns}
-      <ChainedList />
-      <Total />
-      <Footer version={version} />
-    </div>
-  );
+    return () => (
+        <div>
+            <Header />
+            {btns}
+            <ChainedList />
+            <Total />
+            <Footer version={version} />
+        </div>
+    );
 }
 
 export function MultiApp(): RWRNodeEffect {
-  const [ChainedList, push, pop] = createChainedList();
+    const [ChainedList, push, pop] = createChainedList();
 
-  return () => (
-    <div>
-      <ChainedList />
-      <button
-        onclick={() => {
-          push(() => <App />);
-        }}
-      >
-        +
-      </button>
-      <button onclick={pop}>-</button>
-    </div>
-  );
+    return () => (
+        <div>
+            <ChainedList />
+            <button
+                onclick={() => {
+                    push(() => <App />);
+                }}
+            >
+                +
+            </button>
+            <button onclick={pop}>-</button>
+        </div>
+    );
 }
 
 export function GoodBye({ onexit }): RWRNodeEffect {
-  const [c, setC] = createSignal(true);
-  setInterval(() => setC((c) => !c), 1000);
-  return () =>
-    c() ? (
-      <div>
-        Hello!
-        <button onclick={onexit}>GoodBye!</button>
-      </div>
-    ) : (
-      <p>Too late!</p>
-    );
+    let n = 0;
+    const [c, setC] = createSignal(false);
+    setInterval(() => setC((c) => !c), 2000);
+    return () => {
+        n = n + 1;
+        return c() ? (
+            <div>
+                Hello {n}!<button onclick={onexit}>GoodBye!</button>
+            </div>
+        ) : (
+            <Clock />
+        );
+    };
 }
