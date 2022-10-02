@@ -15,10 +15,12 @@ export function h(
     }
 
     const childNodes = altChildren.map((c) => {
-        // If the function has no parameter we want to automatically
-        // wrap it in a render effect, but for the purpose of iterator
-        // or other control flow constructs we want to avoid doing so
-        // in case it has any parameter.
+        // If the child is a function, we want to automatically wrap it
+        // in a render effect, but only when children will not be passed
+        // to a component. When the type is a component, we will pass all
+        // children untouched (for example, some components like the
+        // iterator could redefine the children prop for other purposes
+        // than simply happending them in the html)
         if (typeof c === "function" && typeof type !== "function") {
             return createRenderEffect(c);
         } else {
