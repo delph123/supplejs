@@ -19,7 +19,7 @@ export function h(
         // wrap it in a render effect, but for the purpose of iterator
         // or other control flow constructs we want to avoid doing so
         // in case it has any parameter.
-        if (typeof c === "function" && c.length === 0) {
+        if (typeof c === "function" && typeof type !== "function") {
             return createRenderEffect(c);
         } else {
             return c;

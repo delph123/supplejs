@@ -53,7 +53,7 @@ export function Todo(): RWRNodeEffect {
                 Add
             </button>
             <For anchor="ul" each={list}>
-                {(item: TodoItem): RWRNode => {
+                {/* {(item: TodoItem): RWRNode => {
                     console.log("item", item);
                     return (
                         <li>
@@ -103,7 +103,8 @@ export function Todo(): RWRNodeEffect {
                             </button>
                         </li>
                     );
-                }}
+                }} */}
+                {() => "hello"}
             </For>
         </section>
     );
