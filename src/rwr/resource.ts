@@ -13,6 +13,19 @@ type Resource<R, P> = [
   }
 ];
 
+/**
+ * Creates a signal that reflects the result of an async request.
+ *
+ * The function takes an asynchronous fetcher function and returns a signal
+ * that is updated with the resulting data when the fetcher completes.
+ *
+ * There are two ways to use createResource: you can pass the fetcher function
+ * as the sole argument, or you can additionally pass a source signal as the
+ * first argument. The source signal will retrigger the fetcher whenever it
+ * changes, and its value will be passed to the fetcher.
+ *
+ * @param fetcher
+ */
 export function createResource<R, P>(
   fetcher: (p: P) => R | Promise<R>
 ): Resource<R, P>;
