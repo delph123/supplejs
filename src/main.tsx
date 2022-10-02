@@ -6,6 +6,6 @@ import { Counter, Todo } from "./examples/todo";
 import "./style.css";
 
 const exit = render(
-    () => <Todo onexit={() => exit()} />,
+    () => <GoodBye onexit={() => exit()} />,
     document.getElementById("app")!
 );

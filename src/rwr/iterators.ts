@@ -1,12 +1,12 @@
-import { RWRNode, RWRNodeEffect } from "./types";
+import { DOMComponent, RWRNode, RWRNodeEffect } from "./types";
 import { createRoot } from "./context";
 import { createEffect } from "./reactivity";
-import { createRenderEffect } from "./dom";
+import { createRenderEffect, mount } from "./dom";
 
 interface Entry {
     key: string;
     index: number;
-    node: () => Node;
+    node: DOMComponent;
     dispose: () => void;
 }
 
@@ -31,7 +31,7 @@ export function For({ anchor, each, children }: ForProps): RWRNodeEffect {
             root.firstChild.remove();
         }
         for (const [i, element] of nextList.entries()) {
-            let node: () => Node;
+            let node: DOMComponent;
             let dispose: () => void;
             if (previous.has(element.key)) {
                 const previousEntry = previous.get(element.key)!;
@@ -56,7 +56,7 @@ export function For({ anchor, each, children }: ForProps): RWRNodeEffect {
                 node,
                 dispose,
             });
-            root.appendChild(node());
+            mount(node, root);
         }
         previous.forEach(({ index, dispose }) => {
             if (index >= 0) {
@@ -66,7 +66,10 @@ export function For({ anchor, each, children }: ForProps): RWRNodeEffect {
         previous = next;
     });
 
-    return () => root;
+    return () => ({
+        __kind: "dom_component",
+        node: root,
+    });
 }
 
 export function Index() {

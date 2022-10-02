@@ -32,6 +32,8 @@ function Footer({ version }: { version: string }): RWRNodeEffect {
 
 function Clock(): RWRNodeEffect {
     const [subscribe, notify] = createSignal();
+    const [c, setC] = createSignal(Math.random() > 0.5);
+    setInterval(() => setC(Math.random() > 0.5), 1000);
 
     const timer = setInterval(() => {
         notify();
@@ -43,8 +45,8 @@ function Clock(): RWRNodeEffect {
     });
 
     return () => {
-        subscribe();
-        return new Date().toLocaleTimeString();
+        // subscribe();
+        return c() ? <Clock /> : new Date().toLocaleTimeString();
     };
 }
 

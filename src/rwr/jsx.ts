@@ -1,4 +1,4 @@
-import { RWRComponent, RWRElement, RWRNode, RWRNodeEffect } from "./types";
+import { RWRComponent, RWRNode, RWRNodeEffect } from "./types";
 import { createRenderEffect } from "./dom";
 
 export function h(
@@ -35,10 +35,11 @@ export function h(
         return createComponent(type, attributes, childNodes);
     } else {
         return {
+            __kind: "element",
             type,
             props: attributes,
             children: childNodes,
-        } as RWRElement;
+        };
     }
 }
 

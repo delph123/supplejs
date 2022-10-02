@@ -1,22 +1,43 @@
-import { DOMComponent, RWRNode, RWRNodeEffect } from "./types";
+import {
+    DOMComponent,
+    ProxyDOMComponent,
+    RealDOMComponent,
+    RWRNode,
+    RWRNodeEffect,
+} from "./types";
 import { createChildContext, createRoot, runEffectInContext } from "./context";
 
 export function render(renderEffect: RWRNodeEffect, container: HTMLElement) {
     return createRoot((dispose) => {
         const node = createRenderEffect(renderEffect);
-        container.appendChild(node());
+        mount(node, container);
         return () => {
-            container.removeChild(node());
+            container.removeChild(node.getNode());
             dispose();
         };
     });
 }
 
-export function createRenderEffect(renderEffect: RWRNodeEffect) {
-    let node: Node;
-    const replaceNode = (newNode: Node) => {
-        node.parentNode?.replaceChild(newNode, node);
-        node = newNode;
+let nb = 0;
+
+export function createRenderEffect(
+    renderEffect: RWRNodeEffect
+): ProxyDOMComponent {
+    const renderNb = nb++;
+    let node: Node | null = null;
+    let getNode: () => Node;
+    let parentNode: HTMLElement;
+
+    const replaceNode = (newComponent: DOMComponent) => {
+        mount(newComponent, parentNode, getNode());
+
+        if (newComponent.__kind === "dom_component") {
+            node = newComponent.node;
+            getNode = () => node!;
+        } else {
+            node = null;
+            getNode = newComponent.getNode;
+        }
     };
 
     // Define the update context
@@ -25,25 +46,43 @@ export function createRenderEffect(renderEffect: RWRNodeEffect) {
     });
 
     // Run the render effect a first time
-    node = runEffectInContext(childContext, () => {
+    const component = runEffectInContext(childContext, () => {
         return createDOMComponent(renderEffect());
     });
 
-    return () => node;
+    if (component.__kind === "dom_component") {
+        node = component.node;
+        getNode = () => node!;
+    } else {
+        node = null;
+        getNode = component.getNode;
+    }
+    console.log("render", renderNb, component);
+
+    return {
+        __kind: "render_effect",
+        getNode: () => getNode(),
+        mount: (p) => {
+            console.log("mounting", renderNb, p, component);
+            if (component.__kind === "render_effect") {
+                component.mount(p);
+            }
+            console.log("end");
+            parentNode = p;
+        },
+    };
 }
 
 function createDOMComponent(component: RWRNode): DOMComponent {
     if (component == null || typeof component === "boolean") {
-        return document.createComment("void");
+        return domComponent(document.createComment("void"));
     } else if (
         typeof component === "string" ||
         typeof component === "number" ||
         typeof component === "bigint"
     ) {
-        return document.createTextNode(component.toString());
-    } else if (typeof component === "function") {
-        return component();
-    } else if (component instanceof Node) {
+        return domComponent(document.createTextNode(component.toString()));
+    } else if (component.__kind !== "element") {
         return component;
     } else {
         const element = document.createElement(component.type);
@@ -55,8 +94,36 @@ function createDOMComponent(component: RWRNode): DOMComponent {
             }
         });
         component.children.forEach((child) => {
-            element.appendChild(createDOMComponent(child));
+            mount(createDOMComponent(child), element);
         });
-        return element;
+        return domComponent(element);
+    }
+
+    function domComponent(node: Node): RealDOMComponent {
+        return {
+            __kind: "dom_component",
+            node,
+        };
+    }
+}
+
+export function mount(
+    component: DOMComponent,
+    container: HTMLElement,
+    previousNode?: Node
+) {
+    const newNode =
+        component.__kind === "dom_component"
+            ? component.node
+            : component.getNode();
+
+    if (component.__kind === "render_effect") {
+        component.mount(container);
+    }
+
+    if (previousNode) {
+        container.replaceChild(newNode, previousNode);
+    } else {
+        container.appendChild(newNode);
     }
 }
