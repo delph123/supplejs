@@ -5,8 +5,10 @@ import {
     onCleanup,
     RWRNodeEffect,
     For,
-    RWRNode,
+    Input,
 } from "../rwr";
+
+import "./todo.css";
 
 interface TodoItem {
     key: string;
@@ -17,12 +19,19 @@ interface TodoItem {
     setEdit: (b: boolean) => void;
 }
 
-function createItem(label, completed = false) {
+let currentKey = 0;
+
+function nextKey() {
+    currentKey++;
+    return `todo-${currentKey}`;
+}
+
+function createItem(label, completed = false): TodoItem {
     const [done, setDone] = createSignal(completed);
     const [edit, setEdit] = createSignal(false);
 
     return {
-        key: Math.random().toString(),
+        key: nextKey(),
         label,
         done,
         setDone,
@@ -35,111 +44,189 @@ const DEFAULT_TODO_LIST = [
     createItem("react-without-react", true),
     createItem("solidjs", false),
     createItem("vue + Mobx", false),
-] as TodoItem[];
+];
 
 export function Todo(): RWRNodeEffect {
+    const [selectedFilter, setSelectedFilter] = createSignal("All");
     const [value, setValue] = createSignal("");
     const [list, setList] = createSignal(DEFAULT_TODO_LIST);
 
+    const filteredList = () =>
+        list().filter((t) => {
+            if (selectedFilter() === "All") {
+                return true;
+            } else {
+                return t.done() === (selectedFilter() === "Completed");
+            }
+        });
+
     return () => (
-        <section style="text-align: left">
-            <Input value={value} oninput={(e) => setValue(e.target.value)} />
-            <button
-                onclick={() => {
-                    setList((l) => [...l!, createItem(value())]);
-                    setValue("");
-                }}
+        <div class="todoapp stack-large">
+            <Form value={value} setValue={setValue} setList={setList} />
+
+            <FilterBar
+                selectedFilter={selectedFilter}
+                setSelectedFilter={setSelectedFilter}
+            />
+
+            {() => (
+                <h3>
+                    {selectedFilter()} Task
+                    {filteredList().length !== 1 ? "s" : ""}
+                </h3>
+            )}
+
+            <For
+                anchor={() => (
+                    <ul class="todo-list stack-large stack-exception"></ul>
+                )}
+                each={filteredList}
             >
-                Add
-            </button>
-            <For anchor="ul" each={list}>
-                {/* {(item: TodoItem): RWRNode => {
-                    console.log("item", item);
-                    return (
-                        <li>
-                            <input
-                                type="checkbox"
-                                onchange={(e) => item.setDone(e.target.checked)}
-                                {...(item.done() && { checked: "checked" })}
-                            />
-                            {() =>
-                                !item.edit() && (
-                                    <span
-                                        style={
-                                            item.done()
-                                                ? "text-decoration: line-through;"
-                                                : ""
-                                        }
-                                    >
-                                        {item.label}
-                                    </span>
-                                )
-                            }
-                            {() =>
-                                item.edit() && (
-                                    <Input
-                                        value={() => item.label}
-                                        oninput={(e) => {
-                                            item.label = e.target.value;
-                                        }}
-                                    />
-                                )
-                            }
-                            <button
-                                onclick={() => {
-                                    setList((l) =>
-                                        l!.filter((it) => it.key !== item.key)
-                                    );
-                                }}
-                            >
-                                Delete
-                            </button>
-                            <button
-                                onclick={() => {
-                                    item.setEdit(!item.edit());
-                                }}
-                            >
-                                {() => (item.edit() ? "Update" : "Edit")}
-                            </button>
-                        </li>
-                    );
-                }} */}
-                {() => "hello"}
+                {(item: TodoItem) => (
+                    <TodoListItem item={item} setList={setList} />
+                )}
             </For>
-        </section>
+
+            {() => (
+                <p class="task-completed">
+                    {list().filter((t) => !t.done()).length} task
+                    {list().filter((t) => !t.done()).length !== 1
+                        ? "s"
+                        : ""}{" "}
+                    remaining.
+                </p>
+            )}
+        </div>
     );
 }
 
-function Input({ value, oninput }): RWRNodeEffect {
+function TodoListItem({ item, setList }) {
     return () => (
-        <input
-            id="name-input"
-            value={value()}
-            oninput={(e) => {
-                let node: HTMLElement = e.currentTarget.parentElement;
-                oninput(e);
-                let input = node.querySelector(
-                    "#name-input"
-                ) as HTMLInputElement;
-                input.focus();
-                input.value = "";
-                input.value = value();
+        <li class="todo stack-small">
+            <div class="c-cb">
+                {() => (
+                    <input
+                        type="checkbox"
+                        onchange={(e) => item.setDone(e.target.checked)}
+                        {...(item.done() && {
+                            checked: "checked",
+                        })}
+                    />
+                )}
+                {() =>
+                    item.edit() ? (
+                        <Input
+                            class="todo-label"
+                            id={"input-" + item.key}
+                            value={() => item.label}
+                            oninput={(e) => {
+                                item.label = e.target.value;
+                            }}
+                        />
+                    ) : (
+                        <label
+                            class="todo-label"
+                            style={
+                                item.done()
+                                    ? "text-decoration: line-through;"
+                                    : ""
+                            }
+                        >
+                            {item.label}
+                        </label>
+                    )
+                }
+            </div>
+            <div class="btn-group">
+                <button
+                    class="btn"
+                    onclick={() => {
+                        item.setEdit(!item.edit());
+                    }}
+                >
+                    {() => (item.edit() ? "Update" : "Edit")}
+                </button>
+                <button
+                    class="btn btn__danger"
+                    onclick={() => {
+                        setList((l) => l!.filter((it) => it.key !== item.key));
+                    }}
+                >
+                    Delete
+                </button>
+            </div>
+        </li>
+    );
+}
+
+function Form({ value, setValue, setList }) {
+    return () => (
+        <form>
+            <h2 class="label-wrapper">
+                <label htmlFor="new-todo-input" class="label__lg">
+                    What needs to be done?
+                </label>
+            </h2>
+            <div class="form-input">
+                <Input
+                    type="text"
+                    id="new-todo-input"
+                    name="text"
+                    class="input input__lg"
+                    value={value}
+                    oninput={(e) => setValue(e.target.value)}
+                />
+                <button
+                    type="submit"
+                    class="btn btn__primary btn__lg"
+                    onclick={(e) => {
+                        e.preventDefault();
+                        setList((l) => [...l!, createItem(value())]);
+                        setValue("");
+                    }}
+                >
+                    Add
+                </button>
+            </div>
+        </form>
+    );
+}
+
+function FilterButton({ label, pressed, onpress }) {
+    return () => (
+        <button
+            type="button"
+            class="btn toggle-btn"
+            onclick={(e) => {
+                onpress(label);
             }}
-        ></input>
+            aria-pressed={pressed() === label}
+        >
+            <span class="visually-hidden">Show </span>
+            <span>{label}</span>
+            <span class="visually-hidden"> tasks</span>
+        </button>
     );
 }
 
-export function Counter(): RWRNodeEffect {
-    const [count, setCount] = createSignal(0);
-    const [delay, setDelay] = createSignal(1000);
-    createEffect(() => {
-        const interval = setInterval(() => setCount(count() + 1), delay());
-        onCleanup(() => clearInterval(interval));
-    });
+function FilterBar({ selectedFilter, setSelectedFilter }) {
     return () => (
-        <div>
-            <h1>{count}</h1>
-            <Input value={delay} oninput={(e) => setDelay(e.target.value)} />
+        <div class="filters btn-group stack-exception">
+            <FilterButton
+                label="All"
+                pressed={selectedFilter}
+                onpress={setSelectedFilter}
+            />
+            <FilterButton
+                label="Active"
+                pressed={selectedFilter}
+                onpress={setSelectedFilter}
+            />
+            <FilterButton
+                label="Completed"
+                pressed={selectedFilter}
+                onpress={setSelectedFilter}
+            />
         </div>
     );
 }

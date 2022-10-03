@@ -15,14 +15,14 @@ interface KeyedElement {
 }
 
 interface ForProps {
-    anchor: string;
+    anchor: RWRNodeEffect;
     each: () => Iterable<KeyedElement>;
-    children?: [(item: KeyedElement) => RWRNode];
+    children?: [(element: KeyedElement) => RWRNode];
 }
 
 export function For({ anchor, each, children }: ForProps): RWRNodeEffect {
     let previous = new Map<string, Entry>();
-    const root = document.createElement(anchor);
+    const root = createRenderEffect(anchor).getNode() as HTMLElement;
 
     createEffect(() => {
         const nextList = [...each()];
@@ -39,7 +39,7 @@ export function For({ anchor, each, children }: ForProps): RWRNodeEffect {
                 dispose = previousEntry.dispose;
                 previousEntry.index = -1;
             } else {
-                const root = createRoot((dispose) => ({
+                const item = createRoot((dispose) => ({
                     node: createRenderEffect(
                         () =>
                             (children && children[0] && children[0](element)) ||
@@ -47,8 +47,8 @@ export function For({ anchor, each, children }: ForProps): RWRNodeEffect {
                     ),
                     dispose,
                 }));
-                node = root.node;
-                dispose = root.dispose;
+                node = item.node;
+                dispose = item.dispose;
             }
             next.set(element.key, {
                 key: element.key,
