@@ -46,19 +46,28 @@ const DEFAULT_TODO_LIST = [
     createItem("vue + Mobx", false),
 ];
 
+enum Filters {
+    All = "All",
+    Active = "Active",
+    Completed = "Completed",
+    Editing = "Editing",
+}
+
+type FiltersStrings = keyof typeof Filters;
+
+const FILTER_MAP: { [k in FiltersStrings]: (i: TodoItem) => boolean } = {
+    All: () => true,
+    Active: (task) => !task.done(),
+    Completed: (task) => task.done(),
+    Editing: (task) => task.edit(),
+};
+
 export function Todo(): RWRNodeEffect {
     const [selectedFilter, setSelectedFilter] = createSignal("All");
     const [value, setValue] = createSignal("");
     const [list, setList] = createSignal(DEFAULT_TODO_LIST);
 
-    const filteredList = () =>
-        list().filter((t) => {
-            if (selectedFilter() === "All") {
-                return true;
-            } else {
-                return t.done() === (selectedFilter() === "Completed");
-            }
-        });
+    const filteredList = () => list().filter(FILTER_MAP[selectedFilter()]);
 
     return () => (
         <div class="todoapp stack-large">
@@ -211,22 +220,15 @@ function FilterButton({ label, pressed, onpress }) {
 
 function FilterBar({ selectedFilter, setSelectedFilter }) {
     return () => (
-        <div class="filters btn-group stack-exception">
-            <FilterButton
-                label="All"
-                pressed={selectedFilter}
-                onpress={setSelectedFilter}
-            />
-            <FilterButton
-                label="Active"
-                pressed={selectedFilter}
-                onpress={setSelectedFilter}
-            />
-            <FilterButton
-                label="Completed"
-                pressed={selectedFilter}
-                onpress={setSelectedFilter}
-            />
-        </div>
+        <div
+            class="filters btn-group stack-exception"
+            children={Object.keys(Filters).map((f) => (
+                <FilterButton
+                    label={f}
+                    pressed={selectedFilter}
+                    onpress={setSelectedFilter}
+                />
+            ))}
+        ></div>
     );
 }
