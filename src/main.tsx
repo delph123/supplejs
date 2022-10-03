@@ -8,6 +8,6 @@ import { GameOn, NestedChildren } from "./examples/fragments";
 // import "./style.css";
 
 const exit = render(
-    () => <NestedChildren nb={5} onexit={() => exit()} />,
+    () => <Todo nb={5} onexit={() => exit()} />,
     document.getElementById("app")!
 );

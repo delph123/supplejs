@@ -1,4 +1,10 @@
-import { RWRComponent, RWRElement, RWRNode, RWRNodeEffect } from "./types";
+import {
+    RWRComponent,
+    RWRElement,
+    RWRNode,
+    RWRNodeEffect,
+    flatten,
+} from "./types";
 import { createRenderEffect } from "./dom";
 
 export function h(
@@ -26,8 +32,16 @@ export function h(
     }
 }
 
-export function Fragment() {
-    // TODO
+export function Fragment({
+    children,
+    ...otherProps
+}: {
+    children: RWRNode[];
+}): RWRNodeEffect {
+    if (Object.entries(otherProps).length > 0) {
+        console.error(Object.entries(otherProps));
+    }
+    return () => children;
 }
 
 function createRWRElement(
@@ -66,21 +80,4 @@ function createRWRComponent(
     // expects an mapping function with item as a parameter instead of a raw
     // component.
     return createRenderEffect(Component({ ...props, children }));
-}
-
-/**
- * Flatten childrens (developers may return an array containing nested arrays
- * and expect them to be flatten out in the rendering phase).
- */
-type Nested<T> = T[] | Nested<T>[];
-function flatten<T>(nestedChildren: Nested<T>) {
-    const children: T[] = [];
-    for (const c of nestedChildren) {
-        if (Array.isArray(c)) {
-            children.push(...flatten(c));
-        } else {
-            children.push(c);
-        }
-    }
-    return children;
 }

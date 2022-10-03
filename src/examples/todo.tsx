@@ -85,16 +85,13 @@ export function Todo(): RWRNodeEffect {
                 </h3>
             )}
 
-            <For
-                anchor={() => (
-                    <ul class="todo-list stack-large stack-exception"></ul>
-                )}
-                each={filteredList}
-            >
-                {(item: TodoItem) => (
-                    <TodoListItem item={item} setList={setList} />
-                )}
-            </For>
+            <ul class="todo-list stack-large stack-exception">
+                <For each={filteredList}>
+                    {(item: TodoItem) => (
+                        <TodoListItem item={item} setList={setList} />
+                    )}
+                </For>
+            </ul>
 
             {() => (
                 <p class="task-completed">

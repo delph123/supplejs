@@ -1,4 +1,4 @@
-import { createSignal, h } from "../rwr";
+import { createSignal, h, Fragment } from "../rwr";
 import { Clock } from "./components";
 
 export function GameOn({ nb, onexit }) {
@@ -53,24 +53,44 @@ export function NestedChildren() {
         return c;
     }
 
-    return () => (
-        <div className="App">
-            <div>before</div>
-            <Child>{maplist(nestedList)}</Child>
-            <div>between</div>
-            {print(nestedList)}
-            <div>after</div>
-        </div>
-    );
+    const [show, setShow] = createSignal(false);
+    setTimeout(() => setShow(true), 2000);
+
+    return () => {
+        if (show()) {
+            return (
+                <>
+                    <p>one</p>
+                    <>
+                        <div>before</div>
+                        <>
+                            <Child>{maplist(nestedList)}</Child>
+                            <div>between</div>
+                        </>
+                        {print(nestedList)}
+                        <Clock />
+                        <div>after</div>
+                    </>
+                    <p>two</p>
+                </>
+            );
+        } else {
+            return <></>;
+        }
+    };
 }
 
 function Child({ children }: { children?: any }) {
     console.log(children);
     return () => (
-        <div>
-            <p>1</p>
-            {children}
-            <p>2</p>
-        </div>
+        <>
+            hello<span>f</span>f
+            <>
+                {" "}
+                {children}
+                <Clock />
+                <p>2</p>
+            </>
+        </>
     );
 }

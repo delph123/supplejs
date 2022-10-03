@@ -1,5 +1,8 @@
 import {
     DOMComponent,
+    flatten,
+    MultiDOMComponent,
+    Nested,
     ProxyDOMComponent,
     RealDOMComponent,
     RWRNode,
@@ -12,7 +15,9 @@ export function render(renderEffect: RWRNodeEffect, container: HTMLElement) {
         const node = createRenderEffect(renderEffect);
         mount(node, container);
         return () => {
-            container.removeChild(node.getNode());
+            for (const c of node.getNodes()) {
+                container.removeChild(c);
+            }
             dispose();
         };
     });
@@ -25,18 +30,18 @@ export function createRenderEffect(
 ): ProxyDOMComponent {
     const renderNb = nb++;
     let node: Node | null = null;
-    let getNode: () => Node;
+    let getNodes: () => Node[];
     let parentNode: HTMLElement;
 
     const replaceNode = (newComponent: DOMComponent) => {
-        mount(newComponent, parentNode, getNode());
+        mount(newComponent, parentNode, getNodes());
 
         if (newComponent.__kind === "dom_component") {
             node = newComponent.node;
-            getNode = () => node!;
+            getNodes = () => [node!];
         } else {
             node = null;
-            getNode = newComponent.getNode;
+            getNodes = newComponent.getNodes;
         }
     };
 
@@ -52,29 +57,38 @@ export function createRenderEffect(
 
     if (component.__kind === "dom_component") {
         node = component.node;
-        getNode = () => node!;
+        getNodes = () => [node!];
     } else {
         node = null;
-        getNode = component.getNode;
+        getNodes = component.getNodes;
     }
+
     console.log("render", renderNb, component);
 
     return {
         __kind: "render_effect",
-        getNode: () => getNode(),
+        getNodes: () => getNodes(),
         mount: (p) => {
             console.log("mounting", renderNb, p, component);
-            if (component.__kind === "render_effect") {
-                component.mount(p);
-            }
+            notifyMount(p, component);
             console.log("end");
             parentNode = p;
         },
     };
 }
 
+function notifyMount(parent: HTMLElement, component: DOMComponent) {
+    if (component.__kind === "render_effect") {
+        component.mount(parent);
+    } else if (component.__kind === "multi_components") {
+        const notifyMountOfParent = notifyMount.bind(null, parent);
+        component.components.forEach(notifyMountOfParent);
+    }
+}
+
 function createDOMComponent(component: RWRNode): DOMComponent {
     if (component == null || typeof component === "boolean") {
+        // take the spot for mount
         return domComponent(document.createComment("void"));
     } else if (
         typeof component === "string" ||
@@ -82,6 +96,13 @@ function createDOMComponent(component: RWRNode): DOMComponent {
         typeof component === "bigint"
     ) {
         return domComponent(document.createTextNode(component.toString()));
+    } else if (Array.isArray(component)) {
+        if (component.length > 0) {
+            return multiComponents(component.map(createDOMComponent));
+        } else {
+            // take the spot for mount
+            return domComponent(document.createComment("empty_fragment"));
+        }
     } else if (component.__kind !== "element") {
         return component;
     } else {
@@ -105,25 +126,52 @@ function createDOMComponent(component: RWRNode): DOMComponent {
             node,
         };
     }
+
+    function multiComponents(components: DOMComponent[]): MultiDOMComponent {
+        return {
+            __kind: "multi_components",
+            components,
+            getNodes: () => flatten(getAllNodes(components)),
+        };
+    }
+}
+
+export function getAllNodes(components: DOMComponent[]): Nested<Node> {
+    return components.map((c) => {
+        if (c.__kind === "dom_component") {
+            return [c.node];
+        } else if (c.__kind === "render_effect") {
+            return c.getNodes();
+        } else {
+            return getAllNodes(c.components);
+        }
+    });
 }
 
 export function mount(
     component: DOMComponent,
     container: HTMLElement,
-    previousNode?: Node
+    previousNodes?: Node[]
 ) {
-    const newNode =
-        component.__kind === "dom_component"
-            ? component.node
-            : component.getNode();
+    let newNodes: Node[];
 
-    if (component.__kind === "render_effect") {
-        component.mount(container);
+    if (component.__kind === "dom_component") {
+        newNodes = [component.node];
+    } else {
+        newNodes = component.getNodes();
     }
 
-    if (previousNode) {
-        container.replaceChild(newNode, previousNode);
+    notifyMount(container, component);
+
+    if (previousNodes) {
+        const nextSibling = previousNodes[previousNodes.length - 1].nextSibling;
+        for (const prevNode of previousNodes) {
+            container.removeChild(prevNode);
+        }
+        for (const newNode of newNodes) {
+            container.insertBefore(newNode, nextSibling);
+        }
     } else {
-        container.appendChild(newNode);
+        newNodes.forEach((n) => container.appendChild(n));
     }
 }

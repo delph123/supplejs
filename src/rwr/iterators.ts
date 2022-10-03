@@ -1,7 +1,6 @@
 import { DOMComponent, RWRNode, RWRNodeEffect } from "./types";
 import { createRoot } from "./context";
-import { createEffect } from "./reactivity";
-import { createRenderEffect, mount } from "./dom";
+import { createRenderEffect } from "./dom";
 
 interface Entry {
     key: string;
@@ -15,21 +14,19 @@ interface KeyedElement {
 }
 
 interface ForProps {
-    anchor: RWRNodeEffect;
     each: () => Iterable<KeyedElement>;
     children?: [(element: KeyedElement) => RWRNode];
 }
 
-export function For({ anchor, each, children }: ForProps): RWRNodeEffect {
+export function For({ each, children }: ForProps): RWRNodeEffect {
     let previous = new Map<string, Entry>();
-    const root = createRenderEffect(anchor).getNode() as HTMLElement;
 
-    createEffect(() => {
+    return () => {
         const nextList = [...each()];
         const next = new Map<string, Entry>();
-        while (root.firstChild) {
-            root.firstChild.remove();
-        }
+
+        const nextComponents = [] as DOMComponent[];
+
         for (const [i, element] of nextList.entries()) {
             let node: DOMComponent;
             let dispose: () => void;
@@ -50,26 +47,26 @@ export function For({ anchor, each, children }: ForProps): RWRNodeEffect {
                 node = item.node;
                 dispose = item.dispose;
             }
+
             next.set(element.key, {
                 key: element.key,
                 index: i,
                 node,
                 dispose,
             });
-            mount(node, root);
+            nextComponents.push(node);
         }
+
+        // Cleanup
         previous.forEach(({ index, dispose }) => {
             if (index >= 0) {
                 dispose();
             }
         });
-        previous = next;
-    });
 
-    return () => ({
-        __kind: "dom_component",
-        node: root,
-    });
+        previous = next;
+        return nextComponents; // a fragment :)
+    };
 }
 
 export function Index() {

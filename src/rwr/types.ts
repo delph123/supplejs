@@ -10,17 +10,27 @@ export interface RealDOMComponent {
     node: Node;
 }
 
+export interface MultiDOMComponent {
+    __kind: "multi_components";
+    components: DOMComponent[];
+    getNodes: () => Node[];
+}
+
 export interface ProxyDOMComponent {
     __kind: "render_effect";
-    getNode: () => Node;
+    getNodes: () => Node[];
     mount: (parent: HTMLElement) => void;
 }
 
-export type DOMComponent = RealDOMComponent | ProxyDOMComponent;
+export type DOMComponent =
+    | RealDOMComponent
+    | ProxyDOMComponent
+    | MultiDOMComponent;
 
 export type RWRNode =
     | DOMComponent
     | RWRElement
+    | RWRNode[]
     | string
     | number
     | bigint
@@ -28,3 +38,24 @@ export type RWRNode =
 
 export type RWRNodeEffect = () => RWRNode;
 export type RWRComponent = (props?: any) => RWRNodeEffect;
+
+/**
+ * Nested type
+ */
+export type Nested<T> = T[] | Nested<T>[];
+
+/**
+ * Flatten childrens (developers may return an array containing nested arrays
+ * and expect them to be flatten out in the rendering phase).
+ */
+export function flatten<T>(nestedChildren: Nested<T>) {
+    const children: T[] = [];
+    for (const c of nestedChildren) {
+        if (Array.isArray(c)) {
+            children.push(...flatten(c));
+        } else {
+            children.push(c);
+        }
+    }
+    return children;
+}
