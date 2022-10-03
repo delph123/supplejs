@@ -220,15 +220,14 @@ function FilterButton({ label, pressed, onpress }) {
 
 function FilterBar({ selectedFilter, setSelectedFilter }) {
     return () => (
-        <div
-            class="filters btn-group stack-exception"
-            children={Object.keys(Filters).map((f) => (
+        <div class="filters btn-group stack-exception">
+            {Object.keys(Filters).map((f) => (
                 <FilterButton
                     label={f}
                     pressed={selectedFilter}
                     onpress={setSelectedFilter}
                 />
             ))}
-        ></div>
+        </div>
     );
 }

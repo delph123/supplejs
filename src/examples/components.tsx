@@ -30,7 +30,7 @@ function Footer({ version }: { version: string }): RWRNodeEffect {
     );
 }
 
-function Clock(): RWRNodeEffect {
+export function Clock(): RWRNodeEffect {
     const [subscribe, notify] = createSignal();
     const [c, setC] = createSignal(Math.random() > 0.5);
     setInterval(() => setC(Math.random() > 0.5), 1000);
