@@ -1,6 +1,11 @@
 import { RWRNodeEffect } from "./types";
 import { h } from "./jsx";
 
+type InputElementInputEvent = InputEvent & {
+    currentTarget: HTMLInputElement;
+    target: Element;
+};
+
 export function Input({
     id,
     value,
@@ -10,15 +15,15 @@ export function Input({
 }: {
     id: string;
     value: () => string;
-    oninput: (e) => void;
+    oninput: (e: InputElementInputEvent) => void;
     [x: string]: any;
-}): RWRNodeEffect {
+}) {
     return () => (
         <input
             id={id}
             value={value()}
-            oninput={(e) => {
-                let node: HTMLElement = e.currentTarget.parentElement;
+            oninput={(e: InputElementInputEvent) => {
+                let node = e.currentTarget.parentElement!;
                 let oldSelection = e.currentTarget.selectionStart;
                 oninput(e);
                 let input = node.querySelector("#" + id) as HTMLInputElement;

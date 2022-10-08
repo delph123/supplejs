@@ -1,12 +1,4 @@
-import {
-    h,
-    createSignal,
-    createEffect,
-    onCleanup,
-    RWRNodeEffect,
-    For,
-    Input,
-} from "../rwr";
+import { h, createSignal, RWRNodeEffect, For, Input } from "../rwr";
 
 import "./todo.css";
 
@@ -26,7 +18,7 @@ function nextKey() {
     return `todo-${currentKey}`;
 }
 
-function createItem(label, completed = false): TodoItem {
+function createItem(label: string, completed = false): TodoItem {
     const [done, setDone] = createSignal(completed);
     const [edit, setEdit] = createSignal(false);
 
@@ -62,8 +54,10 @@ const FILTER_MAP: { [k in FiltersStrings]: (i: TodoItem) => boolean } = {
     Editing: (task) => task.edit(),
 };
 
-export function Todo(): RWRNodeEffect {
-    const [selectedFilter, setSelectedFilter] = createSignal("All");
+export function Todo() {
+    const [selectedFilter, setSelectedFilter] = createSignal<Filters>(
+        Filters.All
+    );
     const [value, setValue] = createSignal("");
     const [list, setList] = createSignal(DEFAULT_TODO_LIST);
 
@@ -106,16 +100,21 @@ export function Todo(): RWRNodeEffect {
     );
 }
 
-function TodoListItem({ item, setList }) {
+interface TodoListItemProps {
+    item: TodoItem;
+    setList: (v: (s?: TodoItem[]) => TodoItem[]) => void;
+}
+
+function TodoListItem({ item, setList }: TodoListItemProps) {
     return () => (
         <li class="todo stack-small">
             <div class="c-cb">
                 {() => (
                     <input
                         type="checkbox"
-                        onchange={(e) => item.setDone(e.target.checked)}
+                        onchange={(e) => item.setDone(e.currentTarget.checked)}
                         {...(item.done() && {
-                            checked: "checked",
+                            checked: true,
                         })}
                     />
                 )}
@@ -126,7 +125,7 @@ function TodoListItem({ item, setList }) {
                             id={"input-" + item.key}
                             value={() => item.label}
                             oninput={(e) => {
-                                item.label = e.target.value;
+                                item.label = e.currentTarget.value;
                             }}
                         />
                     ) : (
@@ -155,7 +154,9 @@ function TodoListItem({ item, setList }) {
                 <button
                     class="btn btn__danger"
                     onclick={() => {
-                        setList((l) => l!.filter((it) => it.key !== item.key));
+                        setList((l?: TodoItem[]) =>
+                            l!.filter((it) => it.key !== item.key)
+                        );
                     }}
                 >
                     Delete
@@ -165,13 +166,17 @@ function TodoListItem({ item, setList }) {
     );
 }
 
-function Form({ value, setValue, setList }) {
+interface FormProps {
+    value: () => string;
+    setValue: (v: string) => void;
+    setList: (v: (s?: TodoItem[]) => TodoItem[]) => void;
+}
+
+function Form({ value, setValue, setList }: FormProps) {
     return () => (
         <form>
             <h2 class="label-wrapper">
-                <label htmlFor="new-todo-input" class="label__lg">
-                    What needs to be done?
-                </label>
+                <label class="label__lg">What needs to be done?</label>
             </h2>
             <div class="form-input">
                 <Input
@@ -180,7 +185,7 @@ function Form({ value, setValue, setList }) {
                     name="text"
                     class="input input__lg"
                     value={value}
-                    oninput={(e) => setValue(e.target.value)}
+                    oninput={(e) => setValue(e.currentTarget.value)}
                 />
                 <button
                     type="submit"
@@ -198,12 +203,18 @@ function Form({ value, setValue, setList }) {
     );
 }
 
-function FilterButton({ label, pressed, onpress }) {
+interface FilterButtonProps {
+    label: Filters;
+    pressed: () => Filters;
+    onpress: (v: Filters) => void;
+}
+
+function FilterButton({ label, pressed, onpress }: FilterButtonProps) {
     return () => (
         <button
             type="button"
             class="btn toggle-btn"
-            onclick={(e) => {
+            onclick={() => {
                 onpress(label);
             }}
             aria-pressed={pressed() === label}
@@ -215,10 +226,15 @@ function FilterButton({ label, pressed, onpress }) {
     );
 }
 
-function FilterBar({ selectedFilter, setSelectedFilter }) {
+interface FilterBarProps {
+    selectedFilter: () => Filters;
+    setSelectedFilter: (v?: Filters) => void;
+}
+
+function FilterBar({ selectedFilter, setSelectedFilter }: FilterBarProps) {
     return () => (
         <div class="filters btn-group stack-exception">
-            {Object.keys(Filters).map((f) => (
+            {Object.values(Filters).map((f) => (
                 <FilterButton
                     label={f}
                     pressed={selectedFilter}
