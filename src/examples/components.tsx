@@ -51,15 +51,16 @@ export function Clock(): RWRNodeEffect {
 }
 
 function withPrevious<T>(variable: () => T, initialValue: T) {
-    let current = initialValue;
-    return createMemo(() => {
-        const previous = current;
-        current = variable();
-        return {
-            current,
-            previous,
-        };
-    });
+    return createMemo(
+        (prev) => ({
+            current: variable(),
+            previous: prev.current,
+        }),
+        {
+            current: initialValue,
+            previous: undefined as T,
+        }
+    );
 }
 
 export function Counter(props: {

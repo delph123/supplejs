@@ -1,4 +1,10 @@
-import { createEffect, createSignal, onCleanup, RWRNodeEffect } from "../rwr";
+import {
+    createComputed,
+    createEffect,
+    createSignal,
+    onCleanup,
+    RWRNodeEffect,
+} from "../rwr";
 
 export function NestedEffect(): RWRNodeEffect {
     const [a, setA] = createSignal(1);
@@ -82,7 +88,7 @@ export function MyNameIs(): RWRNodeEffect {
     const [lastName, setLastName] = createSignal("Doe");
     const [showLastName, setShowLastName] = createSignal(true);
 
-    createEffect(() => {
+    createComputed(() => {
         if (showLastName()) {
             console.log(firstName(), lastName());
         } else {

@@ -1,5 +1,5 @@
 import {
-    createEffect,
+    createComputed,
     createSignal,
     indexArray,
     mapArray,
@@ -12,12 +12,12 @@ export function Mapper() {
 
     const f = mapArray(list, (v, i) => {
         console.log("mapping", v, i());
-        createEffect(() => console.log("changing index", i(), "for", v));
+        createComputed(() => console.log("changing index", i(), "for", v));
         onCleanup(() => console.log("removing", v, i()));
         return v;
     });
 
-    createEffect(() => console.log("f is", f()));
+    createComputed(() => console.log("f is", f()));
 
     console.log("same list");
     setList(["a", "b", "c", "a"]);
@@ -45,12 +45,12 @@ export function Indexer() {
 
     const f = indexArray(list, (v, i) => {
         console.log("mapping", v(), i);
-        createEffect(() => console.log("changing value", v(), "at", i));
+        createComputed(() => console.log("changing value", v(), "at", i));
         onCleanup(() => console.log("removing", v(), i));
         return v;
     });
 
-    createEffect(() => console.log("f is", f().map(untrack)));
+    createComputed(() => console.log("f is", f().map(untrack)));
 
     console.log("same list");
     setList(["a", "b", "c", "a"]);

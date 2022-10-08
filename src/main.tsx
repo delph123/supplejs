@@ -9,6 +9,6 @@ import { Indexer, Mapper } from "./examples/iterators";
 // import "./style.css";
 
 const exit = render(
-    () => <Mapper nb={5} onexit={() => exit()} />,
+    () => <MultiApp nb={5} onexit={() => exit()} />,
     document.getElementById("app")!
 );
