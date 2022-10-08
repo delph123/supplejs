@@ -4,10 +4,11 @@ import { AsyncApp, AutoCounter } from "./examples/async_components";
 import { MultiApp, GoodBye } from "./examples/components";
 import { Todo } from "./examples/todo";
 import { GameOn, NestedChildren } from "./examples/fragments";
+import { Indexer, Mapper } from "./examples/iterators";
 
 // import "./style.css";
 
 const exit = render(
-    () => <Todo nb={5} onexit={() => exit()} />,
+    () => <Mapper nb={5} onexit={() => exit()} />,
     document.getElementById("app")!
 );
