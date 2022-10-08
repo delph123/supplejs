@@ -5,6 +5,10 @@ import {
     TrackingContext,
 } from "./context";
 
+interface EqualsOption<T> {
+    equals?: false | ((prev: T, next: T) => boolean);
+}
+
 /**
  * Create a fine-grained reactive signal.
  *
@@ -20,20 +24,37 @@ import {
  * @param initialValue the inital value returned by the getter
  * @returns [get, set] const array (typically destructured)
  */
-export function createSignal<T>(initialValue?: T) {
+export function createSignal<T>(initialValue?: T, options?: EqualsOption<T>) {
+    const equals =
+        options?.equals === false
+            ? () => false
+            : options?.equals || ((p, n) => p === n);
+
     let state = initialValue;
     let observers = new Set<TrackingContext>();
+
     const set = (newState?: T | ((s?: T) => T)) => {
+        let newValue: T | undefined;
         if (typeof newState === "function") {
-            state = (newState as (s?: T) => T)(state);
+            newValue = (newState as (s?: T) => T)(state);
         } else {
-            state = newState;
+            newValue = newState;
         }
+
+        if (!equals(state!, newValue!)) {
+            state = newValue;
+        } else {
+            return state; // do nothing
+        }
+
         const currentObservers = observers;
         observers = new Set<TrackingContext>();
         currentObservers.forEach((o) => o.active && o.execute());
+        return state;
     };
+
     const get = () => {
+        // Automatically registers in the current tracking context (owner)
         const currentObserver = getOwner();
         if (currentObserver) {
             currentObserver.dependencies.push({
@@ -45,7 +66,8 @@ export function createSignal<T>(initialValue?: T) {
         }
         return state;
     };
-    return [get, set] as [() => T, (v?: T | ((s?: T) => T)) => void];
+
+    return [get, set] as [() => T, (newState?: T | ((s?: T) => T)) => T];
 }
 
 /**

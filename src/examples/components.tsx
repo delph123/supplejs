@@ -31,8 +31,8 @@ function Footer({ version }: { version: string }): RWRNodeEffect {
 }
 
 export function Clock(): RWRNodeEffect {
-    const [subscribe, notify] = createSignal();
-    const [c, setC] = createSignal(Math.random() > 0.5);
+    const [subscribe, notify] = createSignal(undefined, { equals: false });
+    const [c, setC] = createSignal(Math.random() > 0.5, { equals: false });
     setInterval(() => setC(Math.random() > 0.5), 1000);
 
     const timer = setInterval(() => {

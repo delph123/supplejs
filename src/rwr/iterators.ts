@@ -133,7 +133,7 @@ export function mapArray<T, U>(
             } else {
                 nextEntry = createRoot((dispose) => {
                     const [index, setIndex] = createSignal(i);
-                    const mappedElement = mapFn(element, createMemo(index)); // XXX remove memo
+                    const mappedElement = mapFn(element, index);
                     return {
                         setIndex,
                         element,
@@ -203,7 +203,7 @@ export function indexArray<T, U>(
             } else {
                 nextEntry = createRoot((dispose) => {
                     const [element, setElement] = createSignal(nextElement);
-                    const mappedElement = mapFn(createMemo(element), i); // XXX remove memo
+                    const mappedElement = mapFn(element, i);
                     return {
                         setElement,
                         mappedElement,

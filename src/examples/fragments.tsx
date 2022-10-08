@@ -9,7 +9,9 @@ export function GameOn({ nb, onexit }) {
             {Array(nbRows())
                 .fill(0)
                 .map(() => {
-                    const [subscribe, notify] = createSignal();
+                    const [subscribe, notify] = createSignal(undefined, {
+                        equals: false,
+                    });
                     setInterval(notify, 1000);
                     return () => {
                         subscribe();
