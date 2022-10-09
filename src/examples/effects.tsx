@@ -10,6 +10,7 @@ import {
     getOwner,
     createMemo,
     runWithOwner,
+    createSelector,
 } from "../rwr";
 
 export function NestedEffect(): RWRNodeEffect {
@@ -118,6 +119,9 @@ export function CounterButton({ onexit, nb }) {
         }
         setCount(count() + 1);
     };
+
+    const selector = createSelector(count);
+    createComputed(() => console.log(selector(8), selector(10)));
 
     const counter = createMemo(() => {
         onCleanup(() => console.log("cleaning tracking"));

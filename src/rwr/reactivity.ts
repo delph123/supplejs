@@ -154,3 +154,22 @@ export function createReaction(onReaction: () => void) {
         runEffectInContext(context, fn, ForwardParameter.NOTHING);
     };
 }
+
+/**
+ * Creates a conditional signal that only notifies subscribers when entering or
+ * exiting their key matching the value. Useful for delegated selection state.
+ * As it makes the operation O(1) instead of O(n).
+ *
+ * @param source the source signal whose values are compared
+ * @param equals the comparison function
+ * @returns the result of the comparison
+ */
+export function createSelector<T, U>(
+    source: () => T,
+    equals?: (a: U, b: T) => boolean
+) {
+    const comparator = equals || ((a: U, b: T) => (a as unknown) === b);
+    return function selector(k: U) {
+        return createMemo(() => comparator(k, source()))();
+    };
+}
