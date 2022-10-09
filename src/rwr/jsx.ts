@@ -25,6 +25,8 @@ export function h(
         delete attributes.children;
     }
 
+    type = overrideDomType(type);
+
     if (typeof type === "function") {
         return createRWRComponent(type, attributes, altChildren);
     } else {
@@ -80,4 +82,54 @@ function createRWRComponent(
     // expects an mapping function with item as a parameter instead of a raw
     // component.
     return createRenderEffect(Component({ ...props, children }));
+}
+
+const OVERRIDES = {
+    input: Input,
+};
+
+function overrideDomType(type: string | RWRComponent) {
+    if (typeof type === "string" && OVERRIDES[type]) {
+        return OVERRIDES[type];
+    } else {
+        return type;
+    }
+}
+
+type InputElementInputEvent = InputEvent & {
+    currentTarget: HTMLInputElement;
+    target: Element;
+};
+
+function Input({
+    id,
+    value,
+    oninput,
+    ...props
+}: {
+    id: string;
+    value: string | (() => string);
+    oninput: (e: InputElementInputEvent) => void;
+    [x: string]: any;
+}) {
+    return () =>
+        createRWRElement(
+            "input",
+            {
+                id: id,
+                value: typeof value === "function" ? value() : value,
+                oninput: (e: InputElementInputEvent) => {
+                    let node = e.currentTarget.parentElement!;
+                    let oldSelection = e.currentTarget.selectionStart;
+                    oninput(e);
+                    let input = node.querySelector(
+                        "#" + id
+                    ) as HTMLInputElement;
+                    input.focus();
+                    input.selectionStart = oldSelection;
+                },
+                ...props,
+            },
+            []
+        );
 }

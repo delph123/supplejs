@@ -1,4 +1,4 @@
-import { h, createSignal, RWRNodeEffect, For, Input } from "../rwr";
+import { h, createSignal, For } from "../rwr";
 
 import "./todo.css";
 
@@ -120,10 +120,10 @@ function TodoListItem({ item, setList }: TodoListItemProps) {
                 )}
                 {() =>
                     item.edit() ? (
-                        <Input
+                        <input
                             class="todo-label"
                             id={"input-" + item.key}
-                            value={() => item.label}
+                            value={item.label}
                             oninput={(e) => {
                                 item.label = e.currentTarget.value;
                             }}
@@ -179,7 +179,7 @@ function Form({ value, setValue, setList }: FormProps) {
                 <label class="label__lg">What needs to be done?</label>
             </h2>
             <div class="form-input">
-                <Input
+                <input
                     type="text"
                     id="new-todo-input"
                     name="text"

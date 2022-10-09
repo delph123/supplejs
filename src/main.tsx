@@ -9,6 +9,6 @@ import { Indexer, Mapper } from "./examples/iterators";
 // import "./style.css";
 
 const exit = render(
-    () => <NestedEffect nb={5} onexit={() => exit()} />,
+    () => <Todo nb={5} onexit={() => exit()} />,
     document.getElementById("app")!
 );

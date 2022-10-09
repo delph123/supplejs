@@ -6,7 +6,6 @@ import {
     onCleanup,
     createChainedList,
     RWRNodeEffect,
-    Input,
 } from "../rwr";
 
 function Dog(): RWRNodeEffect {
@@ -99,7 +98,7 @@ export function AutoCounter(): RWRNodeEffect {
     return () => (
         <div>
             <h1>{count}</h1>
-            <Input
+            <input
                 id="hello"
                 value={() => delay().toString()}
                 oninput={(e) => setDelay(e.target.value)}
