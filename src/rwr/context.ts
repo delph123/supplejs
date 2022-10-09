@@ -2,15 +2,22 @@ export interface Disposable {
     cleanup: () => void;
 }
 
-export interface TrackingContext {
+export interface TrackingContext<T = any> {
     execute: () => void;
+    previousValue: T;
     active: boolean;
-    children: TrackingContext[];
+    children: TrackingContext<T>[];
     dependencies: Disposable[];
 }
 
+export enum ForwardParameter {
+    NOTHING,
+    PREVIOUS_VALUE,
+    DISPOSE,
+}
+
 /** The tracking context stack. (Implemented as an Array) */
-const contextStack = [] as (TrackingContext | null)[];
+const contextStack = [] as (TrackingContext<any> | null)[];
 
 /**
  * Gets the reactive scope that owns the currently running code (i.e. the
@@ -40,17 +47,23 @@ export function getOwner() {
  */
 export function runEffectInContext<T>(
     context: TrackingContext | null,
-    effect: ((dispose: () => void) => T) | (() => T),
-    forwardDispose = false
+    effect: ((dispose: () => void) => T) | ((prev: T) => T) | (() => T),
+    forward: ForwardParameter = ForwardParameter.PREVIOUS_VALUE
 ): T {
     let result: T;
 
     contextStack.push(context);
 
-    if (forwardDispose && context) {
-        result = effect(() => cleanup(context, true));
+    if (forward === ForwardParameter.DISPOSE && context) {
+        const fn = effect as (dispose: () => void) => T;
+        result = fn(() => cleanup(context, true));
+    } else if (forward === ForwardParameter.PREVIOUS_VALUE && context) {
+        const fn = effect as (prev: T) => T;
+        result = fn(context.previousValue);
+        context.previousValue = result;
     } else {
-        result = (effect as () => T)();
+        const fn = effect as () => T;
+        result = fn();
     }
 
     contextStack.pop();
@@ -58,16 +71,15 @@ export function runEffectInContext<T>(
     return result;
 }
 
-export function createChildContext(effect: () => void) {
+export function createChildContext<T>(effect: (prev: T) => T, value?: T) {
     const execute = () => {
         cleanup(context);
-        contextStack.push(context);
-        effect();
-        contextStack.pop();
+        runEffectInContext(context, effect);
     };
 
-    const context: TrackingContext = {
+    const context: TrackingContext<T> = {
         execute,
+        previousValue: value as T,
         active: true,
         children: [],
         dependencies: [],
@@ -95,10 +107,10 @@ export function createChildContext(effect: () => void) {
  * @param context the tracking context to cleanup
  * @param dispose dipose of the current context (deactivate it)
  */
-function cleanup(context: TrackingContext, dispose = false) {
+function cleanup<T>(context: TrackingContext<T>, dispose = false) {
     // Recursively dispose of the context and it's children,
     // while calling all cleanup functions.
-    function disposeRec(ctx: TrackingContext, dispose: boolean) {
+    function disposeRec(ctx: TrackingContext<T>, dispose: boolean) {
         // Dispose children & clean-up dependant disposables
         ctx.children.forEach((child) => {
             // called with dispose = true for deactivating the children
@@ -131,7 +143,7 @@ function cleanup(context: TrackingContext, dispose = false) {
  * @returns the result of the effect
  */
 export function untrack<T>(effect: () => T) {
-    return runEffectInContext(null, effect);
+    return runEffectInContext(null, effect, ForwardParameter.NOTHING);
 }
 
 /**
@@ -148,13 +160,14 @@ export function createRoot<T>(effect: (dispose: () => void) => T) {
     // track children and dependent contexts
     const context: TrackingContext = {
         execute: () => console.error("Executing Root Context!!"),
+        previousValue: undefined,
         active: false,
         children: [],
         dependencies: [],
     };
 
     // Run the effect under the created context
-    return runEffectInContext(context, effect, true);
+    return runEffectInContext<T>(context, effect, ForwardParameter.DISPOSE);
 }
 
 /**
@@ -165,11 +178,20 @@ export function createRoot<T>(effect: (dispose: () => void) => T) {
  * @param effect the effect to run
  * @returns the result of the effect
  */
-export function runWithOwner<T>(
-    owner: TrackingContext,
-    effect: (dispose: () => void) => T
-) {
-    return runEffectInContext(owner, effect, true);
+export function runWithOwner<T>(owner: TrackingContext<T>, effect: () => T) {
+    return runEffectInContext(owner, effect, ForwardParameter.NOTHING);
+}
+
+/**
+ * Registers a method that runs after initial render and elements have been
+ * mounted. Ideal for using refs and managing other one time side effects.
+ *
+ * It is equivalent to a createEffect which does not have any dependencies.
+ *
+ * @param runOnce the computation which runs once at startup
+ */
+export function onMount(runOnce: () => void) {
+    setTimeout(() => untrack(runOnce), 0);
 }
 
 /**

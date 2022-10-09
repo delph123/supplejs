@@ -3,7 +3,6 @@ import {
     getOwner,
     runEffectInContext,
     TrackingContext,
-    untrack,
 } from "./context";
 
 interface EqualsOption<T> {
@@ -78,13 +77,6 @@ export function createSignal<T>(initialValue?: T, options?: EqualsOption<T>) {
     return [get, set] as [() => T, (newState?: T | ((s?: T) => T)) => T];
 }
 
-function computed<T>(fn: (v: T) => T, value?: T) {
-    let previousValue = value;
-    return () => {
-        previousValue = fn(previousValue!);
-    };
-}
-
 /**
  * Creates a new computation that immediately runs the given function in a
  * tracking scope, thus automatically tracking its dependencies, and
@@ -97,9 +89,8 @@ function computed<T>(fn: (v: T) => T, value?: T) {
  * @param fn the computation to run immediately and after any change
  * @param value the initial value to provide to the function
  */
-export function createComputed<T>(fn: (v: T) => T, value?: T) {
-    const effect = computed(fn, value);
-    const childContext = createChildContext(effect);
+export function createComputed<T>(effect: (v: T) => T, value?: T) {
+    const childContext = createChildContext(effect, value);
     runEffectInContext(childContext, effect);
 }
 
@@ -116,9 +107,8 @@ export function createComputed<T>(fn: (v: T) => T, value?: T) {
  * @param effect the computation with side effects
  * @param value the initial value to provide to the function
  */
-export function createEffect<T>(fn: (v: T) => T, value?: T) {
-    const effect = computed(fn, value);
-    const childContext = createChildContext(effect);
+export function createEffect<T>(effect: (v: T) => T, value?: T) {
+    const childContext = createChildContext(effect, value);
     setTimeout(() => runEffectInContext(childContext, effect), 0);
 }
 
@@ -139,22 +129,10 @@ export function createMemo<T>(
     options?: EqualsOption<T>
 ) {
     const [memoizedValue, setMemoizedValue] = createSignal<T>(value, options);
-    let memory = value as T;
-    createComputed(() => {
-        memory = memo(memory);
-        setMemoizedValue(memory);
-    });
+    createComputed((previousValue) => {
+        const nextValue = memo(previousValue);
+        setMemoizedValue(nextValue);
+        return nextValue;
+    }, value);
     return memoizedValue;
-}
-
-/**
- * Registers a method that runs after initial render and elements have been
- * mounted. Ideal for using refs and managing other one time side effects.
- *
- * It is equivalent to a createEffect which does not have any dependencies.
- *
- * @param effect the computation which runs once at startup
- */
-export function onMount(effect: () => void) {
-    setTimeout(() => untrack(effect), 0);
 }
