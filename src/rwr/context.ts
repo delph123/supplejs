@@ -1,13 +1,11 @@
-export interface Disposable {
-    cleanup: () => void;
-}
+type CleanupFunction = () => void;
 
 export interface TrackingContext<T = any> {
     execute: () => void;
     previousValue: T;
     active: boolean;
     children: TrackingContext<T>[];
-    dependencies: Disposable[];
+    cleanups: CleanupFunction[];
 }
 
 export enum ForwardParameter {
@@ -82,7 +80,7 @@ export function createChildContext<T>(effect: (prev: T) => T, value?: T) {
         previousValue: value as T,
         active: true,
         children: [],
-        dependencies: [],
+        cleanups: [],
     };
 
     const parentTrackingContext = getOwner();
@@ -116,13 +114,11 @@ function cleanup<T>(context: TrackingContext<T>, dispose = false) {
             // called with dispose = true for deactivating the children
             disposeRec(child, true);
         });
-        ctx.dependencies.forEach((dep) => {
-            dep.cleanup();
-        });
+        ctx.cleanups.forEach((fn) => fn());
 
         // Clear list of children & dependencies
-        ctx.children.length = 0;
-        ctx.dependencies.length = 0;
+        ctx.children = [];
+        ctx.cleanups = [];
 
         // Deactivate the context if dispose was requested
         ctx.active = ctx.active && !dispose;
@@ -163,7 +159,7 @@ export function createRoot<T>(effect: (dispose: () => void) => T) {
         previousValue: undefined,
         active: false,
         children: [],
-        dependencies: [],
+        cleanups: [],
     };
 
     // Run the effect under the created context
@@ -200,12 +196,10 @@ export function onMount(runOnce: () => void) {
  *
  * @param cleanup the cleanup function to run
  */
-export function onCleanup(cleanup: () => void) {
+export function onCleanup(cleanup: CleanupFunction) {
     const context = getOwner();
     if (context) {
-        context.dependencies.push({
-            cleanup,
-        });
+        context.cleanups.push(cleanup);
     } else {
         console.error("No current tracking context!");
     }

@@ -64,10 +64,8 @@ export function createSignal<T>(initialValue?: T, options?: EqualsOption<T>) {
         // Automatically registers in the current tracking context (owner)
         const currentObserver = getOwner();
         if (currentObserver) {
-            currentObserver.dependencies.push({
-                cleanup() {
-                    observers.delete(currentObserver);
-                },
+            currentObserver.cleanups.push(function cleanup() {
+                observers.delete(currentObserver);
             });
             observers.add(currentObserver);
         }
