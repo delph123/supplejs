@@ -1,5 +1,7 @@
 import {
+    cleanup,
     createChildContext,
+    ForwardParameter,
     getOwner,
     runEffectInContext,
     TrackingContext,
@@ -133,4 +135,22 @@ export function createMemo<T>(
         return nextValue;
     }, value);
     return memoizedValue;
+}
+
+/**
+ * Registers a side effect that is run the first time the expression wrapped by
+ * the returned tracking function is notified of a change.
+ *
+ * Useful to separate tracking from re-execution.
+ *
+ * @param onReaction the function to run in reaction to the next change
+ * @returns a function that can be called to track the next change
+ */
+export function createReaction(onReaction: () => void) {
+    let context: TrackingContext<void> | undefined;
+    return function track(fn: () => void) {
+        if (context) cleanup(context);
+        context = createChildContext(onReaction);
+        runEffectInContext(context, fn, ForwardParameter.NOTHING);
+    };
 }

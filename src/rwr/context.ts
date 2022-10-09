@@ -102,10 +102,12 @@ export function createChildContext<T>(effect: (prev: T) => T, value?: T) {
  * Dispose of any child and deactivate them so they cannot be used later,
  * then clean-up all dependant disposable resources.
  *
+ * @private
+ *
  * @param context the tracking context to cleanup
  * @param dispose dipose of the current context (deactivate it)
  */
-function cleanup<T>(context: TrackingContext<T>, dispose = false) {
+export function cleanup<T>(context: TrackingContext<T>, dispose = false) {
     // Recursively dispose of the context and it's children,
     // while calling all cleanup functions.
     function disposeRec(ctx: TrackingContext<T>, dispose: boolean) {

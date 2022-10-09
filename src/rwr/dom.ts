@@ -1,14 +1,15 @@
 import {
     DOMComponent,
-    flatten,
     MultiDOMComponent,
-    Nested,
     ProxyDOMComponent,
     RealDOMComponent,
     RWRNode,
     RWRNodeEffect,
 } from "./types";
+import { flatten, createLogger, Nested } from "./helper";
 import { createChildContext, createRoot, runEffectInContext } from "./context";
+
+const logger = createLogger("dom");
 
 export function render(renderEffect: RWRNodeEffect, container: HTMLElement) {
     return createRoot((dispose) => {
@@ -63,15 +64,15 @@ export function createRenderEffect(
         getNodes = component.getNodes;
     }
 
-    console.log("render", renderNb, component);
+    logger.log("render", renderNb, component);
 
     return {
         __kind: "render_effect",
         getNodes: () => getNodes(),
         mount: (p) => {
-            console.log("mounting", renderNb, p, component);
+            logger.log("mounting", renderNb, p, component);
             notifyMount(p, component);
-            console.log("end");
+            logger.log("end");
             parentNode = p;
         },
     };

@@ -1,10 +1,5 @@
-import {
-    RWRComponent,
-    RWRElement,
-    RWRNode,
-    RWRNodeEffect,
-    flatten,
-} from "./types";
+import { RWRComponent, RWRElement, RWRNode, RWRNodeEffect } from "./types";
+import { flatten } from "./helper";
 import { createRenderEffect } from "./dom";
 
 export function h(

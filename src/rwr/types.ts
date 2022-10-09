@@ -38,24 +38,3 @@ export type RWRNode =
 
 export type RWRNodeEffect = () => RWRNode;
 export type RWRComponent = (props?: any) => RWRNodeEffect;
-
-/**
- * Nested type
- */
-export type Nested<T> = T[] | Nested<T>[];
-
-/**
- * Flatten childrens (developers may return an array containing nested arrays
- * and expect them to be flatten out in the rendering phase).
- */
-export function flatten<T>(nestedChildren: Nested<T>) {
-    const children: T[] = [];
-    for (const c of nestedChildren) {
-        if (Array.isArray(c)) {
-            children.push(...flatten(c));
-        } else {
-            children.push(c);
-        }
-    }
-    return children;
-}

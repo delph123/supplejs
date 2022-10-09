@@ -1,9 +1,15 @@
 import {
+    h,
+    Fragment,
     createComputed,
     createEffect,
+    createReaction,
     createSignal,
     onCleanup,
     RWRNodeEffect,
+    getOwner,
+    createMemo,
+    runWithOwner,
 } from "../rwr";
 
 export function NestedEffect(): RWRNodeEffect {
@@ -102,4 +108,41 @@ export function MyNameIs(): RWRNodeEffect {
     setFirstName("Marc");
 
     return () => "Hello world!";
+}
+
+export function CounterButton({ onexit, nb }) {
+    const [count, setCount] = createSignal(nb);
+    const increment = () => {
+        if (counter() < 7) {
+            setTimeout(() => runWithOwner(owner!, () => track(counter)), 200);
+        }
+        setCount(count() + 1);
+    };
+
+    const counter = createMemo(() => {
+        onCleanup(() => console.log("cleaning tracking"));
+        console.log("tracking activated", getOwner());
+        return count();
+    });
+
+    const track = createReaction(() => {
+        onCleanup(() => console.log("cleaning reaction"));
+        console.log("reaction!", getOwner());
+    });
+
+    const owner = getOwner();
+
+    track(counter);
+
+    return () => (
+        <>
+            <button type="button" onclick={increment}>
+                {count()}
+            </button>
+            <br />
+            <button type="button" onclick={onexit}>
+                Exit
+            </button>
+        </>
+    );
 }
