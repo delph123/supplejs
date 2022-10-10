@@ -5,10 +5,11 @@ import { MultiApp, GoodBye } from "./examples/components";
 import { Todo } from "./examples/todo";
 import { GameOn, NestedChildren } from "./examples/fragments";
 import { Indexer, Mapper } from "./examples/iterators";
+import { App } from "./examples/js_framework_bench";
 
 // import "./style.css";
 
 const exit = render(
-    () => <CounterButton nb={5} onexit={() => exit()} />,
+    () => <App nb={5} onexit={() => exit()} />,
     document.getElementById("app")!
 );
