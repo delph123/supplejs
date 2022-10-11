@@ -1,5 +1,8 @@
 import { h, For, createSignal, createSelector } from "../rwr";
 
+import "./bootstrap.css";
+import "./js_bench.css";
+
 let idCounter = 1;
 const adjectives = [
         "pretty",
