@@ -165,35 +165,20 @@ export function mount(
     notifyMount(container, component);
 
     if (previousNodes) {
-        replaceNodes(container, newNodes, previousNodes);
-        // hardReplaceNodes(container, newNodes, previousNodes);
+        const nextSibling = previousNodes[previousNodes.length - 1].nextSibling;
+        const [newItems, oldItems] = convertToItems(newNodes, previousNodes);
+        replaceNodes(container, newItems, oldItems, nextSibling);
     } else {
         newNodes.forEach((n) => container.appendChild(n));
     }
 }
 
-function hardReplaceNodes(
-    container: HTMLElement,
-    newNodes: Node[],
-    oldNodes: Node[]
-) {
-    const nextSibling = oldNodes[oldNodes.length - 1].nextSibling;
-    for (const oldNode of oldNodes) {
-        container.removeChild(oldNode);
-    }
-    for (const newNode of newNodes) {
-        container.insertBefore(newNode, nextSibling);
-    }
-}
-
 function replaceNodes(
     container: HTMLElement,
-    newNodes: Node[],
-    oldNodes: Node[]
+    newItems: NodeItem[],
+    oldItems: NodeItem[],
+    nextSibling: Node | null
 ) {
-    const nextSibling = oldNodes[oldNodes.length - 1].nextSibling;
-    const [newItems, oldItems] = convertNodesToItems(newNodes, oldNodes);
-
     let newCursor = 0;
     let oldCursor = 0;
 
@@ -260,7 +245,7 @@ interface NodeItem {
     newSlot: number;
 }
 
-function convertNodesToItems(newNodes: Node[], oldNodes: Node[]) {
+function convertToItems(newNodes: Node[], oldNodes: Node[]) {
     const allItemsMap = new Map();
 
     const convertNew = nodeToItem.bind(null, allItemsMap, "newSlot");
