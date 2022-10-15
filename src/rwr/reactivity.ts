@@ -173,3 +173,16 @@ export function createSelector<T, U>(
         return createMemo(() => comparator(k, source()))();
     };
 }
+
+/**
+ * Creates a mutable ref object, whose .current property is initialized to the
+ * passed argument (initialValue).
+ *
+ * @param initialValue the inital value for the ref's current property
+ * @returns a ref object with mutable current property
+ */
+export function createRef<T>(initialValue?: T) {
+    return {
+        current: initialValue as T,
+    };
+}

@@ -109,7 +109,13 @@ function createDOMComponent(component: RWRNode): DOMComponent {
     } else {
         const element = document.createElement(component.type);
         Object.entries(component.props).forEach(([name, value]) => {
-            if (!name.startsWith("on")) {
+            if (name === "ref") {
+                if (typeof value === "function") {
+                    value(element);
+                } else {
+                    value.current = element;
+                }
+            } else if (!name.startsWith("on")) {
                 element.setAttribute(name, value);
             } else {
                 element.addEventListener(name.substring(2), value);
