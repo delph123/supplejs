@@ -3,6 +3,8 @@ import { h, For, createSignal, createSelector } from "../rwr";
 import "./bootstrap.css";
 import "./js_bench.css";
 
+const BATCH_SIZE = 1000;
+
 let idCounter = 1;
 const adjectives = [
         "pretty",
@@ -100,19 +102,19 @@ const Button =
 export const App = () => {
     const [data, setData] = createSignal<any[]>([]),
         [selected, setSelected] = createSignal(null),
-        run = () => setData(buildData(1000)),
-        runLots = () => setData(buildData(10000)),
-        add = () => setData((d) => [...d!, ...buildData(1000)]),
+        run = () => setData(buildData(BATCH_SIZE)),
+        runLots = () => setData(buildData(10 * BATCH_SIZE)),
+        add = () => setData((d) => [...d!, ...buildData(BATCH_SIZE)]),
         update = () => {
             for (let i = 0, d = data(), len = d.length; i < len; i += 10)
                 d[i].setLabel((l) => l + " !!!");
         },
         swapRows = () => {
             const d = data().slice();
-            if (d.length > 998) {
+            if (d.length >= 5) {
                 let tmp = d[1];
-                d[1] = d[998];
-                d[998] = tmp;
+                d[1] = d[d.length - 2];
+                d[d.length - 2] = tmp;
                 setData(d);
             }
         },

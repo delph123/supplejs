@@ -165,14 +165,133 @@ export function mount(
     notifyMount(container, component);
 
     if (previousNodes) {
-        const nextSibling = previousNodes[previousNodes.length - 1].nextSibling;
-        for (const prevNode of previousNodes) {
-            container.removeChild(prevNode);
-        }
-        for (const newNode of newNodes) {
-            container.insertBefore(newNode, nextSibling);
-        }
+        replaceNodes(container, newNodes, previousNodes);
+        // hardReplaceNodes(container, newNodes, previousNodes);
     } else {
         newNodes.forEach((n) => container.appendChild(n));
     }
+}
+
+function hardReplaceNodes(
+    container: HTMLElement,
+    newNodes: Node[],
+    oldNodes: Node[]
+) {
+    const nextSibling = oldNodes[oldNodes.length - 1].nextSibling;
+    for (const oldNode of oldNodes) {
+        container.removeChild(oldNode);
+    }
+    for (const newNode of newNodes) {
+        container.insertBefore(newNode, nextSibling);
+    }
+}
+
+function replaceNodes(
+    container: HTMLElement,
+    newNodes: Node[],
+    oldNodes: Node[]
+) {
+    const nextSibling = oldNodes[oldNodes.length - 1].nextSibling;
+    const [newItems, oldItems] = convertNodesToItems(newNodes, oldNodes);
+
+    let newCursor = 0;
+    let oldCursor = 0;
+
+    let newItem: NodeItem;
+    let oldItem: NodeItem;
+
+    while (newCursor < newItems.length && oldCursor < oldItems.length) {
+        newItem = newItems[newCursor];
+        oldItem = oldItems[oldCursor];
+
+        if (oldItem.newSlot !== NO_SLOT && oldItem.newSlot < newCursor) {
+            oldCursor++;
+        } else if (newItem === oldItem) {
+            newCursor++;
+            oldCursor++;
+        } else if (oldItem.newSlot === NO_SLOT || newItem.oldSlot !== NO_SLOT) {
+            container.replaceChild(newItem.node, oldItem.node);
+            newCursor++;
+            oldCursor++;
+        } else if (oldItem.newSlot !== NO_SLOT && newItem.oldSlot === NO_SLOT) {
+            if (isNextExisting(oldItem, newItems, newCursor + 1)) {
+                while (newItems[newCursor].oldSlot === NO_SLOT) {
+                    container.insertBefore(
+                        newItems[newCursor].node,
+                        oldItem.node
+                    );
+                    newCursor++;
+                }
+            } else {
+                container.replaceChild(newItem.node, oldItem.node);
+                newCursor++;
+                oldCursor++;
+            }
+        }
+    }
+
+    while (oldCursor < oldItems.length) {
+        oldItem = oldItems[oldCursor];
+        if (oldItem.newSlot === NO_SLOT) {
+            container.removeChild(oldItem.node);
+        }
+        oldCursor++;
+    }
+
+    while (newCursor < newItems.length) {
+        container.insertBefore(newItems[newCursor].node, nextSibling);
+        newCursor++;
+    }
+}
+
+function isNextExisting(item: NodeItem, items: NodeItem[], start: number) {
+    let cursor = start;
+    while (cursor < items.length && items[cursor].oldSlot === NO_SLOT) {
+        cursor++;
+    }
+    return items[cursor] === item;
+}
+
+const NO_SLOT = -1;
+
+interface NodeItem {
+    node: Node;
+    oldSlot: number;
+    newSlot: number;
+}
+
+function convertNodesToItems(newNodes: Node[], oldNodes: Node[]) {
+    const allItemsMap = new Map();
+
+    const convertNew = nodeToItem.bind(null, allItemsMap, "newSlot");
+    const convertOld = nodeToItem.bind(null, allItemsMap, "oldSlot");
+
+    const newItems = newNodes.map(convertNew);
+    const oldItems = oldNodes.map(convertOld);
+
+    return [newItems, oldItems];
+}
+
+function nodeToItem(
+    map: Map<Node, NodeItem>,
+    indexProp: "oldSlot" | "newSlot",
+    node: Node,
+    index: number
+) {
+    let item: NodeItem;
+
+    if (map.has(node)) {
+        item = map.get(node)!;
+    } else {
+        item = {
+            node,
+            oldSlot: NO_SLOT,
+            newSlot: NO_SLOT,
+        };
+        map.set(node, item);
+    }
+
+    item[indexProp] = index;
+
+    return item;
 }
