@@ -100,6 +100,7 @@ function Input({
     id,
     value,
     oninput,
+    children,
     ...props
 }: {
     id: string;
@@ -107,24 +108,28 @@ function Input({
     oninput: (e: InputElementInputEvent) => void;
     [x: string]: any;
 }) {
-    return () =>
-        createRWRElement(
-            "input",
-            {
-                id: id,
-                value: typeof value === "function" ? value() : value,
-                oninput: (e: InputElementInputEvent) => {
-                    let node = e.currentTarget.parentElement!;
-                    let oldSelection = e.currentTarget.selectionStart;
-                    oninput(e);
-                    let input = node.querySelector(
-                        "#" + id
-                    ) as HTMLInputElement;
-                    input.focus();
-                    input.selectionStart = oldSelection;
-                },
-                ...props,
-            },
-            []
-        );
+    return () => {
+        const inputProps = {
+            ...props,
+        };
+
+        if (id != null) {
+            inputProps.id = id;
+        }
+        if (value != null) {
+            inputProps.value = typeof value === "function" ? value() : value;
+        }
+        if (oninput != null) {
+            inputProps.oninput = (e: InputElementInputEvent) => {
+                let node = e.currentTarget.parentElement!;
+                let oldSelection = e.currentTarget.selectionStart;
+                oninput(e);
+                let input = node.querySelector("#" + id) as HTMLInputElement;
+                input.focus();
+                input.selectionStart = oldSelection;
+            };
+        }
+
+        return createRWRElement("input", inputProps, children);
+    };
 }

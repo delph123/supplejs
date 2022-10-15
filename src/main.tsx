@@ -10,6 +10,6 @@ import { App } from "./examples/js_framework_bench";
 // import "./style.css";
 
 const exit = render(
-    () => <App nb={5} onexit={() => exit()} />,
+    () => <Todo nb={5} onexit={() => exit()} />,
     document.getElementById("app")!
 );
