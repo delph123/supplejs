@@ -11,6 +11,8 @@ import {
     createMemo,
     runWithOwner,
     createSelector,
+    createRef,
+    onMount,
 } from "../rwr";
 
 export function NestedEffect(): RWRNodeEffect {
@@ -147,6 +149,23 @@ export function CounterButton({ onexit, nb }) {
             <button type="button" onclick={onexit}>
                 Exit
             </button>
+        </>
+    );
+}
+
+export function Referencing() {
+    const ref = createRef<HTMLElement>();
+
+    onMount(() => console.log("After mount:", ref.current));
+    createEffect(() => console.log("Effect:", ref.current));
+    createComputed(() => console.log("Computed:", ref.current));
+
+    return () => (
+        <>
+            <div ref={ref}>Hello!</div>
+            <div ref={(el) => console.log("Assigning ref:", el)}>
+                How are you?
+            </div>
         </>
     );
 }
