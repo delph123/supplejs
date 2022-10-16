@@ -15,6 +15,6 @@ import { App } from "./examples/js_framework_bench";
 // import "./style.css";
 
 const exit = render(
-    () => <Referencing nb={5} onexit={() => exit()} />,
+    () => <App nb={5} onexit={() => exit()} />,
     document.getElementById("app")!
 );
