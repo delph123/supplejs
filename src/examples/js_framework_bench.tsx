@@ -1,11 +1,4 @@
-import {
-    h,
-    For,
-    createSignal,
-    createEffect,
-    createRef,
-    createMemo,
-} from "../rwr";
+import { h, For, createSignal, createMemo } from "../rwr";
 
 import "./bootstrap.css";
 import "./js_bench.css";
@@ -178,20 +171,12 @@ export const App = () => {
                     <For each={data}>
                         {(row) => {
                             const rowId = row.id;
-                            const rowRef = createRef<HTMLElement>();
-                            const isSelected = createMemo(
-                                () => selected() === rowId
+                            const selectedRowClass = createMemo(() =>
+                                selected() === rowId ? "danger" : ""
                             );
 
-                            createEffect(() => {
-                                rowRef.current.setAttribute(
-                                    "class",
-                                    isSelected() ? "danger" : ""
-                                );
-                            });
-
                             return (
-                                <tr ref={rowRef}>
+                                <tr class={selectedRowClass}>
                                     <td class="col-md-1">{rowId}</td>
                                     <td class="col-md-4">
                                         <a onclick={() => setSelected(rowId)}>

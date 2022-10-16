@@ -8,6 +8,7 @@ import {
 } from "./types";
 import { flatten, createLogger, Nested } from "./helper";
 import { createChildContext, createRoot, runEffectInContext } from "./context";
+import { createComputed } from "./reactivity";
 
 const logger = createLogger("dom");
 
@@ -116,7 +117,13 @@ function createDOMComponent(component: RWRNode): DOMComponent {
                     value.current = element;
                 }
             } else if (!name.startsWith("on")) {
-                element.setAttribute(name, value);
+                if (typeof value === "function") {
+                    createComputed(() => {
+                        element.setAttribute(name, value());
+                    });
+                } else {
+                    element.setAttribute(name, value);
+                }
             } else {
                 element.addEventListener(name.substring(2), value);
             }
