@@ -5,6 +5,8 @@ import {
     createSelector,
     createEffect,
     createRef,
+    createReduxSelector,
+    createMemo,
 } from "../rwr";
 
 import "./bootstrap.css";
@@ -108,7 +110,7 @@ const Button =
 
 export const App = () => {
     const [data, setData] = createSignal<any[]>([]),
-        [selected, setSelected] = createSignal(null),
+        [selected, setSelected] = createSignal<number | null>(null),
         run = () => setData(buildData(BATCH_SIZE)),
         runLots = () => setData(buildData(10 * BATCH_SIZE)),
         add = () => setData((d) => [...d!, ...buildData(BATCH_SIZE)]),
@@ -130,8 +132,7 @@ export const App = () => {
             setData((d) => {
                 const idx = d!.findIndex((d) => d.id === id);
                 return [...d!.slice(0, idx), ...d!.slice(idx + 1)];
-            }),
-        isSelected = createSelector(selected);
+            });
 
     return () => (
         <div class="container">
@@ -176,13 +177,16 @@ export const App = () => {
                 <tbody>
                     <For each={data}>
                         {(row) => {
-                            let rowId = row.id;
-                            let rowRef = createRef<HTMLElement>();
+                            const rowId = row.id;
+                            const rowRef = createRef<HTMLElement>();
+                            const isSelected = createMemo(
+                                () => selected() === rowId
+                            );
 
                             createEffect(() => {
                                 rowRef.current.setAttribute(
                                     "class",
-                                    isSelected(rowId) ? "danger" : ""
+                                    isSelected() ? "danger" : ""
                                 );
                             });
 
