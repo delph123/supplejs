@@ -1,5 +1,5 @@
 /** Nested type */
-export type Nested<T> = T[] | Nested<T>[];
+export type Nested<T> = (T | Nested<T>)[];
 
 /**
  * Flatten childrens (developers may return an array containing nested arrays

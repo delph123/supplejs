@@ -29,15 +29,7 @@ export function h(
     }
 }
 
-export function Fragment({
-    children,
-    ...otherProps
-}: {
-    children: RWRNode[];
-}): RWRNodeEffect {
-    if (Object.entries(otherProps).length > 0) {
-        console.error(Object.entries(otherProps));
-    }
+export function Fragment({ children }: { children: RWRNode[] }): RWRNodeEffect {
     return () => children;
 }
 
@@ -74,7 +66,7 @@ function createRWRComponent(
     // When we create a component, we will pass children untouched so that the
     // component itself can define the semantics of the children prop as it
     // sees fit. This is useful for example for the iterators components which
-    // expects an mapping function with item as a parameter instead of a raw
+    // expects a mapping function with item as a parameter instead of a raw
     // component.
     return createRenderEffect(Component({ ...props, children }));
 }
