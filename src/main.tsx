@@ -11,10 +11,11 @@ import { Todo } from "./examples/todo";
 import { GameOn, NestedChildren } from "./examples/fragments";
 import { Indexer, Mapper } from "./examples/iterators";
 import { App } from "./examples/js_framework_bench";
+import { ReduxSlice } from "./examples/redux";
 
 // import "./style.css";
 
 const exit = render(
-    () => <App nb={5} onexit={() => exit()} />,
+    () => <ReduxSlice nb={5} onexit={() => exit()} />,
     document.getElementById("app")!
 );
