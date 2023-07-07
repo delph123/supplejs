@@ -67,7 +67,7 @@ function _random(max) {
 }
 
 function buildData(count) {
-    let data = new Array(count);
+    const data = new Array(count);
     for (let i = 0; i < count; i++) {
         const [label, setLabel] = createSignal(
             `${adjectives[_random(adjectives.length)]} ${
@@ -112,7 +112,7 @@ export const App = () => {
         swapRows = () => {
             const d = data().slice();
             if (d.length >= 5) {
-                let tmp = d[1];
+                const tmp = d[1];
                 d[1] = d[d.length - 2];
                 d[d.length - 2] = tmp;
                 setData(d);
