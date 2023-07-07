@@ -15,7 +15,7 @@ export function h(
         console.error("Children should be an array!");
     }
 
-    let attributes = props ? { ...props } : {};
+    const attributes = props ? { ...props } : {};
     if ("children" in attributes) {
         delete attributes.children;
     }
@@ -113,10 +113,10 @@ function Input({
         }
         if (oninput != null) {
             inputProps.oninput = (e: InputElementInputEvent) => {
-                let node = e.currentTarget.parentElement!;
-                let oldSelection = e.currentTarget.selectionStart;
+                const node = e.currentTarget.parentElement!;
+                const oldSelection = e.currentTarget.selectionStart;
                 oninput(e);
-                let input = node.querySelector("#" + id) as HTMLInputElement;
+                const input = node.querySelector("#" + id) as HTMLInputElement;
                 input.focus();
                 input.selectionStart = oldSelection;
             };

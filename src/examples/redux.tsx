@@ -20,7 +20,7 @@ export function ReduxSlice() {
 
     const [store, dispatch] = createReduxSlice(initialValue, {
         addSome(state, action: ActionPayload<number>) {
-            let some = state.some + action.payload;
+            const some = state.some + action.payload;
             return { ...state, some };
         },
         changeOther(state, action: ActionPayload<string>) {
