@@ -4,6 +4,11 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+dependencies:
+  rainbow-gradient:
+    specifier: ^1.0.0
+    version: 1.0.0
+
 devDependencies:
   '@typescript-eslint/eslint-plugin':
     specifier: ^5.61.0
@@ -30,6 +35,10 @@ packages:
     resolution: {integrity: sha512-1Yjs2SvM8TflER/OD3cOjhWWOZb58A2t7wpE2S9XfBYTiIl+XFhQG2bjy4Pu1I+EAlCNUzRDYDdFwFYUKvXcIA==}
     engines: {node: '>=0.10.0'}
     dev: true
+
+  /@charlesstover/hsl2rgb@1.0.4:
+    resolution: {integrity: sha512-g0IEbSlYeTadEGzrlAui6oiZSMB1QfGX9yakVPfkjWYwlMQBfIype/d9SVg1uXHFmbe9Y+SsToZPWKFG1MxI7w==}
+    dev: false
 
   /@esbuild/android-arm@0.15.18:
     resolution: {integrity: sha512-5GT+kcs2WVGjVs7+boataCkO5Fg0y4kCjzkB5bAip7H4jfnOS3dA6KPiww9W1OEKTKeAcUVhdZGvgI65OXmUnw==}
@@ -1094,6 +1103,12 @@ packages:
   /queue-microtask@1.2.3:
     resolution: {integrity: sha512-NuaNSa6flKT5JaSYQzJok04JzTL1CA6aGhv5rfLW3PgqA+M2ChpZQnAC8h8i4ZFkBS8X5RqkDBHA7r4hej3K9A==}
     dev: true
+
+  /rainbow-gradient@1.0.0:
+    resolution: {integrity: sha512-BfZAa+U8Fyd3UPcu09zvi73iZf7T7mGcYmHfaLYG3Q8pXhbyQ65Sbns58am6oaSWAy66bOmXl9ptGkdikdaOiQ==}
+    dependencies:
+      '@charlesstover/hsl2rgb': 1.0.4
+    dev: false
 
   /resolve-from@4.0.0:
     resolution: {integrity: sha512-pb/MYmXstAkysRFx8piNI1tGFNQIFA3vkE3Gq4EuA1dF6gHp/+vgZqsCGJapvy8N3Q+4o7FwvquPJcnZ7RYy4g==}

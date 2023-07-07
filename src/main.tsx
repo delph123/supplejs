@@ -12,10 +12,12 @@ import { GameOn, NestedChildren } from "./examples/fragments";
 import { Indexer, Mapper } from "./examples/iterators";
 import { App } from "./examples/js_framework_bench";
 import { ReduxSlice } from "./examples/redux";
+import RainbowApp from "./examples/RainbowApp";
 
 // import "./style.css";
 
 const exit = render(
-    () => <ReduxSlice nb={5} onexit={() => exit()} />,
+    // () => <ReduxSlice nb={5} onexit={() => exit()} />,
+    () => <RainbowApp />,
     document.getElementById("app")!
 );
