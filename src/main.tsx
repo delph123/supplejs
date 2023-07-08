@@ -13,11 +13,12 @@ import { Indexer, Mapper } from "./examples/iterators";
 import { App } from "./examples/js_framework_bench";
 import { ReduxSlice } from "./examples/redux";
 import RainbowApp from "./examples/RainbowApp";
+import { TestWhen } from "./examples/controls";
 
 // import "./style.css";
 
 const exit = render(
     // () => <ReduxSlice nb={5} onexit={() => exit()} />,
-    () => <RainbowApp />,
+    () => <TestWhen />,
     document.getElementById("app")!
 );
