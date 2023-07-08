@@ -30,11 +30,13 @@ export type DOMComponent =
 export type RWRNode =
     | DOMComponent
     | RWRElement
-    | RWRNode[]
+    | RWRChild[]
     | string
     | number
     | bigint
     | null;
 
 export type RWRNodeEffect = () => RWRNode;
+export type RWRChild = RWRNode | RWRNodeEffect;
+
 export type RWRComponent = (props?: any) => RWRNodeEffect;
