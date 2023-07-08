@@ -100,7 +100,15 @@ function createDOMComponent(component: RWRNode): DOMComponent {
         return domComponent(document.createTextNode(component.toString()));
     } else if (Array.isArray(component)) {
         if (component.length > 0) {
-            return multiComponents(component.map(createDOMComponent));
+            return multiComponents(
+                component.map((c) => {
+                    if (typeof c === "function") {
+                        return createRenderEffect(c);
+                    } else {
+                        return createDOMComponent(c);
+                    }
+                })
+            );
         } else {
             // take the spot for mount
             return domComponent(document.createComment("empty_fragment"));
@@ -135,13 +143,13 @@ function createDOMComponent(component: RWRNode): DOMComponent {
     }
 }
 
-function setDOMAttribute(element, name, value) {
+function setDOMAttribute(element: HTMLElement, name: string, value: any) {
     switch (name) {
         case "style":
             if (typeof value === "object") {
                 // Initialize style in case it's not empty
                 if (element.style.length > 0) {
-                    element.style = "";
+                    element.style.cssText = "";
                 }
                 // Set values through JS setter (supports both JS-style & CSS-style properties)
                 Object.entries(value as Record<string, string>).forEach(

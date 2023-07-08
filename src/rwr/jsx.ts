@@ -1,14 +1,19 @@
-import { RWRComponent, RWRElement, RWRNode, RWRNodeEffect } from "./types";
+import {
+    RWRChild,
+    RWRComponent,
+    RWRElement,
+    RWRNode,
+    RWRNodeEffect,
+} from "./types";
 import { flatten } from "./helper";
 import { createRenderEffect } from "./dom";
 
 export function h(
     type: string | RWRComponent,
     props?: Record<string, any>,
-    ...children: (RWRNode | RWRNodeEffect)[]
+    ...children: RWRChild[]
 ): RWRNode {
-    let altChildren: (RWRNode | RWRNodeEffect)[] =
-        props?.children || children || [];
+    let altChildren: RWRChild[] = props?.children || children || [];
     if (!Array.isArray(altChildren) && altChildren != null) {
         altChildren = [altChildren];
     } else if (altChildren == null) {
@@ -29,14 +34,18 @@ export function h(
     }
 }
 
-export function Fragment({ children }: { children: RWRNode[] }): RWRNodeEffect {
+export function Fragment({
+    children,
+}: {
+    children: RWRChild[];
+}): RWRNodeEffect {
     return () => children;
 }
 
 function createRWRElement(
     type: string,
     props: Record<string, any>,
-    children: (RWRNode | RWRNodeEffect)[]
+    children: RWRChild[]
 ): RWRElement {
     // First, we need to recursively flatten the children array.
     // Then, if any child is a function, we want to automatically wrap
