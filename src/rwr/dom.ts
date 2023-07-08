@@ -119,10 +119,10 @@ function createDOMComponent(component: RWRNode): DOMComponent {
             } else if (!name.startsWith("on")) {
                 if (typeof value === "function") {
                     createComputed(() => {
-                        element.setAttribute(name, value());
+                        setDOMAttribute(element, name, value());
                     });
                 } else {
-                    element.setAttribute(name, value);
+                    setDOMAttribute(element, name, value);
                 }
             } else {
                 element.addEventListener(name.substring(2), value);
@@ -133,21 +133,58 @@ function createDOMComponent(component: RWRNode): DOMComponent {
         });
         return domComponent(element);
     }
+}
 
-    function domComponent(node: Node): RealDOMComponent {
-        return {
-            __kind: "dom_component",
-            node,
-        };
+function setDOMAttribute(element, name, value) {
+    switch (name) {
+        case "style":
+            if (typeof value === "object") {
+                // Initialize style in case it's not empty
+                if (element.style.length > 0) {
+                    element.style = "";
+                }
+                // Set values through JS setter (supports both JS-style & CSS-style properties)
+                Object.entries(value as Record<string, string>).forEach(
+                    ([prop, val]) => {
+                        element.style[prop] = val;
+                    }
+                );
+                return;
+            }
+            break;
+        case "className":
+            element.className = value ?? "";
+            return;
+        case "classList":
+            Object.entries(value as Record<string, any>).forEach(
+                // Only set or unset changed elements from the record and leave other
+                // classes unchanged (in case class & classList attributes are combined)
+                ([className, status]) => {
+                    if (
+                        Boolean(status) != element.classList.contains(className)
+                    ) {
+                        element.classList.toggle(className);
+                    }
+                }
+            );
+            return;
     }
+    element.setAttribute(name, value);
+}
 
-    function multiComponents(components: DOMComponent[]): MultiDOMComponent {
-        return {
-            __kind: "multi_components",
-            components,
-            getNodes: () => flatten(getAllNodes(components)),
-        };
-    }
+function domComponent(node: Node): RealDOMComponent {
+    return {
+        __kind: "dom_component",
+        node,
+    };
+}
+
+function multiComponents(components: DOMComponent[]): MultiDOMComponent {
+    return {
+        __kind: "multi_components",
+        components,
+        getNodes: () => flatten(getAllNodes(components)),
+    };
 }
 
 export function getAllNodes(components: DOMComponent[]): Nested<Node> {

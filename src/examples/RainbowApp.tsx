@@ -5,15 +5,25 @@ import "./RainbowApp.css";
 
 type ColorProps = { colors: () => string[] };
 
+const NB_COLORS = 360 * 8;
+
 function ReactColors({ colors }: ColorProps) {
-    //   const minWidth = `${100.0 / colors.length}vw`;
+    const minWidth = `${100.0 / NB_COLORS}vw`;
     return () => (
-        <div class="flexcontainer">
+        <div
+            style={{
+                display: "flex",
+                flexDirection: "row",
+            }}
+        >
             <For each={colors}>
                 {(color) => (
                     <div
-                        class="flexcol"
-                        style={"background-color: " + color}
+                        style={{
+                            minHeight: "100vh",
+                            minWidth,
+                            backgroundColor: color,
+                        }}
                     ></div>
                 )}
             </For>
@@ -27,7 +37,7 @@ const rainbowColors = (rainbowGradient(360) as number[][]).map(
 
 function RainbowApp() {
     const [colors, setColors] = createSignal(
-        new Array(360 * 30)
+        new Array(NB_COLORS)
             .fill(0)
             .map((_, i) => rainbowColors[i % rainbowColors.length])
     );
