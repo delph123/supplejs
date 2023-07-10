@@ -77,7 +77,7 @@ function createRWRComponent(
     // sees fit. This is useful for example for the iterators components which
     // expects a mapping function with item as a parameter instead of a raw
     // component.
-    return createRenderEffect(Component({ ...props, children }));
+    return createRenderEffect(Component({ ...props, children }), Component);
 }
 
 const OVERRIDES = {
