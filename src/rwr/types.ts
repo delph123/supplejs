@@ -17,9 +17,15 @@ export interface MultiDOMComponent {
 }
 
 export interface ProxyDOMComponent {
-    __kind: "render_effect";
+    __kind: "proxy_component";
+    type?: RWRComponent;
     getNodes: () => Node[];
-    mount: (parent: HTMLElement) => void;
+    mount: (
+        parent:
+            | HTMLElement
+            | ((component: DOMComponent, previousNodes?: Node[]) => void)
+    ) => void;
+    target: DOMComponent;
 }
 
 export type DOMComponent =
@@ -34,6 +40,7 @@ export type RWRNode =
     | string
     | number
     | bigint
+    | boolean
     | null;
 
 export type RWRNodeEffect = () => RWRNode;
