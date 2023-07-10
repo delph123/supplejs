@@ -1,13 +1,11 @@
 import { onCleanup, untrack } from "./context";
 import { createRenderEffect, mount } from "./dom";
-import { flatten } from "./helper";
 import { mapArray } from "./iterators";
 import { createMemo, createSignal } from "./reactivity";
 import {
     DOMComponent,
     ProxyDOMComponent,
     RWRChild,
-    RWRComponent,
     RWRNode,
     RWRNodeEffect,
 } from "./types";
@@ -119,12 +117,7 @@ export function Switch(props: {
             }
         }
         newChildren[index] = component;
-        let newNodes;
-        if (component.__kind === "dom_component") {
-            newNodes = [component.node];
-        } else {
-            newNodes = component.getNodes();
-        }
+        const newNodes = component.nodes();
         // newNodes.forEach((n) => childrenMap.set(n, index));
         childrenMap.set(newNodes[0], index);
         // console.log("Switch accepted", component, previousNodes, newChildren);
@@ -141,7 +134,7 @@ export function Switch(props: {
         console.log("Filtered =>", matchChildren);
 
         const firstChildMatching = matchChildren.find((p) => {
-            const nodes = p.getNodes();
+            const nodes = p.nodes();
             return nodes.length > 1 || nodes[0].nodeType != Node.COMMENT_NODE;
         });
 

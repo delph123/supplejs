@@ -19,6 +19,6 @@ import { SwitchApp, TestSwitch, TestWhen } from "./examples/controls";
 
 const exit = render(
     // () => <ReduxSlice nb={5} onexit={() => exit()} />,
-    () => <SwitchApp nb={5} onexit={() => exit()} />,
+    () => <NestedChildren nb={5} onexit={() => exit()} />,
     document.getElementById("app")!
 );

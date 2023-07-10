@@ -70,7 +70,7 @@ export function NestedChildren() {
                             <div>between</div>
                         </>
                         {print(nestedList)}
-                        <Clock />
+                        <Clock level={0} />
                         <div>after</div>
                     </>
                     <p>two</p>
@@ -90,7 +90,7 @@ function Child({ children }: { children?: any }) {
             <>
                 {" "}
                 {children}
-                <Clock />
+                <Clock level={0} />
                 <p>2</p>
             </>
         </>

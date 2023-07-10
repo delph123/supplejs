@@ -7,7 +7,7 @@ import {
     RWRNode,
     RWRNodeEffect,
 } from "./types";
-import { flatten, createLogger, Nested } from "./helper";
+import { createLogger } from "./helper";
 import { createChildContext, createRoot, runEffectInContext } from "./context";
 import { createComputed } from "./reactivity";
 
@@ -15,11 +15,11 @@ const logger = createLogger("dom");
 
 export function render(renderEffect: RWRNodeEffect, container: HTMLElement) {
     return createRoot((dispose) => {
-        const node = createRenderEffect(renderEffect);
-        mount(node, container);
+        const component = createRenderEffect(renderEffect);
+        mount(component, container);
         return () => {
-            for (const c of node.getNodes()) {
-                container.removeChild(c);
+            for (const node of component.nodes()) {
+                container.removeChild(node);
             }
             dispose();
         };
@@ -34,33 +34,20 @@ export function createRenderEffect(
 ): ProxyDOMComponent {
     const renderNb = nb++;
     let component: DOMComponent;
-    let node: Node | null = null;
-    let getNodes: () => Node[];
     let parentNode:
         | HTMLElement
         | ((component: DOMComponent, previousNodes?: Node[]) => void);
 
-    const rerender = () => {
-        component = createDOMComponent(renderEffect());
-        if (component.__kind === "dom_component") {
-            node = component.node;
-            getNodes = () => [node!];
-        } else {
-            node = null;
-            getNodes = component.getNodes;
-        }
-    };
-
     // Define the update context
     const childContext = createChildContext(() => {
-        const previousNodes = getNodes();
-        rerender();
+        const previousNodes = component.nodes();
+        component = createDOMComponent(renderEffect());
         mount(component, parentNode, previousNodes);
     });
 
     // Run the render effect a first time
     runEffectInContext(childContext, () => {
-        rerender();
+        component = createDOMComponent(renderEffect());
         logger.log("render", renderNb, component);
     });
 
@@ -70,7 +57,9 @@ export function createRenderEffect(
         get target() {
             return component;
         },
-        getNodes: () => getNodes(),
+        nodes() {
+            return component.nodes();
+        },
         mount: (p) => {
             if (parentNode && parentNode !== p) {
                 console.warn("Overwriting", parentNode, "with", p);
@@ -193,6 +182,7 @@ function domComponent(node: Node): RealDOMComponent {
     return {
         __kind: "dom_component",
         node,
+        nodes: () => [node],
     };
 }
 
@@ -200,20 +190,8 @@ function multiComponents(components: DOMComponent[]): MultiDOMComponent {
     return {
         __kind: "multi_components",
         components,
-        getNodes: () => flatten(getAllNodes(components)),
+        nodes: () => components.flatMap((c) => c.nodes()),
     };
-}
-
-export function getAllNodes(components: DOMComponent[]): Nested<Node> {
-    return components.map((c) => {
-        if (c.__kind === "dom_component") {
-            return [c.node];
-        } else if (c.__kind === "proxy_component") {
-            return c.getNodes();
-        } else {
-            return getAllNodes(c.components);
-        }
-    });
 }
 
 export function mount(
@@ -223,13 +201,7 @@ export function mount(
         | ((component: DOMComponent, previousNodes?: Node[]) => void),
     previousNodes?: Node[]
 ) {
-    let newNodes: Node[];
-
-    if (component.__kind === "dom_component") {
-        newNodes = [component.node];
-    } else {
-        newNodes = component.getNodes();
-    }
+    const newNodes = component.nodes();
 
     notifyMount(container, component);
 
@@ -263,6 +235,13 @@ export function mount(
         previousNodes.length > 0 &&
         previousNodes[0].parentNode
     ) {
+        if (container !== previousNodes[0].parentNode) {
+            console.error(
+                "Different parent provided",
+                container,
+                previousNodes[0].parentNode
+            );
+        }
         const nextSibling = previousNodes[previousNodes.length - 1].nextSibling;
         const [newItems, oldItems] = convertToItems(newNodes, previousNodes);
         replaceNodes(container, newItems, oldItems, nextSibling);
