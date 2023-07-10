@@ -16,7 +16,7 @@ function Header(): RWRNodeEffect {
         <div>
             <h2>Hello!</h2>
             <h5>
-                It is <Clock />
+                It is <Clock level={0} />
             </h5>
         </div>
     );
@@ -30,18 +30,21 @@ function Footer({ version }: { version: string }): RWRNodeEffect {
     );
 }
 
-export function Clock(): RWRNodeEffect {
+export function Clock({ level }): RWRNodeEffect {
     const [c, setC] = createSignal(Math.random() > 0.5, { equals: false });
 
     const timer = setInterval(() => setC(Math.random() > 0.5), 1000);
 
     onCleanup(() => {
-        console.log("stoping timer");
         clearInterval(timer);
     });
 
     return () => {
-        return c() ? <Clock /> : new Date().toLocaleTimeString();
+        return c() ? (
+            <Clock level={level + 1} />
+        ) : (
+            `${new Date().toLocaleTimeString()} (${level})`
+        );
     };
 }
 
@@ -157,7 +160,7 @@ export function GoodBye({ onexit }): RWRNodeEffect {
                 Hello {n}!<button onclick={onexit}>GoodBye!</button>
             </div>
         ) : (
-            <Clock />
+            <Clock level={0} />
         );
     };
 }

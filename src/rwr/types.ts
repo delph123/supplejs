@@ -8,24 +8,25 @@ export interface RWRElement {
 export interface RealDOMComponent {
     __kind: "dom_component";
     node: Node;
+    nodes: () => Node[];
 }
 
 export interface MultiDOMComponent {
     __kind: "multi_components";
     components: DOMComponent[];
-    getNodes: () => Node[];
+    nodes: () => Node[];
 }
 
 export interface ProxyDOMComponent {
     __kind: "proxy_component";
     type?: RWRComponent;
-    getNodes: () => Node[];
+    target: DOMComponent;
+    nodes: () => Node[];
     mount: (
         parent:
             | HTMLElement
             | ((component: DOMComponent, previousNodes?: Node[]) => void)
     ) => void;
-    target: DOMComponent;
 }
 
 export type DOMComponent =
