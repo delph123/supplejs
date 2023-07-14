@@ -6,6 +6,7 @@ import {
     RWRComponent,
     RWRNode,
     RWRNodeEffect,
+    DOMContainer,
 } from "./types";
 import { createLogger } from "./helper";
 import { createChildContext, createRoot, runEffectInContext } from "./context";
@@ -33,57 +34,41 @@ export function createRenderEffect(
     Component?: RWRComponent
 ): ProxyDOMComponent {
     const renderNb = nb++;
-    let component: DOMComponent;
-    let parentNode:
-        | HTMLElement
-        | ((component: DOMComponent, previousNodes?: Node[]) => void);
+
+    const proxy: ProxyDOMComponent = {
+        __kind: "proxy_component",
+        type: Component,
+        target: undefined as unknown as DOMComponent,
+        parent: null,
+        nodes() {
+            return this.target.nodes();
+        },
+        mount(parent) {
+            logger.log("mounting", renderNb, parent, this.target);
+            this.parent = parent;
+            logger.log("end");
+            this.target.mount(this);
+        },
+    };
 
     // Define the update context
     const childContext = createChildContext(() => {
-        const previousNodes = component.nodes();
-        component = createDOMComponent(renderEffect());
-        mount(component, parentNode, previousNodes);
+        const previousNodes = proxy.target.nodes();
+        // Unmount current target
+        proxy.target.mount(null);
+        // Re-render DOM component
+        proxy.target = createDOMComponent(renderEffect());
+        logger.log("re-rendered", renderNb, proxy.target);
+        mount(proxy, proxy.parent, previousNodes);
     });
 
     // Run the render effect a first time
     runEffectInContext(childContext, () => {
-        component = createDOMComponent(renderEffect());
-        logger.log("render", renderNb, component);
+        proxy.target = createDOMComponent(renderEffect());
+        logger.log("rendered", renderNb, proxy.target);
     });
 
-    return {
-        __kind: "proxy_component",
-        type: Component,
-        get target() {
-            return component;
-        },
-        nodes() {
-            return component.nodes();
-        },
-        mount: (p) => {
-            if (parentNode && parentNode !== p) {
-                console.warn("Overwriting", parentNode, "with", p);
-            }
-            logger.log("mounting", renderNb, p, component);
-            notifyMount(p, component);
-            logger.log("end");
-            parentNode = p;
-        },
-    };
-}
-
-function notifyMount(
-    parent:
-        | HTMLElement
-        | ((component: DOMComponent, previousNodes?: Node[]) => void),
-    component: DOMComponent
-) {
-    if (component.__kind === "proxy_component") {
-        component.mount(parent);
-    } else if (component.__kind === "multi_components") {
-        const notifyMountOfParent = notifyMount.bind(null, parent);
-        component.components.forEach(notifyMountOfParent);
-    }
+    return proxy;
 }
 
 function createDOMComponent(component: RWRNode): DOMComponent {
@@ -182,7 +167,12 @@ function domComponent(node: Node): RealDOMComponent {
     return {
         __kind: "dom_component",
         node,
+        parent: null,
         nodes: () => [node],
+        mount(parent) {
+            logger.log("mounting-dom into", parent);
+            this.parent = parent;
+        },
     };
 }
 
@@ -190,23 +180,37 @@ function multiComponents(components: DOMComponent[]): MultiDOMComponent {
     return {
         __kind: "multi_components",
         components,
+        parent: null,
         nodes: () => components.flatMap((c) => c.nodes()),
+        mount(parent) {
+            logger.log("mounting-multi into", parent);
+            this.parent = parent;
+            components.forEach((child) => child.mount(this));
+        },
     };
+}
+
+function getParentHTMLElement(container: DOMContainer) {
+    if (container == null || !("__kind" in container)) {
+        return container;
+    } else {
+        return getParentHTMLElement(container.parent);
+    }
 }
 
 export function mount(
     component: DOMComponent,
-    container:
-        | HTMLElement
-        | ((component: DOMComponent, previousNodes?: Node[]) => void),
+    container: DOMContainer,
     previousNodes?: Node[]
 ) {
     const newNodes = component.nodes();
 
-    notifyMount(container, component);
+    component.mount(container);
+
+    const parent = getParentHTMLElement(container);
 
     if (
-        (container == null || typeof container === "function") &&
+        (parent == null || typeof parent === "function") &&
         previousNodes &&
         previousNodes.length > 0 &&
         previousNodes[0].parentNode
@@ -216,17 +220,16 @@ export function mount(
             previousNodes[0],
             previousNodes[0].parentNode
         );
-        const parent = previousNodes[0].parentNode;
-        previousNodes.forEach((n) => parent.removeChild(n));
+        const previousParent = previousNodes[0].parentNode;
+        previousNodes.forEach((n) => previousParent.removeChild(n));
     }
 
-    if (container == null) {
-        console.warn("No re-rendering of", component, "since it has no parent");
+    if (typeof parent === "function") {
+        parent(component, previousNodes);
         return;
     }
 
-    if (typeof container === "function") {
-        container(component, previousNodes);
+    if (parent == null) {
         return;
     }
 
@@ -235,21 +238,21 @@ export function mount(
         previousNodes.length > 0 &&
         previousNodes[0].parentNode
     ) {
-        if (container !== previousNodes[0].parentNode) {
+        if (parent !== previousNodes[0].parentNode) {
             console.error(
                 "Different parent provided",
-                container,
+                parent,
                 previousNodes[0].parentNode
             );
         }
         const nextSibling = previousNodes[previousNodes.length - 1].nextSibling;
         const [newItems, oldItems] = convertToItems(newNodes, previousNodes);
-        replaceNodes(container, newItems, oldItems, nextSibling);
+        replaceNodes(parent, newItems, oldItems, nextSibling);
     } else {
         if (previousNodes && previousNodes.length > 0) {
             console.error("No parent for previous nodes", previousNodes);
         }
-        newNodes.forEach((n) => container.appendChild(n));
+        newNodes.forEach((n) => parent.appendChild(n));
     }
 }
 
