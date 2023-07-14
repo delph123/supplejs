@@ -5,34 +5,38 @@ export interface RWRElement {
     children: RWRNode[];
 }
 
-export interface RealDOMComponent {
+export interface AbstractDOMComponent {
+    parent: DOMContainer;
+    mount: (parent: DOMContainer) => void;
+    nodes: () => Node[];
+}
+
+export interface RealDOMComponent extends AbstractDOMComponent {
     __kind: "dom_component";
     node: Node;
-    nodes: () => Node[];
 }
 
-export interface MultiDOMComponent {
+export interface MultiDOMComponent extends AbstractDOMComponent {
     __kind: "multi_components";
     components: DOMComponent[];
-    nodes: () => Node[];
 }
 
-export interface ProxyDOMComponent {
+export interface ProxyDOMComponent extends AbstractDOMComponent {
     __kind: "proxy_component";
     type?: RWRComponent;
     target: DOMComponent;
-    nodes: () => Node[];
-    mount: (
-        parent:
-            | HTMLElement
-            | ((component: DOMComponent, previousNodes?: Node[]) => void)
-    ) => void;
 }
 
 export type DOMComponent =
     | RealDOMComponent
     | ProxyDOMComponent
     | MultiDOMComponent;
+
+export type DOMContainer =
+    | HTMLElement
+    | DOMComponent
+    | ((component: DOMComponent, previousNodes?: Node[]) => void)
+    | null;
 
 export type RWRNode =
     | DOMComponent

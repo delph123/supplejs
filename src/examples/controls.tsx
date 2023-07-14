@@ -1,4 +1,6 @@
 import { h, Fragment, Show, createSignal, Switch, Match, For } from "../rwr";
+import { Clock } from "./components";
+import { CounterButton } from "./effects";
 
 export function TestWhen() {
     const [content, setContent] = createSignal<any>();
@@ -47,16 +49,39 @@ export function TestWhen() {
     );
 }
 
+export function WhenAppWithSignal() {
+    const [first, setFirst] = createSignal<any>(true);
+    const [second, setSecond] = createSignal<any>(false);
+    return () => (
+        <>
+            <Show when={first}>
+                <CounterButton nb={5} onexit={() => 0} />
+            </Show>
+            <Show when={second}>
+                <Clock level={0} />
+            </Show>
+            <div>
+                <button type="button" onclick={() => setFirst((s) => !s)}>
+                    Display First
+                </button>
+                <button type="button" onclick={() => setSecond((s) => !s)}>
+                    Display Second
+                </button>
+            </div>
+        </>
+    );
+}
+
 export function TestSwitch() {
     const [content, setContent] = createSignal<any>();
     setTimeout(() => setContent("Now you can show"), 2000);
     return () => (
         <Switch fallback={<div>fb</div>}>
-            <Match when={() => content()}>
+            <Match when={() => !content()}>
                 <div>hello</div>
             </Match>
-            <Match when={() => !content()}>
-                <div>you</div>
+            <Match when={() => content()}>
+                <div>you!</div>
             </Match>
         </Switch>
     );

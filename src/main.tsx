@@ -13,12 +13,17 @@ import { Indexer, Mapper } from "./examples/iterators";
 import { App } from "./examples/js_framework_bench";
 import { ReduxSlice } from "./examples/redux";
 import RainbowApp from "./examples/RainbowApp";
-import { SwitchApp, TestSwitch, TestWhen } from "./examples/controls";
+import {
+    SwitchApp,
+    TestSwitch,
+    TestWhen,
+    WhenAppWithSignal,
+} from "./examples/controls";
 
 // import "./style.css";
 
 const exit = render(
     // () => <ReduxSlice nb={5} onexit={() => exit()} />,
-    () => <NestedChildren nb={5} onexit={() => exit()} />,
+    () => <WhenAppWithSignal nb={5} onexit={() => exit()} />,
     document.getElementById("app")!
 );
