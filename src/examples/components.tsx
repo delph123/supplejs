@@ -9,7 +9,9 @@ import {
     version,
     createChainedList,
     RWRNodeEffect,
+    onMount,
 } from "../rwr";
+import { createLogger } from "../rwr/helper";
 
 function Header(): RWRNodeEffect {
     return () => (
@@ -30,18 +32,29 @@ function Footer({ version }: { version: string }): RWRNodeEffect {
     );
 }
 
-export function Clock({ level }): RWRNodeEffect {
-    const [c, setC] = createSignal(Math.random() > 0.5, { equals: false });
+const clockLogger = createLogger("clock");
 
-    const timer = setInterval(() => setC(Math.random() > 0.5), 1000);
+export function Clock({ level, probability = 0.5 }): RWRNodeEffect {
+    const [c, setC] = createSignal(Math.random() > probability, {
+        equals: false,
+    });
+
+    clockLogger.log("Initializing clock with probability", probability);
+
+    const timer = setInterval(() => setC(Math.random() > probability), 1000);
+
+    onMount(() => {
+        clockLogger.log("Mounting clock with probability", probability);
+    });
 
     onCleanup(() => {
+        clockLogger.log("Cleaning clock with probability", probability);
         clearInterval(timer);
     });
 
     return () => {
         return c() ? (
-            <Clock level={level + 1} />
+            <Clock level={level + 1} probability={probability} />
         ) : (
             `${new Date().toLocaleTimeString()} (${level})`
         );

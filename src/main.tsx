@@ -14,6 +14,7 @@ import { App } from "./examples/js_framework_bench";
 import { ReduxSlice } from "./examples/redux";
 import RainbowApp from "./examples/RainbowApp";
 import {
+    ForElseApp,
     SwitchApp,
     TestSwitch,
     TestWhen,
@@ -24,6 +25,6 @@ import {
 
 const exit = render(
     // () => <ReduxSlice nb={5} onexit={() => exit()} />,
-    () => <WhenAppWithSignal nb={5} onexit={() => exit()} />,
+    () => <SwitchApp nb={5} onexit={() => exit()} />,
     document.getElementById("app")!
 );
