@@ -29,8 +29,45 @@ export function useContext() {
     // TODO
 }
 
-export function lazy() {
-    // TODO
+export function lazy<Component extends RWRComponent<any>>(
+    componentLoader: () => Promise<{ default: Component }>
+): RWRComponent<any> & { preload: () => Promise<Component> } {
+    let promise: Promise<Component>;
+    const [component, setComponent] = createSignal<{
+        target?: any;
+        error?: any;
+    }>({});
+
+    const preload = () => {
+        if (!promise) {
+            promise = componentLoader()
+                .then(({ default: target }) => {
+                    setComponent({ target });
+                    return target;
+                })
+                .catch((error) => {
+                    setComponent({ error });
+                    throw error;
+                });
+        }
+        return promise;
+    };
+
+    const lazyCompnent = (props) => {
+        preload();
+
+        return () => {
+            // TODO ... improve with Suspense
+            if (component().error) return "Error while loading component :-(";
+            // TODO ... improve with ErrorBoundary
+            if (!component().target) return "Loading component...";
+
+            return h(component()!.target, props);
+        };
+    };
+    lazyCompnent.preload = preload;
+
+    return lazyCompnent;
 }
 
 export function Dynamic<Props>({
