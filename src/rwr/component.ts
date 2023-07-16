@@ -1,6 +1,7 @@
 import { createDOMComponent, mount } from "./dom";
+import { h } from "./jsx";
 import { createSignal } from "./reactivity";
-import { DOMComponent, RWRChild } from "./types";
+import { DOMComponent, RWRChild, RWRComponent } from "./types";
 
 export function children(
     props: RWRChild[] | { children: RWRChild[] } | undefined | null
@@ -32,8 +33,14 @@ export function lazy() {
     // TODO
 }
 
-export function Dynamic() {
-    // TODO
+export function Dynamic<Props>({
+    component,
+    ...props
+}: Props & {
+    children?: any[];
+    component: RWRComponent<Props> | string;
+}) {
+    return () => h(component, props as Props & { children? });
 }
 
 export function Portal() {

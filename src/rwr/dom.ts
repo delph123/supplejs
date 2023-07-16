@@ -29,9 +29,9 @@ export function render(renderEffect: RWRNodeEffect, container: HTMLElement) {
 
 let nb = 0;
 
-export function createRenderEffect(
+export function createRenderEffect<Props>(
     renderEffect: RWRNodeEffect,
-    Component?: RWRComponent
+    Component?: RWRComponent<Props>
 ): ProxyDOMComponent {
     const renderNb = nb++;
 

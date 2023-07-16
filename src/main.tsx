@@ -19,12 +19,13 @@ import {
     TestSwitch,
     TestWhen,
     WhenAppWithSignal,
+    DynamicApp,
 } from "./examples/controls";
 
 // import "./style.css";
 
 const exit = render(
     // () => <ReduxSlice nb={5} onexit={() => exit()} />,
-    () => <CounterButton nb={5} onexit={() => exit()} />,
+    () => <DynamicApp nb={5} onexit={() => exit()} />,
     document.getElementById("app")!
 );

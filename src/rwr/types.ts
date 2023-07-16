@@ -23,7 +23,7 @@ export interface MultiDOMComponent extends AbstractDOMComponent {
 
 export interface ProxyDOMComponent extends AbstractDOMComponent {
     __kind: "proxy_component";
-    type?: RWRComponent;
+    type?: RWRComponent<never>;
     target: DOMComponent;
     id: number;
 }
@@ -52,4 +52,4 @@ export type RWRNode =
 export type RWRNodeEffect = () => RWRNode;
 export type RWRChild = RWRNode | RWRNodeEffect;
 
-export type RWRComponent = (props?: any) => RWRNodeEffect;
+export type RWRComponent<Props> = (props: Props) => RWRNodeEffect;
