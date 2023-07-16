@@ -19,3 +19,23 @@ export function children(
     });
     return children;
 }
+
+export function createContext() {
+    // TODO
+}
+
+export function useContext() {
+    // TODO
+}
+
+export function lazy() {
+    // TODO
+}
+
+export function Dynamic() {
+    // TODO
+}
+
+export function Portal() {
+    // TODO
+}

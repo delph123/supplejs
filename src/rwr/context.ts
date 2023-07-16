@@ -239,3 +239,11 @@ export function on<T extends Array<() => any> | (() => any), U>(
         }
     };
 }
+
+export function catchError() {
+    // TODO
+}
+
+export function onError() {
+    // TODO
+}
