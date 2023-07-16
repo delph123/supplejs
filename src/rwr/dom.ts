@@ -181,7 +181,17 @@ function setDOMAttribute(element: HTMLElement, name: string, value: any) {
             );
             return;
     }
-    element.setAttribute(name, value);
+
+    if (name.startsWith("prop:")) {
+        element[name.substring(5)] = value;
+    } else {
+        const attrName = name.startsWith("attr:") ? name.substring(5) : name;
+        if (value != null) {
+            element.setAttribute(attrName, value);
+        } else {
+            element.removeAttribute(attrName);
+        }
+    }
 }
 
 function domComponent(node: Node): RealDOMComponent {
