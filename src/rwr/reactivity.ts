@@ -186,3 +186,28 @@ export function createRef<T>(initialValue?: T) {
         current: initialValue as T,
     };
 }
+
+/**
+ * Creates a readonly that only notifies downstream changes when the browser is
+ * idle. timeoutMs is .
+ *
+ * @param source the source signal
+ * @param options.timeoutMs the maximum time to wait before forcing the update
+ * @param options.equals the comparison function
+ */
+export function createDeferred<T>(
+    source: () => T,
+    options?: {
+        timeoutMs?: number;
+        equals?: false | ((prev: T, next: T) => boolean);
+    }
+): () => T {
+    // TODO not implemented yet!
+
+    // XXX only here to prevent lint warning
+    setTimeout(() => {
+        console.log("Deferred timed-out!");
+    }, options?.timeoutMs || 0);
+
+    return source;
+}
