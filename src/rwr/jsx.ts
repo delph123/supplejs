@@ -8,12 +8,12 @@ import {
 import { flatten } from "./helper";
 import { createRenderEffect } from "./dom";
 
-export function h(
-    type: string | RWRComponent,
-    props?: Record<string, any>,
+export function h<Props>(
+    type: string | RWRComponent<Props>,
+    props?: Props & { children?: any[] },
     ...children: RWRChild[]
 ): RWRNode {
-    let altChildren: RWRChild[] = props?.children || children || [];
+    let altChildren = props?.children || children || [];
     if (!Array.isArray(altChildren) && altChildren != null) {
         altChildren = [altChildren];
     } else if (altChildren == null) {
@@ -28,7 +28,7 @@ export function h(
     type = overrideDomType(type);
 
     if (typeof type === "function") {
-        return createRWRComponent(type, attributes, altChildren);
+        return createRWRComponent(type, attributes as Props, altChildren);
     } else {
         return createRWRElement(type, attributes, altChildren);
     }
@@ -67,9 +67,9 @@ function createRWRElement(
     };
 }
 
-function createRWRComponent(
-    Component: RWRComponent,
-    props: Record<string, any>,
+function createRWRComponent<Props>(
+    Component: RWRComponent<Props>,
+    props: Props,
     children: any[]
 ) {
     // When we create a component, we will pass children untouched so that the
@@ -84,7 +84,7 @@ const OVERRIDES = {
     input: Input,
 };
 
-function overrideDomType(type: string | RWRComponent) {
+function overrideDomType<Props>(type: string | RWRComponent<Props>) {
     if (typeof type === "string" && OVERRIDES[type]) {
         return OVERRIDES[type];
     } else {

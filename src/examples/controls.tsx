@@ -7,6 +7,7 @@ import {
     Match,
     For,
     RWRNode,
+    Dynamic,
 } from "../rwr";
 import { Clock } from "./components";
 import { CounterButton } from "./effects";
@@ -15,6 +16,7 @@ export function TestWhen() {
     const [content, setContent] = createSignal<any>();
     setTimeout(() => setContent("Now you can show"), 2000);
     setTimeout(() => setContent("Too late to show"), 4000);
+
     return () => (
         <p>
             <Show
@@ -249,5 +251,56 @@ export function SwitchApp() {
                 }}
             </Switch>
         </div>
+    );
+}
+
+export function DynamicApp() {
+    const [elems, setElems] = createSignal([10, 11]);
+
+    return () => (
+        <Dynamic component="div">
+            <Dynamic component="h1" id="toto">
+                Header{" "}
+                <Dynamic
+                    component="font"
+                    style={{ fontSize: "0.7em" }}
+                    prop:color="red"
+                >
+                    is red
+                </Dynamic>
+                !
+            </Dynamic>
+            <Dynamic component={"br"} />
+            <Dynamic component={Clock} level={0} />
+            <Dynamic component={"div"}>
+                <Dynamic
+                    component="button"
+                    type="button"
+                    onclick={() =>
+                        setElems((s) =>
+                            s.length === 0 ? [0] : [...s, s[s.length - 1] + 1]
+                        )
+                    }
+                >
+                    More
+                </Dynamic>{" "}
+                <Dynamic
+                    component={"button"}
+                    type="button"
+                    onclick={() => setElems((s) => s.slice(1))}
+                >
+                    Less
+                </Dynamic>
+            </Dynamic>
+            <Dynamic component="ul">
+                <Dynamic
+                    component={ForElse}
+                    each={elems}
+                    fallback={<li>no more element</li>}
+                >
+                    {(el) => <li>{el}</li>}
+                </Dynamic>
+            </Dynamic>
+        </Dynamic>
     );
 }

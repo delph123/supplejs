@@ -7,6 +7,7 @@ export * from "./resource";
 export * from "./controls";
 export * from "./chain";
 export * from "./iterators";
+export * from "./component";
 export * from "./store";
 
 export const version = "0.3";
