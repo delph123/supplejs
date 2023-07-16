@@ -1,4 +1,13 @@
-import { h, Fragment, Show, createSignal, Switch, Match, For } from "../rwr";
+import {
+    h,
+    Fragment,
+    Show,
+    createSignal,
+    Switch,
+    Match,
+    For,
+    RWRNode,
+} from "../rwr";
 import { Clock } from "./components";
 import { CounterButton } from "./effects";
 
@@ -22,13 +31,27 @@ export function TestWhen() {
             <br />
             <Show
                 when={false}
-                fallback={<font color="magenta">Direct to fallback.</font>}
+                fallback={
+                    <Show
+                        when={content}
+                        fallback={
+                            <div style={{ color: "magenta" }}>
+                                fall-fall-back
+                            </div>
+                        }
+                    >
+                        {() => (
+                            <div style={{ color: "magenta" }}>
+                                {"Fallback: " + content()}
+                            </div>
+                        )}
+                    </Show>
+                }
             >
-                <p style="color: magenta;">
+                <p style={{ color: "magenta" }}>
                     Error - This shouldn't be displayed
                 </p>
             </Show>
-            <br />
             <Show
                 when={() => content() == null}
                 fallback={<font color="green">HIDDEN NOW</font>}
@@ -49,6 +72,61 @@ export function TestWhen() {
     );
 }
 
+export function ForElseApp() {
+    const [elems, setElems] = createSignal([10, 11]);
+
+    return () => (
+        <>
+            <div>
+                <button
+                    type="button"
+                    onclick={() =>
+                        setElems((s) =>
+                            s.length === 0 ? [0] : [...s, s[s.length - 1] + 1]
+                        )
+                    }
+                >
+                    More
+                </button>{" "}
+                <button
+                    type="button"
+                    onclick={() => setElems((s) => s.slice(1))}
+                >
+                    Less
+                </button>
+            </div>
+            <ul>
+                <ForElse
+                    each={elems}
+                    fallback={<li style={{ color: "red" }}>No element!</li>}
+                >
+                    {(el) => <li>{el}</li>}
+                </ForElse>
+            </ul>
+        </>
+    );
+}
+
+export function ForElse({
+    each,
+    fallback,
+    equals,
+    children,
+}: {
+    each;
+    fallback?;
+    equals?;
+    children?: [(el, i) => RWRNode];
+}) {
+    return () => (
+        <Show when={() => !each() || each().length > 0} fallback={fallback}>
+            <For each={each} equals={equals}>
+                {children?.[0]}
+            </For>
+        </Show>
+    );
+}
+
 export function WhenAppWithSignal() {
     const [first, setFirst] = createSignal<any>(true);
     const [second, setSecond] = createSignal<any>(false);
@@ -58,7 +136,7 @@ export function WhenAppWithSignal() {
                 <CounterButton nb={5} onexit={() => 0} />
             </Show>
             <Show when={second}>
-                <Clock level={0} />
+                {() => <Clock level={0} probability={1} />}
             </Show>
             <div>
                 <button type="button" onclick={() => setFirst((s) => !s)}>
@@ -73,15 +151,16 @@ export function WhenAppWithSignal() {
 }
 
 export function TestSwitch() {
-    const [content, setContent] = createSignal<any>();
-    setTimeout(() => setContent("Now you can show"), 2000);
+    const [content, setContent] = createSignal<any>(1);
+    setTimeout(() => setContent(2), 1000);
+    setTimeout(() => setContent(3), 2000);
     return () => (
-        <Switch fallback={<div>fb</div>}>
-            <Match when={() => !content()}>
-                <div>hello</div>
+        <Switch fallback={<div>By now!</div>}>
+            <Match when={() => content() === 1}>
+                <div>Hello...</div>
             </Match>
-            <Match when={() => content()}>
-                <div>you!</div>
+            <Match when={() => content() === 2}>
+                <div>...you</div>
             </Match>
         </Switch>
     );
@@ -105,11 +184,13 @@ function Proxy({ x, children }: { x; children? }) {
 
 export function SwitchApp() {
     const [forNums, setForNums] = createSignal([11, 12, 13]);
-    const [x, setX] = createSignal(14);
+    const [single, setSingle] = createSignal(true);
+    const [x, setX] = createSignal(11);
 
-    setTimeout(() => setForNums([11, 12, 13, 14]), 2000);
-    setTimeout(() => setX(13), 3000);
-    setTimeout(() => setForNums([11, 14]), 4000);
+    setTimeout(() => setForNums([11, 12, 13, 14]), 1000);
+    setTimeout(() => setX(13), 2000);
+    setTimeout(() => setForNums([11, 14]), 3000);
+    setTimeout(() => setSingle(false), 4000);
 
     return () => (
         <div style="border: 1px solid grey;">
@@ -134,9 +215,9 @@ export function SwitchApp() {
                     )}
                 </For>
                 {[
-                    // <Match when={() => x() == 9}>
-                    //     <p>{x} is 9</p>
-                    // </Match>,
+                    <Match when={() => x() == 9}>
+                        <p>{x} is 9</p>
+                    </Match>,
                     "ABC",
                 ]}
                 <>
@@ -147,10 +228,10 @@ export function SwitchApp() {
                 {true}
                 {() => {
                     console.warn("rerendering");
-                    if (forNums().length != 2) {
+                    if (single()) {
                         return (
                             <Match when={() => x() == 13}>
-                                <p>{x} is 8</p>
+                                <p>{x} is 13.0</p>
                             </Match>
                         );
                     } else {

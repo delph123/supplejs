@@ -42,7 +42,7 @@ export function createSignal<T>(initialValue?: T, options?: EqualsOption<T>) {
     let state = initialValue;
     let observers = new Set<TrackingContext>();
 
-    const set = (newState?: T | ((s?: T) => T)) => {
+    const set = (newState: T | ((s: T) => T)) => {
         let newValue: T | undefined;
         if (typeof newState === "function") {
             newValue = (newState as (s?: T) => T)(state);
@@ -50,7 +50,7 @@ export function createSignal<T>(initialValue?: T, options?: EqualsOption<T>) {
             newValue = newState;
         }
 
-        if (!equals(state!, newValue!)) {
+        if (!equals(state!, newValue)) {
             state = newValue;
         } else {
             return state; // do nothing
@@ -74,7 +74,7 @@ export function createSignal<T>(initialValue?: T, options?: EqualsOption<T>) {
         return state;
     };
 
-    return [get, set] as [() => T, (newState?: T | ((s?: T) => T)) => T];
+    return [get, set] as [() => T, (newState: T | ((prev: T) => T)) => T];
 }
 
 /**

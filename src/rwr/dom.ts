@@ -40,14 +40,15 @@ export function createRenderEffect(
         type: Component,
         target: undefined as unknown as DOMComponent,
         parent: null,
+        id: renderNb,
         nodes() {
             return this.target.nodes();
         },
-        mount(parent) {
+        mount(parent, oldParent) {
             logger.log("mounting", renderNb, parent, this.target);
-            this.parent = parent;
+            overwriteParent(this, parent, oldParent);
             logger.log("end");
-            this.target.mount(this);
+            this.target.mount(this, null);
         },
     };
 
@@ -55,7 +56,7 @@ export function createRenderEffect(
     const childContext = createChildContext(() => {
         const previousNodes = proxy.target.nodes();
         // Unmount current target
-        proxy.target.mount(null);
+        proxy.target.mount(null, proxy);
         // Re-render DOM component
         proxy.target = createDOMComponent(renderEffect());
         logger.log("re-rendered", renderNb, proxy.target);
@@ -71,7 +72,27 @@ export function createRenderEffect(
     return proxy;
 }
 
-function createDOMComponent(component: RWRNode): DOMComponent {
+function overwriteParent(
+    component: DOMComponent,
+    parent: DOMContainer,
+    oldParent: DOMContainer
+) {
+    if (component.parent === oldParent || component.parent === parent) {
+        component.parent = parent;
+    } else if (
+        (typeof getParentHTMLElement(component.parent) === "function" &&
+            getParentHTMLElement(parent) instanceof HTMLElement) ||
+        (getParentHTMLElement(component.parent) == null &&
+            getParentHTMLElement(parent) != null)
+    ) {
+        console.warn("Overwriting", component, parent);
+        component.parent = parent;
+    } else {
+        console.error("Bad overwrite", component, parent);
+    }
+}
+
+export function createDOMComponent(component: RWRNode): DOMComponent {
     if (component == null || typeof component === "boolean") {
         // take the spot for mount
         return domComponent(document.createComment("void"));
@@ -169,9 +190,9 @@ function domComponent(node: Node): RealDOMComponent {
         node,
         parent: null,
         nodes: () => [node],
-        mount(parent) {
+        mount(parent, oldParent) {
             logger.log("mounting-dom into", parent);
-            this.parent = parent;
+            overwriteParent(this, parent, oldParent);
         },
     };
 }
@@ -182,10 +203,10 @@ function multiComponents(components: DOMComponent[]): MultiDOMComponent {
         components,
         parent: null,
         nodes: () => components.flatMap((c) => c.nodes()),
-        mount(parent) {
+        mount(parent, oldParent) {
             logger.log("mounting-multi into", parent);
-            this.parent = parent;
-            components.forEach((child) => child.mount(this));
+            overwriteParent(this, parent, oldParent);
+            components.forEach((child) => child.mount(this, null));
         },
     };
 }
@@ -205,24 +226,25 @@ export function mount(
 ) {
     const newNodes = component.nodes();
 
-    component.mount(container);
+    component.mount(container, null);
 
     const parent = getParentHTMLElement(container);
 
-    if (
-        (parent == null || typeof parent === "function") &&
-        previousNodes &&
-        previousNodes.length > 0 &&
-        previousNodes[0].parentNode
-    ) {
-        console.error(
-            "Previous nodes had parent",
-            previousNodes[0],
-            previousNodes[0].parentNode
-        );
-        const previousParent = previousNodes[0].parentNode;
-        previousNodes.forEach((n) => previousParent.removeChild(n));
-    }
+    // if (
+    //     (parent == null || typeof parent === "function") &&
+    //     previousNodes &&
+    //     previousNodes.length > 0 &&
+    //     previousNodes[0].parentNode
+    // ) {
+    //     console.error(
+    //         "Previous nodes had parent",
+    //         previousNodes[0],
+    //         previousNodes[0].parentNode,
+    //         parent
+    //     );
+    //     const previousParent = previousNodes[0].parentNode;
+    //     previousNodes.forEach((n) => previousParent.removeChild(n));
+    // }
 
     if (typeof parent === "function") {
         parent(component, previousNodes);

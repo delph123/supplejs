@@ -7,7 +7,7 @@ export interface RWRElement {
 
 export interface AbstractDOMComponent {
     parent: DOMContainer;
-    mount: (parent: DOMContainer) => void;
+    mount: (parent: DOMContainer, oldParent: DOMContainer) => void;
     nodes: () => Node[];
 }
 
@@ -25,6 +25,7 @@ export interface ProxyDOMComponent extends AbstractDOMComponent {
     __kind: "proxy_component";
     type?: RWRComponent;
     target: DOMComponent;
+    id: number;
 }
 
 export type DOMComponent =

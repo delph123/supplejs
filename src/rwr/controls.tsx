@@ -1,14 +1,8 @@
-import { onCleanup, untrack } from "./context";
-import { createRenderEffect, mount } from "./dom";
-import { mapArray } from "./iterators";
-import { createMemo, createSignal } from "./reactivity";
-import {
-    DOMComponent,
-    ProxyDOMComponent,
-    RWRChild,
-    RWRNode,
-    RWRNodeEffect,
-} from "./types";
+import { children } from "./component";
+import { onCleanup } from "./context";
+import { createRenderEffect } from "./dom";
+import { createMemo } from "./reactivity";
+import { ProxyDOMComponent, RWRChild, RWRNode, RWRNodeEffect } from "./types";
 
 type WhenCondition<T> = T | undefined | null | false;
 
@@ -87,59 +81,21 @@ export function Switch(props: {
     fallback?: RWRChild;
     children?: RWRChild[];
 }): RWRNodeEffect {
-    const [children, setChildren] = createSignal<DOMComponent[]>([], {
-        equals: false,
-    });
-    const source = mapArray(
-        () => props?.children || [],
-        (v) => createRenderEffect(typeof v === "function" ? v : () => v)
-    );
-    const childrenMap = new Map<Node, number>();
-    const acceptComponent = (
-        component: DOMComponent,
-        previousNodes?: Node[]
-    ) => {
-        let newChildren = untrack(children);
-        let index = newChildren.length;
-        if (previousNodes) {
-            index = childrenMap.get(previousNodes[0])!;
-            // firstChild =
-            //     childrenMap.get(previousNodes[0]) ?? newChildren.length;
-            // previousNodes.forEach((n) => {
-            //     if (!childrenMap.delete(n)) {
-            //         console.error("couldn't delete", n, childrenMap);
-            //     }
-            // });
-            if (!childrenMap.delete(previousNodes[0])) {
-                console.error("couldn't delete", previousNodes[0], childrenMap);
-                setChildren(newChildren);
-                return;
-            }
-        }
-        newChildren[index] = component;
-        const newNodes = component.nodes();
-        // newNodes.forEach((n) => childrenMap.set(n, index));
-        childrenMap.set(newNodes[0], index);
-        // console.log("Switch accepted", component, previousNodes, newChildren);
-        setChildren(newChildren);
-    };
-    source().forEach((p) => {
-        // console.log("Mounting", p.target());
-        mount(p, acceptComponent);
-    });
+    const resolved = children(props?.children);
 
-    return () => {
-        // console.log(children());
-        const matchChildren = filterMatchChildren(children());
+    const firstChildMatching = createMemo(() => {
+        const matchChildren = filterMatchChildren(resolved());
         console.log("Filtered =>", matchChildren);
 
-        const firstChildMatching = matchChildren.find((p) => {
+        return matchChildren.find((p) => {
             const nodes = p.nodes();
             return nodes.length > 1 || nodes[0].nodeType != Node.COMMENT_NODE;
         });
+    });
 
-        if (firstChildMatching) {
-            return firstChildMatching;
+    return () => {
+        if (firstChildMatching()) {
+            return firstChildMatching()!;
         } else {
             if (typeof props?.fallback === "function") {
                 return props.fallback();
@@ -175,7 +131,7 @@ export function Match<T>(props: {
                 return props.children as RWRNode[];
             }
         } else {
-            return [];
+            return null;
         }
     };
 }
