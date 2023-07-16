@@ -142,7 +142,16 @@ export function CounterButton({ onexit, nb }) {
 
     return () => (
         <>
-            <button type="button" onclick={increment}>
+            <button
+                attr:data-count={count}
+                data-count-twice={() => 2 * count()}
+                prop:autofocus={() => count() % 2 === 0}
+                class={() =>
+                    count() % 3 === 0 ? null : count() % 3 === 2 ? "" : count()
+                }
+                type="button"
+                onclick={increment}
+            >
                 {count()}
             </button>
             <br />
