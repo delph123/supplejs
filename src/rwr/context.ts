@@ -206,3 +206,36 @@ export function onCleanup(cleanup: CleanupFunction) {
         console.error("No current tracking context!");
     }
 }
+
+/**
+ * Return an effect function that is designed to run only when one of the
+ * dependencies changes.
+ *
+ * on(deps, fn) is designed to be passed into a computation (createEffect,
+ * createMemo, createComputed, etc.) to make its dependencies explicit. If
+ * an array of dependencies is passed, input and prevInput are arrays.
+ *
+ * @param deps the dependency or list of dependencies
+ * @param fn the computation to run each time on of the dependency changes
+ * @param options.defer opt-in to only run the computation on change by
+ *                      setting the defer option to true
+ */
+export function on<T extends Array<() => any> | (() => any), U>(
+    deps: T,
+    fn: (input: T, prevInput: T, prevValue?: U) => U,
+    options: { defer?: boolean } = {}
+) {
+    let defer = options?.defer ?? false;
+    let prevInput;
+    let input;
+    return (prevValue?: U) => {
+        prevInput = input;
+        input = Array.isArray(deps) ? deps.map((dep) => dep()) : deps();
+        if (!defer) {
+            return untrack(() => fn(input, prevInput, prevValue));
+        } else {
+            defer = false;
+            return;
+        }
+    };
+}
