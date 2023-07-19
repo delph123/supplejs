@@ -10,6 +10,7 @@ import {
     Dynamic,
     lazy,
     onCleanup,
+    onMount,
 } from "../rwr";
 import { Clock } from "./components";
 import { CounterButton } from "./effects";
@@ -122,6 +123,8 @@ export function ForElse({
     equals?;
     children?: [(el, i) => RWRNode];
 }) {
+    onMount(() => console.log("Mounting ForElse"));
+    onCleanup(() => console.log("Cleaning-up ForElse"));
     return () => (
         <Show when={() => !each() || each().length > 0} fallback={fallback}>
             <For each={each} equals={equals}>
@@ -333,20 +336,14 @@ export function DynamicApp() {
                             Less
                         </Dynamic>
                     </Dynamic>
-                    {() => {
-                        console.log("replay");
-                        onCleanup(() => console.log("cleaning"));
-                        return (
-                            <ul>
-                                <LazyForElse
-                                    each={elems}
-                                    fallback={<li>no more element</li>}
-                                >
-                                    {(el) => <li>{el}</li>}
-                                </LazyForElse>
-                            </ul>
-                        );
-                    }}
+                    <ul>
+                        <LazyForElse
+                            each={elems}
+                            fallback={<li>no more element</li>}
+                        >
+                            {(el) => <li>{el}</li>}
+                        </LazyForElse>
+                    </ul>
                 </Dynamic>
             </div>
         </Dynamic>

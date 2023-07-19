@@ -1,23 +1,13 @@
-import {
-    RWRChild,
-    RWRComponent,
-    RWRElement,
-    RWRNode,
-    RWRNodeEffect,
-} from "./types";
-import { flatten } from "./helper";
-import { createRenderEffect } from "./dom";
+import { RWRChild, RWRComponent, RWRElement, RWRNodeEffect } from "./types";
 
 export function h<Props>(
     type: string | RWRComponent<Props>,
-    props?: Props & { children?: any[] },
+    props?: Props & { children?: RWRChild[] },
     ...children: RWRChild[]
-): RWRNode {
-    let altChildren = props?.children || children || [];
-    if (!Array.isArray(altChildren) && altChildren != null) {
+): RWRElement<Props> {
+    let altChildren = props?.children ?? children;
+    if (!Array.isArray(altChildren)) {
         altChildren = [altChildren];
-    } else if (altChildren == null) {
-        console.error("Children should be an array!");
     }
 
     const attributes = props ? { ...props } : {};
@@ -27,10 +17,26 @@ export function h<Props>(
 
     type = overrideDomType(type);
 
+    // Create a virtual DOM that will only be rendered in the DOM (via createDOMComponent)
+    // when the element will be attached in the DOM.
+    // This is necessary to avoid evaluating all branches of a Show or a Match component
+    // when only a single one should be executed. Also note that it means the virtual DOM
+    // may be rendered multiple times each time it is added back in the DOM after it was
+    // removed (as could be the case with a Show component alternating states)
     if (typeof type === "function") {
-        return createRWRComponent(type, attributes as Props, altChildren);
+        return {
+            __kind: "rwr_element",
+            type,
+            props: attributes as Props,
+            children: altChildren,
+        };
     } else {
-        return createRWRElement(type, attributes, altChildren);
+        return {
+            __kind: "html_element",
+            type,
+            props: attributes as Props,
+            children: altChildren,
+        };
     }
 }
 
@@ -40,44 +46,6 @@ export function Fragment({
     children: RWRChild[];
 }): RWRNodeEffect {
     return () => children;
-}
-
-function createRWRElement(
-    type: string,
-    props: Record<string, any>,
-    children: RWRChild[]
-): RWRElement {
-    // First, we need to recursively flatten the children array.
-    // Then, if any child is a function, we want to automatically wrap
-    // it in a render effect, so that it is automatically executed in a
-    // tracking context.
-    const directChildren = flatten(children).map((c) => {
-        if (typeof c === "function") {
-            return createRenderEffect(c);
-        } else {
-            return c;
-        }
-    });
-
-    return {
-        __kind: "element",
-        type,
-        props,
-        children: directChildren,
-    };
-}
-
-function createRWRComponent<Props>(
-    Component: RWRComponent<Props>,
-    props: Props,
-    children: any[]
-) {
-    // When we create a component, we will pass children untouched so that the
-    // component itself can define the semantics of the children prop as it
-    // sees fit. This is useful for example for the iterators components which
-    // expects a mapping function with item as a parameter instead of a raw
-    // component.
-    return createRenderEffect(Component({ ...props, children }), Component);
 }
 
 const OVERRIDES = {
@@ -131,6 +99,11 @@ function Input({
             };
         }
 
-        return createRWRElement("input", inputProps, children);
+        return {
+            __kind: "html_element",
+            type: "input",
+            props: inputProps,
+            children,
+        };
     };
 }
