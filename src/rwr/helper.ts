@@ -26,7 +26,7 @@ enum LOG_LEVEL {
 }
 
 const DEFAULT_LOG_LEVELS = {
-    dom: LOG_LEVEL.INFO,
+    dom: LOG_LEVEL.ERROR,
     clock: LOG_LEVEL.INFO,
 };
 

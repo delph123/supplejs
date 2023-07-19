@@ -1,9 +1,16 @@
-export interface RWRElement {
-    __kind: "element";
-    type: string;
-    props: Record<string, any>;
-    children: RWRNode[];
-}
+export type RWRElement<Props> =
+    | {
+          __kind: "html_element";
+          type: string;
+          props: Props;
+          children: RWRChild[];
+      }
+    | {
+          __kind: "rwr_element";
+          type: RWRComponent<Props>;
+          props: Props;
+          children: RWRChild[];
+      };
 
 export interface AbstractDOMComponent {
     parent: DOMContainer;
@@ -41,7 +48,7 @@ export type DOMContainer =
 
 export type RWRNode =
     | DOMComponent
-    | RWRElement
+    | RWRElement<Record<string, any>>
     | RWRChild[]
     | string
     | number

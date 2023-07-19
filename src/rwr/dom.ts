@@ -8,7 +8,7 @@ import {
     RWRNodeEffect,
     DOMContainer,
 } from "./types";
-import { createLogger } from "./helper";
+import { createLogger, flatten } from "./helper";
 import { createChildContext, createRoot, runEffectInContext } from "./context";
 import { createComputed } from "./reactivity";
 
@@ -85,10 +85,10 @@ function overwriteParent(
         (getParentHTMLElement(component.parent) == null &&
             getParentHTMLElement(parent) != null)
     ) {
-        console.warn("Overwriting", component, parent);
+        logger.warn("Overwriting", component, parent);
         component.parent = parent;
     } else {
-        console.error("Bad overwrite", component, parent);
+        logger.error("Bad overwrite", component, parent);
     }
 }
 
@@ -105,11 +105,15 @@ export function createDOMComponent(component: RWRNode): DOMComponent {
     } else if (Array.isArray(component)) {
         if (component.length > 0) {
             return multiComponents(
-                component.map((c) => {
-                    if (typeof c === "function") {
-                        return createRenderEffect(c);
+                // First, we need to recursively flatten the children array.
+                // Then, if any child is a function, we want to automatically wrap
+                // it in a render effect, so that it is automatically executed in a
+                // tracking context.
+                flatten(component).map((child) => {
+                    if (typeof child === "function") {
+                        return createRenderEffect(child);
                     } else {
-                        return createDOMComponent(c);
+                        return createDOMComponent(child);
                     }
                 })
             );
@@ -117,9 +121,20 @@ export function createDOMComponent(component: RWRNode): DOMComponent {
             // take the spot for mount
             return domComponent(document.createComment("empty_fragment"));
         }
-    } else if (component.__kind !== "element") {
-        return component;
-    } else {
+    } else if (component.__kind === "rwr_element") {
+        // When we create a component, we will pass children untouched so that the
+        // component itself can define the semantics of the children prop as it
+        // sees fit. This is useful for example for the iterators components which
+        // expects a mapping function with item as a parameter instead of a raw
+        // component.
+        return createRenderEffect(
+            component.type({
+                ...component.props,
+                children: component.children,
+            }),
+            component.type
+        );
+    } else if (component.__kind === "html_element") {
         const element = document.createElement(component.type);
         Object.entries(component.props).forEach(([name, value]) => {
             if (name === "ref") {
@@ -140,10 +155,22 @@ export function createDOMComponent(component: RWRNode): DOMComponent {
                 element.addEventListener(name.substring(2), value);
             }
         });
-        component.children.forEach((child) => {
-            mount(createDOMComponent(child), element);
-        });
+        // Treat children same as for multi-components, except this time we directly
+        // mount the children to avoid one unnecessary level of indirection
+        flatten(component.children)
+            .map((child) => {
+                if (typeof child === "function") {
+                    return createRenderEffect(child);
+                } else {
+                    return createDOMComponent(child);
+                }
+            })
+            .forEach((domChild) => {
+                mount(domChild, element);
+            });
         return domComponent(element);
+    } else {
+        return component;
     }
 }
 
