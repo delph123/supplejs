@@ -192,7 +192,7 @@ function Proxy({ x, children }: { x; children? }) {
 export function SwitchApp() {
     const [forNums, setForNums] = createSignal([11, 12, 13]);
     const [single, setSingle] = createSignal(true);
-    const [x, setX] = createSignal(11);
+    const [x, setX] = createSignal(14);
 
     setTimeout(() => setForNums([11, 12, 13, 14]), 1000);
     setTimeout(() => setX(13), 2000);
@@ -247,7 +247,7 @@ export function SwitchApp() {
                                 <Match when={() => x() == 8}>
                                     <p>{x} is 8</p>
                                 </Match>
-                                <Match when={() => x() == 9}>
+                                <Match when={() => x() == 9.5}>
                                     <p>{x} is 9.5</p>
                                 </Match>
                             </>

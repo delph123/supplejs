@@ -1,8 +1,8 @@
 import { children } from "./component";
-import { onCleanup } from "./context";
-import { createRenderEffect } from "./dom";
+import { onCleanup, onMount } from "./context";
+import { createDOMComponent, createRenderEffect } from "./dom";
 import { createMemo } from "./reactivity";
-import { ProxyDOMComponent, RWRChild, RWRNode, RWRNodeEffect } from "./types";
+import { DOMComponent, RWRChild, RWRNode, RWRNodeEffect } from "./types";
 
 type WhenCondition<T> = T | undefined | null | false;
 
@@ -41,8 +41,8 @@ export function Show<T>(props: {
 }
 
 function filterMatchChildren(children: RWRChild[]) {
-    const matchChildren: ProxyDOMComponent[] = [];
-    for (let c of children) {
+    const matchChildren: DOMComponent[] = [];
+    for (const c of children) {
         if (c == null || (typeof c !== "object" && typeof c !== "function")) {
             continue;
         }
@@ -62,7 +62,7 @@ function filterMatchChildren(children: RWRChild[]) {
             continue;
         }
         if (c.__kind === "proxy_component" && c.type === Match) {
-            matchChildren.push(c);
+            matchChildren.push(c.target);
             continue;
         }
         if (c.__kind === "proxy_component") {
@@ -84,18 +84,36 @@ export function Switch(props: {
     const resolved = children(props?.children);
 
     const firstChildMatching = createMemo(() => {
-        const matchChildren = filterMatchChildren(resolved());
+        const matchChildren = filterMatchChildren(resolved()) as (DOMComponent &
+            MatchProps<unknown>)[];
         console.log("Filtered =>", matchChildren);
 
-        return matchChildren.find((p) => {
-            const nodes = p.nodes();
-            return nodes.length > 1 || nodes[0].nodeType != Node.COMMENT_NODE;
+        const displayMatches = matchChildren.map((m) => {
+            return typeof m.when === "function"
+                ? (m.when() as unknown)
+                : m.when;
         });
+        const matchingIndex = displayMatches.findIndex(
+            (v) => v != null && v !== false
+        );
+        if (matchingIndex >= 0) {
+            return matchChildren[matchingIndex];
+        } else {
+            return null;
+        }
     });
 
     return () => {
-        if (firstChildMatching()) {
-            return firstChildMatching()!;
+        const matching = firstChildMatching();
+        if (matching) {
+            if (
+                matching.children?.length === 1 &&
+                typeof matching.children?.[0] === "function"
+            ) {
+                return matching.children[0](matching.when as any);
+            } else {
+                return matching.children as RWRNode[];
+            }
         } else {
             if (typeof props?.fallback === "function") {
                 return props.fallback();
@@ -106,33 +124,22 @@ export function Switch(props: {
     };
 }
 
-export function Match<T>(props: {
+type MatchProps<T> = {
     when: WhenCondition<T> | (() => WhenCondition<T>);
     children?:
         | RWRNode[]
         | [((item: () => T) => RWRNode) | ((item: T) => RWRNode)];
-}) {
+};
+
+export function Match<T>(props: MatchProps<T>) {
+    onMount(() => console.log("monting match"));
     onCleanup(() => console.log("cleaning up"));
-    const when = (
-        typeof props.when === "function" ? props.when : () => props.when
-    ) as () => WhenCondition<T>;
-    const display = createMemo(() => {
-        const v = when();
-        return v != null && v !== false;
-    });
     return () => {
-        if (display()) {
-            if (
-                props.children?.length === 1 &&
-                typeof props.children?.[0] === "function"
-            ) {
-                return props.children[0](props.when as any);
-            } else {
-                return props.children as RWRNode[];
-            }
-        } else {
-            return null;
-        }
+        return {
+            ...createDOMComponent(null),
+            when: props.when,
+            children: props?.children,
+        };
     };
 }
 
