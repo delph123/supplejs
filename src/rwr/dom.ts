@@ -136,25 +136,27 @@ export function createDOMComponent(component: RWRNode): DOMComponent {
         );
     } else if (component.__kind === "html_element") {
         const element = document.createElement(component.type);
-        Object.entries(component.props).forEach(([name, value]) => {
-            if (name === "ref") {
-                if (typeof value === "function") {
-                    value(element);
+        Object.entries(component.props as Record<string, any>).forEach(
+            ([name, value]) => {
+                if (name === "ref") {
+                    if (typeof value === "function") {
+                        value(element);
+                    } else {
+                        value.current = element;
+                    }
+                } else if (!name.startsWith("on")) {
+                    if (typeof value === "function") {
+                        createComputed(() => {
+                            setDOMAttribute(element, name, value());
+                        });
+                    } else {
+                        setDOMAttribute(element, name, value);
+                    }
                 } else {
-                    value.current = element;
+                    element.addEventListener(name.substring(2), value);
                 }
-            } else if (!name.startsWith("on")) {
-                if (typeof value === "function") {
-                    createComputed(() => {
-                        setDOMAttribute(element, name, value());
-                    });
-                } else {
-                    setDOMAttribute(element, name, value);
-                }
-            } else {
-                element.addEventListener(name.substring(2), value);
             }
-        });
+        );
         // Treat children same as for multi-components, except this time we directly
         // mount the children to avoid one unnecessary level of indirection
         flatten(component.children)

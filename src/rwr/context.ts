@@ -235,7 +235,7 @@ export function on<T extends Array<() => any> | (() => any), U>(
             return untrack(() => fn(input, prevInput, prevValue));
         } else {
             defer = false;
-            return;
+            return undefined;
         }
     };
 }

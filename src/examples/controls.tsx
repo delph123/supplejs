@@ -173,7 +173,7 @@ export function TestSwitch() {
     );
 }
 
-function Proxy({ x, children }: { x; children? }) {
+function MatchWrapper({ x, children }: { x; children? }) {
     return () => (
         <>
             <Match when={() => x() == 7}>
@@ -203,11 +203,11 @@ export function SwitchApp() {
         <div style="border: 1px solid grey;">
             <Switch fallback={<font>{x} is between 5 and 15</font>}>
                 dsgfjl
-                <Proxy x={x}>
+                <MatchWrapper x={x}>
                     <Match when={() => x() > 15}>
                         <p>{x} is greater than 15</p>
                     </Match>
-                </Proxy>
+                </MatchWrapper>
                 {12}
                 <Match when={() => x() < 5}>
                     <p>{x} is less than 5</p>

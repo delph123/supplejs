@@ -23,10 +23,10 @@ function createChainItem() {
     return item;
 }
 
-export function createChainedList({
+export function createChainedList<Props>({
     tag,
     attributes,
-}: { tag?: string; attributes?: Record<string, any> } = {}) {
+}: { tag?: string; attributes?: Props & { children?: never } } = {}) {
     const [size, setSize] = createSignal(0);
 
     const root = createChainItem();
@@ -49,10 +49,7 @@ export function createChainedList({
             return;
         }
 
-        const previousLast = getLast(
-            root(),
-            (c) => !!(c.next && c.next().next)
-        );
+        const previousLast = getLast(root(), (c) => !!c?.next?.()?.next);
         previousLast.setItem?.({
             setItem: previousLast.setItem,
         });
@@ -62,7 +59,7 @@ export function createChainedList({
 
     const BoundedChainedList = () =>
         ChainedList({
-            tag: tag || "div",
+            tag: tag ?? "div",
             attributes,
             item: root,
         });
@@ -70,9 +67,9 @@ export function createChainedList({
     return [BoundedChainedList, push, pop, size] as const;
 }
 
-export function ChainedList(props: {
+export function ChainedList<Props>(props: {
     tag: string;
-    attributes?: Record<string, any>;
+    attributes?: Props & { children?: never };
     item: () => Chain;
 }): RWRNodeEffect {
     return () => {

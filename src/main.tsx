@@ -26,6 +26,6 @@ import {
 
 const exit = render(
     // () => <ReduxSlice nb={5} onexit={() => exit()} />,
-    () => <TestSwitch nb={5} onexit={() => exit()} />,
+    () => <MultiApp nb={5} onexit={() => exit()} />,
     document.getElementById("app")!
 );
