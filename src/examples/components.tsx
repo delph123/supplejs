@@ -90,7 +90,7 @@ export function Counter(props: {
     const counterMemo = withPrevious(counter, 0);
 
     createEffect(() => {
-        setSum((s) => s! + counterMemo().current - counterMemo().previous);
+        setSum((s) => s + counterMemo().current - counterMemo().previous);
     });
 
     onCleanup(() => {
@@ -116,7 +116,17 @@ export function Total() {
 }
 
 export function App(): RWRNodeEffect {
-    const [ChainedList, push, pop, size] = createChainedList();
+    const [ChainedList, push, pop, size] = createChainedList({
+        tag: "div",
+        attributes: {
+            style: () => ({
+                color: "red",
+                border: `8px solid #${Math.ceil(Math.random() * 3) * 2 + 3}${
+                    Math.ceil(Math.random() * 3) * 2 + 3
+                }${Math.ceil(Math.random() * 3) * 2 + 3}`,
+            }),
+        },
+    });
 
     const btns = (
         <div>
@@ -150,13 +160,7 @@ export function MultiApp(): RWRNodeEffect {
     return () => (
         <div>
             <ChainedList />
-            <button
-                onclick={() => {
-                    push(() => <App />);
-                }}
-            >
-                +
-            </button>
+            <button onclick={() => push(() => <App />)}>+</button>
             <button onclick={pop}>-</button>
         </div>
     );

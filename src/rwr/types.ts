@@ -48,7 +48,7 @@ export type DOMContainer =
 
 export type RWRNode =
     | DOMComponent
-    | RWRElement<Record<string, any>>
+    | RWRElement<any>
     | RWRChild[]
     | string
     | number

@@ -23,11 +23,7 @@ export function For<T>({ each, children, equals }: ForProps<T>): RWRNodeEffect {
     return mapArray(
         each,
         (element, index) =>
-            createRenderEffect(
-                () =>
-                    (children && children[0] && children[0](element, index)) ||
-                    null
-            ),
+            createRenderEffect(() => children?.[0]?.(element, index) ?? null),
         equals
     );
 }
@@ -53,10 +49,7 @@ interface IndexProps<T> {
  */
 export function Index<T>({ each, children }: IndexProps<T>) {
     return indexArray(each, (element, index) =>
-        createRenderEffect(
-            () =>
-                (children && children[0] && children[0](element, index)) || null
-        )
+        createRenderEffect(() => children?.[0]?.(element, index) ?? null)
     );
 }
 
@@ -92,7 +85,7 @@ export function mapArray<T, U>(
 ) {
     // Define the finder function (eiter uses the provided equals function
     // or use strict equality defined by === to compare underlying elements)
-    const compare = equals || ((p, n) => p === n);
+    const compare = equals ?? ((p, n) => p === n);
     const finder = function finder(nextElement: T) {
         return (previousEntry: Entry<T, U>) => {
             return (

@@ -42,35 +42,42 @@ export function Show<T>(props: {
 
 function filterMatchChildren(children: RWRChild[]) {
     const matchChildren: DOMComponent[] = [];
-    for (const c of children) {
-        if (c == null || (typeof c !== "object" && typeof c !== "function")) {
+    for (const child of children) {
+        if (
+            child == null ||
+            (typeof child !== "object" && typeof child !== "function")
+        ) {
             continue;
         }
-        if (typeof c === "function") {
-            const p = createRenderEffect(c);
-            matchChildren.push(...filterMatchChildren([p.target]));
+        if (typeof child === "function") {
+            const target = createRenderEffect(child).target;
+            const subMatches = filterMatchChildren([target]);
+            matchChildren.push(...subMatches);
             continue;
         }
-        if (Array.isArray(c)) {
-            matchChildren.push(
-                ...filterMatchChildren(
-                    c.map((sc) =>
-                        typeof sc === "function" ? createRenderEffect(sc) : sc
-                    )
+        if (Array.isArray(child)) {
+            const subMatches = filterMatchChildren(
+                child.map((sc) =>
+                    typeof sc === "function"
+                        ? createRenderEffect(sc).target
+                        : sc
                 )
             );
+            matchChildren.push(...subMatches);
             continue;
         }
-        if (c.__kind === "proxy_component" && c.type === Match) {
-            matchChildren.push(c.target);
+        if (child.__kind === "proxy_component" && child.type === Match) {
+            matchChildren.push(child.target);
             continue;
         }
-        if (c.__kind === "proxy_component") {
-            matchChildren.push(...filterMatchChildren([c.target]));
+        if (child.__kind === "proxy_component") {
+            const subMatches = filterMatchChildren([child.target]);
+            matchChildren.push(...subMatches);
             continue;
         }
-        if (c.__kind === "multi_components") {
-            matchChildren.push(...filterMatchChildren(c.components));
+        if (child.__kind === "multi_components") {
+            const subMatches = filterMatchChildren(child.components);
+            matchChildren.push(...subMatches);
             continue;
         }
     }

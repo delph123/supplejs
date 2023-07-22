@@ -37,7 +37,7 @@ export function createSignal<T>(initialValue?: T, options?: EqualsOption<T>) {
     const equals =
         options?.equals === false
             ? () => false
-            : options?.equals || ((p, n) => p === n);
+            : options?.equals ?? ((p, n) => p === n);
 
     let state = initialValue;
     let observers = new Set<TrackingContext>();
@@ -168,7 +168,7 @@ export function createSelector<T, U>(
     source: () => T,
     equals?: (a: U, b: T) => boolean
 ) {
-    const comparator = equals || ((a: U, b: T) => (a as unknown) === b);
+    const comparator = equals ?? ((a: U, b: T) => (a as unknown) === b);
     return function selector(k: U) {
         return createMemo(() => comparator(k, source()))();
     };
@@ -207,7 +207,7 @@ export function createDeferred<T>(
     // XXX only here to prevent lint warning
     setTimeout(() => {
         console.log("Deferred timed-out!");
-    }, options?.timeoutMs || 0);
+    }, options?.timeoutMs);
 
     return source;
 }

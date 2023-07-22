@@ -7,12 +7,12 @@ export function children(
     props: RWRChild[] | { children: RWRChild[] } | undefined | null
 ) {
     const target = createDOMComponent(
-        Array.isArray(props) ? props : props?.children || []
+        Array.isArray(props) ? props : props?.children ?? []
     );
     const [children, setChildren] = createSignal<DOMComponent[]>([], {
         equals: false,
     });
-    mount(target, (component, previousNodes) => {
+    mount(target, (component) => {
         console.log("children notified with", component, target);
         setChildren(
             target.__kind === "multi_components" ? target.components : []
@@ -32,7 +32,7 @@ export function useContext() {
 export function lazy<Component extends RWRComponent<any>>(
     componentLoader: () => Promise<{ default: Component }>
 ): RWRComponent<any> & { preload: () => Promise<Component> } {
-    let promise: Promise<Component>;
+    let promise: Promise<Component> | undefined;
     const [component, setComponent] = createSignal<{
         target?: any;
         error?: any;
