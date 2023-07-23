@@ -76,13 +76,7 @@ export function AsyncApp(): RWRNodeEffect {
     return () => (
         <div>
             <ChainedList />
-            <button
-                onclick={() => {
-                    push(() => <Dog />);
-                }}
-            >
-                More dogs!
-            </button>
+            <button onclick={() => push(<Dog />)}>More dogs!</button>
             <button onclick={pop}>Less dogs!</button>
         </div>
     );

@@ -131,11 +131,9 @@ export function App(): RWRNodeEffect {
     const btns = (
         <div>
             <button
-                onclick={() => {
-                    push(() => (
-                        <Counter index={untrack(() => size())} total={size} />
-                    ));
-                }}
+                onclick={() =>
+                    push(<Counter index={untrack(() => size())} total={size} />)
+                }
             >
                 Add Counter
             </button>
@@ -160,7 +158,7 @@ export function MultiApp(): RWRNodeEffect {
     return () => (
         <div>
             <ChainedList />
-            <button onclick={() => push(() => <App />)}>+</button>
+            <button onclick={() => push(<App />)}>+</button>
             <button onclick={pop}>-</button>
         </div>
     );
