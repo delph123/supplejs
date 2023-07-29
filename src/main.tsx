@@ -20,12 +20,13 @@ import {
     TestWhen,
     WhenAppWithSignal,
     DynamicApp,
+    LoginApp,
 } from "./examples/controls";
 
 // import "./style.css";
 
 const exit = render(
     // () => <ReduxSlice nb={5} onexit={() => exit()} />,
-    () => <MultiApp nb={5} onexit={() => exit()} />,
+    () => <ForElseApp nb={5} onexit={() => exit()} />,
     document.getElementById("app")!
 );

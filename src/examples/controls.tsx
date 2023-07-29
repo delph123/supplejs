@@ -85,7 +85,7 @@ export function ForElseApp() {
             <div>
                 <button
                     type="button"
-                    onclick={() =>
+                    onClick={() =>
                         setElems((s) =>
                             s.length === 0 ? [0] : [...s, s[s.length - 1] + 1]
                         )
@@ -95,7 +95,7 @@ export function ForElseApp() {
                 </button>{" "}
                 <button
                     type="button"
-                    onclick={() => setElems((s) => s.slice(1))}
+                    onClick={() => setElems((s) => s.slice(1))}
                 >
                     Less
                 </button>
@@ -170,6 +170,20 @@ export function TestSwitch() {
                 <div>...you</div>
             </Match>
         </Switch>
+    );
+}
+
+export function LoginApp() {
+    const [loggedIn, setLoggedIn] = createSignal(false);
+    const toggle = () => setLoggedIn(!loggedIn());
+
+    return () => (
+        <Show
+            when={loggedIn}
+            fallback={<button oncapture:click={toggle}>Log in</button>}
+        >
+            <button on:click={toggle}>Log out</button>
+        </Show>
     );
 }
 
