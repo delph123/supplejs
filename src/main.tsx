@@ -27,6 +27,6 @@ import {
 
 const exit = render(
     // () => <ReduxSlice nb={5} onexit={() => exit()} />,
-    () => <Looper nb={5} onexit={() => exit()} />,
-    document.getElementById("app")!
+    () => <LoginApp nb={5} onexit={() => exit()} />,
+    document.getElementById("app")!,
 );
