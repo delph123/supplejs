@@ -92,13 +92,13 @@ export function Looper() {
     };
     const change = () => {
         list()[Math.floor(Math.random() * list().length)].setLabel(
-            (l) => l + "*"
+            (l) => l + "*",
         );
     };
     const remove = () => {
         const l = list();
         setList(
-            (l as any).toSpliced(Math.floor(Math.random() * list().length), 1)
+            (l as any).toSpliced(Math.floor(Math.random() * list().length), 1),
         );
     };
     const add = () => {
@@ -107,8 +107,8 @@ export function Looper() {
             (l as any).toSpliced(
                 Math.floor(Math.random() * list().length),
                 0,
-                newRow()
-            )
+                newRow(),
+            ),
         );
     };
 
@@ -122,20 +122,26 @@ export function Looper() {
                 <button onClick={remove}>Remove row</button>{" "}
                 <button onClick={add}>Add row</button>
             </div>
-            <ol>
-                <For each={list}>
+            <ul>
+                <For
+                    each={list}
+                    fallback={
+                        <li style={{ color: "red" }}>No element to display!</li>
+                    }
+                >
                     {(elem) => {
                         console.log("rendering", elem.row);
                         return (
-                            <Counter
-                                index={elem.label()}
-                                total={() => list().length}
-                            />
+                            <li>
+                                <Counter
+                                    index={elem.label()}
+                                    total={() => list().length}
+                                />
+                            </li>
                         );
-                        // return elem.label();
                     }}
                 </For>
-            </ol>
+            </ul>
         </div>
     );
 }

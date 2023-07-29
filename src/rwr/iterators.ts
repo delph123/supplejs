@@ -1,4 +1,4 @@
-import { RWRNode, RWRNodeEffect } from "./types";
+import { RWRChild, RWRNode, RWRNodeEffect } from "./types";
 import { createRoot } from "./context";
 import { createMemo, createSignal } from "./reactivity";
 import { createRenderEffect } from "./dom";
@@ -6,6 +6,7 @@ import { createRenderEffect } from "./dom";
 interface ForProps<T> {
     each: () => Iterable<T>;
     children?: [(item: T, index: () => number) => RWRNode];
+    fallback?: RWRChild;
     equals?: (prev: T, next: T) => boolean;
 }
 
@@ -19,18 +20,35 @@ interface ForProps<T> {
  *            - index is a signal representing the position in the array
  * @returns a reactive fragment composed of mapped element of the iterator
  */
-export function For<T>({ each, children, equals }: ForProps<T>): RWRNodeEffect {
-    return mapArray(
+export function For<T>({
+    each,
+    children,
+    equals,
+    fallback,
+}: ForProps<T>): RWRNodeEffect {
+    const resolvedChildren = mapArray(
         each,
         (element, index) =>
             createRenderEffect(() => children?.[0]?.(element, index) ?? null),
-        equals
+        equals,
     );
+    return () => {
+        if (resolvedChildren().length > 0) {
+            return resolvedChildren();
+        } else {
+            if (typeof fallback === "function") {
+                return fallback();
+            } else {
+                return fallback ?? null;
+            }
+        }
+    };
 }
 
 interface IndexProps<T> {
     each: () => Iterable<T>;
     children?: [(item: () => T, index: number) => RWRNode];
+    fallback?: RWRChild;
 }
 
 /**
@@ -47,10 +65,21 @@ interface IndexProps<T> {
  *            - index is the position (a constant number) in the array
  * @returns a reactive fragment composed of mapped element of the iterator
  */
-export function Index<T>({ each, children }: IndexProps<T>) {
-    return indexArray(each, (element, index) =>
-        createRenderEffect(() => children?.[0]?.(element, index) ?? null)
+export function Index<T>({ each, children, fallback }: IndexProps<T>) {
+    const resolvedChildren = indexArray(each, (element, index) =>
+        createRenderEffect(() => children?.[0]?.(element, index) ?? null),
     );
+    return () => {
+        if (resolvedChildren().length > 0) {
+            return resolvedChildren();
+        } else {
+            if (typeof fallback === "function") {
+                return fallback();
+            } else {
+                return fallback ?? null;
+            }
+        }
+    };
 }
 
 /* HELPERS */
@@ -81,7 +110,7 @@ interface Entry<T, U> {
 export function mapArray<T, U>(
     iterator: () => Iterable<T>,
     mapFn: (v: T, i: () => number) => U,
-    equals?: (prev: T, next: T) => boolean
+    equals?: (prev: T, next: T) => boolean,
 ) {
     // Define the finder function (eiter uses the provided equals function
     // or use strict equality defined by === to compare underlying elements)
@@ -175,7 +204,7 @@ interface IndexEntry<T, U> {
  */
 export function indexArray<T, U>(
     iterator: () => Iterable<T>,
-    mapFn: (v: () => T, i: number) => U
+    mapFn: (v: () => T, i: number) => U,
 ) {
     // The previous input & mapped lists
     let previousEntries = [] as IndexEntry<T, U>[];
@@ -230,12 +259,12 @@ export function indexArray<T, U>(
 function listEquals<T, U>(
     previousEntries: Entry<T, U>[],
     nextList: T[],
-    equals: (prev: T, next: T) => boolean
+    equals: (prev: T, next: T) => boolean,
 ) {
     return (
         nextList.length === previousEntries.length &&
         previousEntries.every(
-            (e, i) => e.element !== REMOVED && equals(e.element, nextList[i])
+            (e, i) => e.element !== REMOVED && equals(e.element, nextList[i]),
         )
     );
 }

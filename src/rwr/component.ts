@@ -4,10 +4,10 @@ import { createSignal } from "./reactivity";
 import { DOMComponent, RWRChild, RWRComponent } from "./types";
 
 export function children(
-    props: RWRChild[] | { children: RWRChild[] } | undefined | null
+    props: RWRChild[] | { children: RWRChild[] } | undefined | null,
 ) {
     const target = createDOMComponent(
-        Array.isArray(props) ? props : props?.children ?? []
+        Array.isArray(props) ? props : props?.children ?? [],
     );
     const [children, setChildren] = createSignal<DOMComponent[]>([], {
         equals: false,
@@ -15,7 +15,7 @@ export function children(
     mount(target, (component) => {
         console.log("children notified with", component, target);
         setChildren(
-            target.__kind === "multi_components" ? target.components : []
+            target.__kind === "multi_components" ? target.components : [],
         );
     });
     return children;
@@ -30,11 +30,11 @@ export function useContext() {
 }
 
 export function lazy<Component extends RWRComponent<any>>(
-    componentLoader: () => Promise<{ default: Component }>
+    componentLoader: () => Promise<{ default: Component }>,
 ): RWRComponent<any> & { preload: () => Promise<Component> } {
     let promise: Promise<Component> | undefined;
     const [component, setComponent] = createSignal<{
-        target?: any;
+        target?: Component;
         error?: any;
     }>({});
 
@@ -62,7 +62,7 @@ export function lazy<Component extends RWRComponent<any>>(
             // TODO ... improve with ErrorBoundary
             if (!component().target) return "Loading component...";
 
-            return h(component()!.target, props);
+            return h(component().target!, props);
         };
     };
     lazyCompnent.preload = preload;
