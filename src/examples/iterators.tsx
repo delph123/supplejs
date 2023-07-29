@@ -1,11 +1,15 @@
 import {
+    h,
+    For,
     createComputed,
     createSignal,
     indexArray,
     mapArray,
     onCleanup,
     untrack,
+    onMount,
 } from "../rwr";
+import { Counter } from "./components";
 
 export function Mapper() {
     const [list, setList] = createSignal(["a", "b", "c", "a"]);
@@ -71,4 +75,67 @@ export function Indexer() {
     setList(["b", "e", "c", "a"]);
 
     return () => "hello world!";
+}
+
+export function Looper() {
+    const [list, setList] = createSignal<any[]>([]);
+    let rowNumber = 0;
+
+    const newRow = () => {
+        rowNumber++;
+        const [label, setLabel] = createSignal(rowNumber);
+        return { row: rowNumber, label, setLabel };
+    };
+    const init = () => {
+        const l = new Array(10).fill(0).map(newRow);
+        setList(l);
+    };
+    const change = () => {
+        list()[Math.floor(Math.random() * list().length)].setLabel(
+            (l) => l + "*"
+        );
+    };
+    const remove = () => {
+        const l = list();
+        setList(
+            (l as any).toSpliced(Math.floor(Math.random() * list().length), 1)
+        );
+    };
+    const add = () => {
+        const l = list();
+        setList(
+            (l as any).toSpliced(
+                Math.floor(Math.random() * list().length),
+                0,
+                newRow()
+            )
+        );
+    };
+
+    onMount(init);
+
+    return () => (
+        <div>
+            <div>
+                <button onClick={init}>Init</button>{" "}
+                <button onClick={change}>Change label</button>{" "}
+                <button onClick={remove}>Remove row</button>{" "}
+                <button onClick={add}>Add row</button>
+            </div>
+            <ol>
+                <For each={list}>
+                    {(elem) => {
+                        console.log("rendering", elem.row);
+                        return (
+                            <Counter
+                                index={elem.label()}
+                                total={() => list().length}
+                            />
+                        );
+                        // return elem.label();
+                    }}
+                </For>
+            </ol>
+        </div>
+    );
 }

@@ -81,10 +81,7 @@ export function Counter(props: {
     const [counter, setCounter] = createSignal(10);
 
     const label = () => {
-        onCleanup(() =>
-            console.log("Cleanup before rerendering", counter(), getOwner())
-        );
-        return `Counter ${props.index + 1} / ${props.total()} >> ${counter()}.`;
+        return `Counter ${props.index} / ${props.total()} >> ${counter()}.`;
     };
 
     const counterMemo = withPrevious(counter, 0);
@@ -94,7 +91,7 @@ export function Counter(props: {
     });
 
     onCleanup(() => {
-        console.log("Disposing of Counter!", counter());
+        console.log("Disposing of Counter", props.index, "!");
         setSum(sum() - counter());
     });
 
@@ -132,7 +129,12 @@ export function App(): RWRNodeEffect {
         <div>
             <button
                 onclick={() =>
-                    push(<Counter index={untrack(() => size())} total={size} />)
+                    push(
+                        <Counter
+                            index={untrack(() => size() + 1)}
+                            total={size}
+                        />
+                    )
                 }
             >
                 Add Counter
