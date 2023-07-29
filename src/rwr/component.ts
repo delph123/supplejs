@@ -1,4 +1,5 @@
-import { createDOMComponent, mount } from "./dom";
+import { onCleanup } from "./context";
+import { createDOMComponent, mount, render } from "./dom";
 import { h } from "./jsx";
 import { createSignal } from "./reactivity";
 import { DOMComponent, RWRChild, RWRComponent } from "./types";
@@ -80,6 +81,21 @@ export function Dynamic<Props>({
     return () => h(component, props as Props & { children? });
 }
 
-export function Portal() {
-    // TODO
+export function Portal(props: {
+    mount: HTMLElement;
+    useShadow?: boolean;
+    children?: RWRChild[];
+}) {
+    let container: Node = props.mount;
+    if (props?.useShadow) {
+        container =
+            props.mount.shadowRoot ??
+            props.mount.attachShadow({ mode: "open" });
+    }
+    const dispose = render(
+        () => h("div", {}, ...(props?.children ?? [])),
+        container,
+    );
+    onCleanup(dispose);
+    return () => null;
 }

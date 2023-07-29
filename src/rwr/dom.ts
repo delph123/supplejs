@@ -14,7 +14,7 @@ import { createComputed } from "./reactivity";
 
 const logger = createLogger("dom");
 
-export function render(renderEffect: RWRNodeEffect, container: HTMLElement) {
+export function render(renderEffect: RWRNodeEffect, container: Node) {
     return createRoot((dispose) => {
         const component = createRenderEffect(renderEffect);
         mount(component, container);
@@ -31,7 +31,7 @@ let nb = 0;
 
 export function createRenderEffect<Props>(
     renderEffect: RWRNodeEffect,
-    Component?: RWRComponent<Props>
+    Component?: RWRComponent<Props>,
 ): ProxyDOMComponent {
     const renderNb = nb++;
 
@@ -75,13 +75,13 @@ export function createRenderEffect<Props>(
 function overwriteParent(
     component: DOMComponent,
     parent: DOMContainer,
-    oldParent: DOMContainer
+    oldParent: DOMContainer,
 ) {
     if (component.parent === oldParent || component.parent === parent) {
         component.parent = parent;
     } else if (
         (typeof getParentHTMLElement(component.parent) === "function" &&
-            getParentHTMLElement(parent) instanceof HTMLElement) ||
+            getParentHTMLElement(parent) instanceof Node) ||
         (getParentHTMLElement(component.parent) == null &&
             getParentHTMLElement(parent) != null)
     ) {
@@ -115,7 +115,7 @@ export function createDOMComponent(component: RWRNode): DOMComponent {
                     } else {
                         return createDOMComponent(child);
                     }
-                })
+                }),
             );
         } else {
             // take the spot for mount
@@ -132,7 +132,7 @@ export function createDOMComponent(component: RWRNode): DOMComponent {
                 ...component.props,
                 children: component.children,
             }),
-            component.type
+            component.type,
         );
     } else if (component.__kind === "html_element") {
         const element = document.createElement(component.type);
@@ -162,10 +162,10 @@ export function createDOMComponent(component: RWRNode): DOMComponent {
                     // Add an event listener for common UI event (name is lower cased)
                     element.addEventListener(
                         name.substring(2).toLowerCase(),
-                        value
+                        value,
                     );
                 }
-            }
+            },
         );
         // Treat children same as for multi-components, except this time we directly
         // mount the children to avoid one unnecessary level of indirection
@@ -198,7 +198,7 @@ function setDOMAttribute(element: HTMLElement, name: string, value: any) {
                 Object.entries(value as Record<string, string>).forEach(
                     ([prop, val]) => {
                         element.style[prop] = val;
-                    }
+                    },
                 );
                 return;
             }
@@ -216,7 +216,7 @@ function setDOMAttribute(element: HTMLElement, name: string, value: any) {
                     ) {
                         element.classList.toggle(className);
                     }
-                }
+                },
             );
             return;
     }
@@ -271,7 +271,7 @@ function getParentHTMLElement(container: DOMContainer) {
 export function mount(
     component: DOMComponent,
     container: DOMContainer,
-    previousNodes?: Node[]
+    previousNodes?: Node[],
 ) {
     const newNodes = component.nodes();
 
@@ -313,7 +313,7 @@ export function mount(
             console.error(
                 "Different parent provided",
                 parent,
-                previousNodes[0].parentNode
+                previousNodes[0].parentNode,
             );
         }
         const nextSibling = previousNodes[previousNodes.length - 1].nextSibling;
@@ -328,10 +328,10 @@ export function mount(
 }
 
 function replaceNodes(
-    container: HTMLElement,
+    container: Node,
     newItems: NodeItem[],
     oldItems: NodeItem[],
-    nextSibling: Node | null
+    nextSibling: Node | null,
 ) {
     let newCursor = 0;
     let oldCursor = 0;
@@ -357,7 +357,7 @@ function replaceNodes(
                 while (newItems[newCursor].oldSlot === NO_SLOT) {
                     container.insertBefore(
                         newItems[newCursor].node,
-                        oldItem.node
+                        oldItem.node,
                     );
                     newCursor++;
                 }
@@ -415,7 +415,7 @@ function nodeToItem(
     map: Map<Node, NodeItem>,
     indexProp: "oldSlot" | "newSlot",
     node: Node,
-    index: number
+    index: number,
 ) {
     let item: NodeItem;
 

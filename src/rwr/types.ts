@@ -41,7 +41,7 @@ export type DOMComponent =
     | MultiDOMComponent;
 
 export type DOMContainer =
-    | HTMLElement
+    | Node
     | DOMComponent
     | ((component: DOMComponent, previousNodes?: Node[]) => void)
     | null;
