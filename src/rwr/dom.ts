@@ -152,8 +152,18 @@ export function createDOMComponent(component: RWRNode): DOMComponent {
                     } else {
                         setDOMAttribute(element, name, value);
                     }
+                } else if (name.startsWith("on:")) {
+                    // Adds an event listener verbatim (for unusual names)
+                    element.addEventListener(name.substring(3), value);
+                } else if (name.startsWith("oncapture:")) {
+                    // Adds an event listener verbatim (for unusual names)
+                    element.addEventListener(name.substring(10), value);
                 } else {
-                    element.addEventListener(name.substring(2), value);
+                    // Add an event listener for common UI event (name is lower cased)
+                    element.addEventListener(
+                        name.substring(2).toLowerCase(),
+                        value
+                    );
                 }
             }
         );
