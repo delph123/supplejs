@@ -1,6 +1,5 @@
 import { RWRNode, RWRNodeEffect } from "./types";
 import { createRoot } from "./context";
-import { createRenderEffect } from "./dom";
 import { createMemo, createSignal } from "./reactivity";
 
 interface ForProps<T> {
@@ -22,8 +21,7 @@ interface ForProps<T> {
 export function For<T>({ each, children, equals }: ForProps<T>): RWRNodeEffect {
     return mapArray(
         each,
-        (element, index) =>
-            createRenderEffect(() => children?.[0]?.(element, index) ?? null),
+        (element, index) => () => children?.[0]?.(element, index) ?? null,
         equals
     );
 }
@@ -48,8 +46,9 @@ interface IndexProps<T> {
  * @returns a reactive fragment composed of mapped element of the iterator
  */
 export function Index<T>({ each, children }: IndexProps<T>) {
-    return indexArray(each, (element, index) =>
-        createRenderEffect(() => children?.[0]?.(element, index) ?? null)
+    return indexArray(
+        each,
+        (element, index) => () => children?.[0]?.(element, index) ?? null
     );
 }
 
