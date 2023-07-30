@@ -1,12 +1,13 @@
 import { onCleanup, untrack } from "./context";
 import { createDOMComponent, mount, render } from "./dom";
-import { shallowArrayEqual } from "./helper";
+import { shallowArrayEqual, toArray } from "./helper";
 import { h } from "./jsx";
 import { createComputed, createMemo, createSignal } from "./reactivity";
 import {
     DOMComponent,
     RWRChild,
     RWRComponent,
+    RWRNode,
     RealDOMComponent,
 } from "./types";
 
@@ -20,12 +21,14 @@ function extractRealDOMComponents(component: DOMComponent): RealDOMComponent[] {
     }
 }
 
-export function children(childrenGetter: () => RWRChild[] | undefined) {
+export function children(childrenGetter: () => RWRNode | undefined) {
     const [components, setComponents] = createSignal<RealDOMComponent[]>([], {
         equals: shallowArrayEqual,
     });
 
-    const target = createMemo(() => createDOMComponent(childrenGetter() ?? []));
+    const target = createMemo(() =>
+        createDOMComponent(toArray(childrenGetter())),
+    );
 
     createComputed(() => {
         mount(target(), (component) => {

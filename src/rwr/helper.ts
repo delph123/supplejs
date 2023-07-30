@@ -25,6 +25,16 @@ export function shallowArrayEqual<T>(first: T[], second: T[]) {
     );
 }
 
+export function toArray<T>(v: T | T[] | null | undefined): T[] {
+    if (v == null) {
+        return [];
+    } else if (Array.isArray(v)) {
+        return v;
+    } else {
+        return [v];
+    }
+}
+
 enum LOG_LEVEL {
     ERROR = 0,
     WARN = 1,
