@@ -1,8 +1,51 @@
 import { onCleanup } from "./context";
 import { createDOMComponent, mount, render } from "./dom";
+import { memo } from "./helper";
 import { h } from "./jsx";
 import { createSignal } from "./reactivity";
 import { DOMComponent, RWRChild, RWRComponent } from "./types";
+
+const mirrorComponent = (target: DOMComponent, mc) => {
+    return {
+        __kind: target.__kind,
+        get node() {
+            return target.__kind === "dom_component" ? target.node : undefined;
+        },
+        get components() {
+            return target.__kind === "multi_components"
+                ? target.components.map((c) => mc(c, mc))
+                : undefined;
+        },
+        get type() {
+            return target.__kind === "proxy_component"
+                ? target.type
+                : undefined;
+        },
+        get target() {
+            return target.__kind === "proxy_component"
+                ? mc(target.target, mc)
+                : (undefined as any);
+        },
+        get id() {
+            return target.__kind === "proxy_component"
+                ? "mirror:" + target.id
+                : (undefined as any);
+        },
+        parent: null,
+        nodes() {
+            // return (this as any).clones;
+            // console.log("nodes()", this);
+            return target.nodes(); //.map((n) => n.cloneNode());
+        },
+        mount(parent, oldParent) {
+            console.log("Mounting", this, parent);
+            this.parent = parent;
+            // target.mount(parent, oldParent);
+        },
+    } as DOMComponent;
+};
+
+const memoizedMirrorComponent = memo(mirrorComponent);
 
 export function children(
     props: RWRChild[] | { children: RWRChild[] } | undefined | null,
@@ -10,16 +53,18 @@ export function children(
     const target = createDOMComponent(
         Array.isArray(props) ? props : props?.children ?? [],
     );
-    const [children, setChildren] = createSignal<DOMComponent[]>([], {
+    const [components, setComponents] = createSignal<DOMComponent[]>([], {
         equals: false,
     });
     mount(target, (component) => {
         console.log("children notified with", component, target);
-        setChildren(
-            target.__kind === "multi_components" ? target.components : [],
+        setComponents(
+            target.__kind === "multi_components"
+                ? target.components.map(memoizedMirrorComponent)
+                : [],
         );
     });
-    return children;
+    return components;
 }
 
 export function createContext() {

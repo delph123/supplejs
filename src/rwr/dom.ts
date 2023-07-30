@@ -315,6 +315,8 @@ export function mount(
                 parent,
                 previousNodes[0].parentNode,
             );
+            // parent = previousNodes[0].parentNode;
+            return;
         }
         const nextSibling = previousNodes[previousNodes.length - 1].nextSibling;
         const [newItems, oldItems] = convertToItems(newNodes, previousNodes);

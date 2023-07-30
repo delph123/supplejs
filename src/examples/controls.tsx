@@ -86,7 +86,7 @@ export function ForElseApp() {
                     type="button"
                     onClick={() =>
                         setElems((s) =>
-                            s.length === 0 ? [0] : [...s, s[s.length - 1] + 1]
+                            s.length === 0 ? [0] : [...s, s[s.length - 1] + 1],
                         )
                     }
                 >

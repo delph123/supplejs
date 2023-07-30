@@ -17,6 +17,21 @@ export function flatten<T>(nestedChildren: Nested<T>) {
     return children;
 }
 
+export function memo<
+    Fn extends (p: any, fnMemo: (p: any, q: any) => any) => any,
+>(fn: Fn): (inp: Parameters<Fn>[0]) => ReturnType<Fn> {
+    const memoized = new WeakMap<Parameters<Fn>[0], ReturnType<Fn>>();
+
+    function memoizedFn(inp: Parameters<Fn>[0]) {
+        if (!memoized.has(inp)) {
+            memoized.set(inp, fn(inp, memoizedFn));
+        }
+        return memoized.get(inp)!;
+    }
+
+    return memoizedFn;
+}
+
 enum LOG_LEVEL {
     ERROR = 0,
     WARN = 1,
