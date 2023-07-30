@@ -17,6 +17,14 @@ export function flatten<T>(nestedChildren: Nested<T>) {
     return children;
 }
 
+export function shallowArrayEqual<T>(first: T[], second: T[]) {
+    return (
+        first === second ||
+        (first.length === second.length &&
+            first.every((v, i) => v === second[i]))
+    );
+}
+
 enum LOG_LEVEL {
     ERROR = 0,
     WARN = 1,

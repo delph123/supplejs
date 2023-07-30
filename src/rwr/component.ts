@@ -1,5 +1,6 @@
 import { onCleanup } from "./context";
 import { createDOMComponent, mount, render } from "./dom";
+import { shallowArrayEqual } from "./helper";
 import { h } from "./jsx";
 import { createSignal } from "./reactivity";
 import {
@@ -21,7 +22,9 @@ function extractRealDOMComponents(component: DOMComponent): RealDOMComponent[] {
 
 export function children(childrenGetter: () => RWRChild[] | undefined) {
     const target = createDOMComponent(childrenGetter() ?? []);
-    const [components, setComponents] = createSignal<RealDOMComponent[]>([]);
+    const [components, setComponents] = createSignal<RealDOMComponent[]>([], {
+        equals: shallowArrayEqual,
+    });
     mount(target, (component) => {
         console.log("children notified with", component, target);
         setComponents(extractRealDOMComponents(target));
