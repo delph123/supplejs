@@ -86,7 +86,7 @@ export function ForElseApp() {
                     type="button"
                     onClick={() =>
                         setElems((s) =>
-                            s.length === 0 ? [0] : [...s, s[s.length - 1] + 1]
+                            s.length === 0 ? [0] : [...s, s[s.length - 1] + 1],
                         )
                     }
                 >
@@ -182,7 +182,7 @@ export function LoginApp() {
             fallback={<button oncapture:click={toggle}>Log in</button>}
         >
             <button on:click={toggle}>Log out</button>
-            <Portal mount={document.getElementById("portal")!} useShadow={true}>
+            <Portal mount={document.getElementById("portal")!} useShadow>
                 <h1>Hello world!</h1>
                 <p>
                     It is <Clock level={0} />

@@ -82,19 +82,17 @@ export function Dynamic<Props>({
 }
 
 export function Portal(props: {
-    mount: HTMLElement;
+    mount?: HTMLElement;
     useShadow?: boolean;
     children?: RWRChild[];
 }) {
-    let container: Node = props.mount;
-    if (props?.useShadow) {
-        container =
-            props.mount.shadowRoot ??
-            props.mount.attachShadow({ mode: "open" });
-    }
     const dispose = render(
-        () => h("div", {}, ...(props?.children ?? [])),
-        container,
+        () =>
+            h("div", {
+                useShadow: props?.useShadow ?? false,
+                children: props?.children,
+            }),
+        props.mount ?? document.body,
     );
     onCleanup(dispose);
     return () => null;
