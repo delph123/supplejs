@@ -8,7 +8,6 @@ import {
     children,
     For,
     onCleanup,
-    DOMComponent,
 } from "../rwr";
 import { Clock } from "./components";
 import { ForElse } from "./controls";
@@ -76,7 +75,7 @@ export function DynamicApp() {
                                 setElems((s) =>
                                     s.length === 0
                                         ? [0]
-                                        : [...s, s[s.length - 1] + 1]
+                                        : [...s, s[s.length - 1] + 1],
                                 )
                             }
                         >
@@ -118,28 +117,15 @@ function PlayWithChildren(props: { children?: any[]; index: () => number }) {
         }
     }
 
-    function extractRealElement(
-        elements: () => DOMComponent[],
-        idx: () => number
-    ) {
-        const element = elements()[idx()];
-        let level = 0;
-        let realElement = element;
-        while (realElement.__kind === "proxy_component") {
-            realElement = realElement.target;
-            level++;
-        }
-        console.log("Extracting", element, "level", level, realElement);
-        return realElement;
-    }
+    const resolved = children(() => props?.children);
+    // const resolved = () => props?.children ?? [];
 
-    const resolved = children(props?.children ?? []);
     return () => (
         <>
-            Extracting {() => rankString(props.index)} child:
+            {/* Extracting {() => rankString(props.index)} child:
             <ol start={() => props.index() + 1}>
-                <li>{() => extractRealElement(resolved, props.index)}</li>
-            </ol>
+                <li>{() => resolved()[props.index()]}</li>
+            </ol> */}
             Out of:
             <ol
                 style={{

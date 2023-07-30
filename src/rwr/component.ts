@@ -2,24 +2,31 @@ import { onCleanup } from "./context";
 import { createDOMComponent, mount, render } from "./dom";
 import { h } from "./jsx";
 import { createSignal } from "./reactivity";
-import { DOMComponent, RWRChild, RWRComponent } from "./types";
+import {
+    DOMComponent,
+    RWRChild,
+    RWRComponent,
+    RealDOMComponent,
+} from "./types";
 
-export function children(
-    props: RWRChild[] | { children: RWRChild[] } | undefined | null,
-) {
-    const target = createDOMComponent(
-        Array.isArray(props) ? props : props?.children ?? [],
-    );
-    const [children, setChildren] = createSignal<DOMComponent[]>([], {
-        equals: false,
-    });
+function extractRealDOMComponents(component: DOMComponent): RealDOMComponent[] {
+    if (component.__kind === "dom_component") {
+        return [component];
+    } else if (component.__kind === "proxy_component") {
+        return extractRealDOMComponents(component.target);
+    } else {
+        return component.components.flatMap(extractRealDOMComponents);
+    }
+}
+
+export function children(childrenGetter: () => RWRChild[] | undefined) {
+    const target = createDOMComponent(childrenGetter() ?? []);
+    const [components, setComponents] = createSignal<RealDOMComponent[]>([]);
     mount(target, (component) => {
         console.log("children notified with", component, target);
-        setChildren(
-            target.__kind === "multi_components" ? target.components : [],
-        );
+        setComponents(extractRealDOMComponents(target));
     });
-    return children;
+    return components;
 }
 
 export function createContext() {

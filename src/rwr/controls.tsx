@@ -40,59 +40,16 @@ export function Show<T>(props: {
     };
 }
 
-function filterMatchChildren(children: RWRChild[]) {
-    const matchChildren: DOMComponent[] = [];
-    for (const child of children) {
-        if (
-            child == null ||
-            (typeof child !== "object" && typeof child !== "function")
-        ) {
-            continue;
-        }
-        if (typeof child === "function") {
-            const target = createRenderEffect(child).target;
-            const subMatches = filterMatchChildren([target]);
-            matchChildren.push(...subMatches);
-            continue;
-        }
-        if (Array.isArray(child)) {
-            const subMatches = filterMatchChildren(
-                child.map((sc) =>
-                    typeof sc === "function"
-                        ? createRenderEffect(sc).target
-                        : sc
-                )
-            );
-            matchChildren.push(...subMatches);
-            continue;
-        }
-        if (child.__kind === "proxy_component" && child.type === Match) {
-            matchChildren.push(child.target);
-            continue;
-        }
-        if (child.__kind === "proxy_component") {
-            const subMatches = filterMatchChildren([child.target]);
-            matchChildren.push(...subMatches);
-            continue;
-        }
-        if (child.__kind === "multi_components") {
-            const subMatches = filterMatchChildren(child.components);
-            matchChildren.push(...subMatches);
-            continue;
-        }
-    }
-    return matchChildren;
-}
-
 export function Switch(props: {
     fallback?: RWRChild;
     children?: RWRChild[];
 }): RWRNodeEffect {
-    const resolved = children(props?.children);
+    const resolved = children(() => props?.children);
 
     const firstChildMatching = createMemo(() => {
-        const matchChildren = filterMatchChildren(resolved()) as (DOMComponent &
-            MatchProps<unknown>)[];
+        const matchChildren = resolved().filter(
+            (c) => "type" in c && c.type === Match,
+        ) as (DOMComponent & MatchProps<unknown>)[];
         console.log("Filtered =>", matchChildren);
 
         const displayMatches = matchChildren.map((m) => {
@@ -101,7 +58,7 @@ export function Switch(props: {
                 : m.when;
         });
         const matchingIndex = displayMatches.findIndex(
-            (v) => v != null && v !== false
+            (v) => v != null && v !== false,
         );
         if (matchingIndex >= 0) {
             return matchChildren[matchingIndex];
@@ -144,6 +101,7 @@ export function Match<T>(props: MatchProps<T>) {
     return () => {
         return {
             ...createDOMComponent(null),
+            type: Match,
             when: props.when,
             children: props?.children,
         };
