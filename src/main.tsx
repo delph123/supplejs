@@ -27,6 +27,6 @@ import { ChildrenPlayer, DynamicApp } from "./examples/dynamic";
 
 const exit = render(
     // () => <ReduxSlice nb={5} onexit={() => exit()} />,
-    () => <LoginApp nb={5} onexit={() => exit()} />,
-    document.getElementById("app")!
+    () => <SwitchApp nb={5} onexit={() => exit()} />,
+    document.getElementById("app")!,
 );
