@@ -144,6 +144,8 @@ export function createDOMComponent(component: RWRNode): DOMComponent {
                     } else {
                         value.current = element;
                     }
+                } else if (name === "useShadow") {
+                    // do nothing
                 } else if (!name.startsWith("on")) {
                     if (typeof value === "function") {
                         createComputed(() => {
@@ -167,6 +169,11 @@ export function createDOMComponent(component: RWRNode): DOMComponent {
                 }
             },
         );
+        let container: Node = element;
+        if ("useShadow" in component.props && component.props.useShadow) {
+            container =
+                element.shadowRoot ?? element.attachShadow({ mode: "open" });
+        }
         // Treat children same as for multi-components, except this time we directly
         // mount the children to avoid one unnecessary level of indirection
         flatten(component.children)
@@ -178,7 +185,7 @@ export function createDOMComponent(component: RWRNode): DOMComponent {
                 }
             })
             .forEach((domChild) => {
-                mount(domChild, element);
+                mount(domChild, container);
             });
         return domComponent(element);
     } else {
