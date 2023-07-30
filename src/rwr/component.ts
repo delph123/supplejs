@@ -1,8 +1,8 @@
-import { onCleanup } from "./context";
+import { onCleanup, untrack } from "./context";
 import { createDOMComponent, mount, render } from "./dom";
 import { shallowArrayEqual } from "./helper";
 import { h } from "./jsx";
-import { createSignal } from "./reactivity";
+import { createComputed, createMemo, createSignal } from "./reactivity";
 import {
     DOMComponent,
     RWRChild,
@@ -21,14 +21,20 @@ function extractRealDOMComponents(component: DOMComponent): RealDOMComponent[] {
 }
 
 export function children(childrenGetter: () => RWRChild[] | undefined) {
-    const target = createDOMComponent(childrenGetter() ?? []);
     const [components, setComponents] = createSignal<RealDOMComponent[]>([], {
         equals: shallowArrayEqual,
     });
-    mount(target, (component) => {
-        console.log("children notified with", component, target);
-        setComponents(extractRealDOMComponents(target));
+
+    const target = createMemo(() => createDOMComponent(childrenGetter() ?? []));
+
+    createComputed(() => {
+        mount(target(), (component) => {
+            console.log("children notified with", component, target);
+            setComponents(extractRealDOMComponents(untrack(target)));
+        });
+        onCleanup(() => mount(target(), null));
     });
+
     return components;
 }
 
