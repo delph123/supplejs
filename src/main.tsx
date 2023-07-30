@@ -19,14 +19,14 @@ import {
     TestSwitch,
     TestWhen,
     WhenAppWithSignal,
-    DynamicApp,
     LoginApp,
 } from "./examples/controls";
+import { ChildrenPlayer, DynamicApp } from "./examples/dynamic";
 
 // import "./style.css";
 
 const exit = render(
     // () => <ReduxSlice nb={5} onexit={() => exit()} />,
     () => <LoginApp nb={5} onexit={() => exit()} />,
-    document.getElementById("app")!,
+    document.getElementById("app")!
 );

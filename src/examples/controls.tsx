@@ -7,8 +7,6 @@ import {
     Match,
     For,
     RWRNode,
-    Dynamic,
-    lazy,
     onCleanup,
     onMount,
     Portal,
@@ -88,7 +86,7 @@ export function ForElseApp() {
                     type="button"
                     onClick={() =>
                         setElems((s) =>
-                            s.length === 0 ? [0] : [...s, s[s.length - 1] + 1],
+                            s.length === 0 ? [0] : [...s, s[s.length - 1] + 1]
                         )
                     }
                 >
@@ -278,96 +276,5 @@ export function SwitchApp() {
                 }}
             </Switch>
         </div>
-    );
-}
-
-export function DynamicApp() {
-    const [elems, setElems] = createSignal([10, 11]);
-    const [load, setLoad] = createSignal(false);
-
-    const LazyForElse = lazy(() => {
-        return new Promise<{ default: typeof ForElse }>((resolve) => {
-            console.log("Loading...");
-            setTimeout(() => {
-                console.log("Loaded");
-                resolve({
-                    default: ForElse,
-                });
-            }, 2000);
-        });
-    });
-
-    return () => (
-        <Dynamic component="div">
-            <Dynamic component="h1" id="toto">
-                Header{" "}
-                <Dynamic
-                    component="font"
-                    style={{ fontSize: "0.7em" }}
-                    prop:color="red"
-                >
-                    is red
-                </Dynamic>
-                !
-            </Dynamic>
-            <Dynamic component={"br"} />
-            <Dynamic component={Clock} level={0} />
-            <div style={{ marginTop: "20px" }}>
-                <Dynamic
-                    component={Show}
-                    when={load()}
-                    fallback={
-                        <div>
-                            <button
-                                type="button"
-                                onclick={() => LazyForElse.preload()}
-                            >
-                                Preload
-                            </button>{" "}
-                            <button
-                                type="button"
-                                onclick={() => {
-                                    setLoad(true);
-                                    setTimeout(() => setLoad(false), 5000);
-                                }}
-                            >
-                                Load component
-                            </button>
-                        </div>
-                    }
-                >
-                    <Dynamic component={"div"}>
-                        <Dynamic
-                            component="button"
-                            type="button"
-                            onclick={() =>
-                                setElems((s) =>
-                                    s.length === 0
-                                        ? [0]
-                                        : [...s, s[s.length - 1] + 1],
-                                )
-                            }
-                        >
-                            More
-                        </Dynamic>{" "}
-                        <Dynamic
-                            component={"button"}
-                            type="button"
-                            onclick={() => setElems((s) => s.slice(1))}
-                        >
-                            Less
-                        </Dynamic>
-                    </Dynamic>
-                    <ul>
-                        <LazyForElse
-                            each={elems}
-                            fallback={<li>no more element</li>}
-                        >
-                            {(el) => <li>{el}</li>}
-                        </LazyForElse>
-                    </ul>
-                </Dynamic>
-            </div>
-        </Dynamic>
     );
 }
