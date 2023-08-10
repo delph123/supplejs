@@ -34,27 +34,49 @@ function Footer({ version }: { version: string }): RWRNodeEffect {
 
 const clockLogger = createLogger("clock");
 
-export function Clock({ level, probability = 0.5 }): RWRNodeEffect {
-    const [c, setC] = createSignal(Math.random() > probability, {
-        equals: false,
-    });
+export function Clock({
+    level,
+    probability = 0.5,
+    clock,
+}: {
+    level: number;
+    probability?: number;
+    clock?: () => number;
+}): RWRNodeEffect {
+    let notif: () => boolean;
 
-    clockLogger.log("Initializing clock with probability", probability);
+    if (clock) {
+        notif = () => {
+            clock();
+            return Math.random() > probability;
+        };
+    } else {
+        const [c, setC] = createSignal(Math.random() > probability, {
+            equals: false,
+        });
 
-    const timer = setInterval(() => setC(Math.random() > probability), 1000);
+        clockLogger.log("Initializing clock with probability", probability);
 
-    onMount(() => {
-        clockLogger.log("Mounting clock with probability", probability);
-    });
+        const timer = setInterval(
+            () => setC(Math.random() > probability),
+            1000,
+        );
 
-    onCleanup(() => {
-        clockLogger.log("Cleaning clock with probability", probability);
-        clearInterval(timer);
-    });
+        onMount(() => {
+            clockLogger.log("Mounting clock with probability", probability);
+        });
+
+        onCleanup(() => {
+            clockLogger.log("Cleaning clock with probability", probability);
+            clearInterval(timer);
+        });
+
+        notif = c;
+    }
 
     return () => {
-        return c() ? (
-            <Clock level={level + 1} probability={probability} />
+        return notif() ? (
+            <Clock level={level + 1} probability={probability} clock={clock} />
         ) : (
             `${new Date().toLocaleTimeString()} (${level})`
         );
@@ -70,7 +92,7 @@ function withPrevious<T>(variable: () => T, initialValue: T) {
         {
             current: initialValue,
             previous: undefined as T,
-        }
+        },
     );
 }
 
@@ -133,7 +155,7 @@ export function App(): RWRNodeEffect {
                         <Counter
                             index={untrack(() => size() + 1)}
                             total={size}
-                        />
+                        />,
                     )
                 }
             >
