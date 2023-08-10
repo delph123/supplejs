@@ -1,4 +1,5 @@
 export * from "./types";
+export * from "./helper";
 export * from "./context";
 export * from "./reactivity";
 export * from "./dom";

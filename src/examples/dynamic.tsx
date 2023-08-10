@@ -7,10 +7,10 @@ import {
     Show,
     children,
     For,
-    onCleanup,
 } from "../rwr";
 import { Clock } from "./components";
 import { ForElse } from "./controls";
+import { createIncrement } from "./util";
 
 export function DynamicApp() {
     const [elems, setElems] = createSignal([10, 11]);
@@ -147,21 +147,32 @@ function PlayWithChildren(props: { children?: any[]; index: () => number }) {
 }
 
 export function ChildrenPlayer() {
-    const [idx, setIdx] = createSignal(0);
-    // const timer = setInterval(() => setIdx((i) => (i + 1) % 5), 1000);
-    // onCleanup(() => clearInterval(timer));
+    const [idx, , IdxPlayer] = createIncrement(0);
+    const [clock, , ClockPlayer] = createIncrement(100);
+
     return () => (
         <div>
             <h3>Playing with children</h3>
-            <PlayWithChildren index={idx}>
-                <Clock level={0} probability={0.1} />
-                <Clock level={0} probability={0.3} />
+            <div
+                style={{
+                    display: "flex",
+                    gap: "5px",
+                    marginBottom: "1em",
+                    alignItems: "baseline",
+                }}
+            >
+                Index: <IdxPlayer pause />
+                Clock: <ClockPlayer pause />
+            </div>
+            <PlayWithChildren index={() => idx() % 5}>
+                <Clock level={0} probability={0.1} clock={clock} />
+                <Clock level={0} probability={0.3} clock={clock} />
                 <span>
                     {Math.random().toString().substring(3, 8)} -{" "}
-                    <Clock level={0} probability={0.5} />
+                    <Clock level={0} probability={0.5} clock={clock} />
                 </span>
-                <Clock level={0} probability={0.7} />
-                <Clock level={0} probability={0.9} />
+                <Clock level={0} probability={0.7} clock={clock} />
+                <Clock level={0} probability={0.9} clock={clock} />
             </PlayWithChildren>
         </div>
     );
