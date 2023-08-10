@@ -1,4 +1,17 @@
-import { h, createSignal, untrack } from "../rwr";
+import {
+    h,
+    createSignal,
+    untrack,
+    toValue,
+    ValueOrGetter,
+    createEffect,
+} from "../rwr";
+
+interface IncrementPlayerProps {
+    color?: string;
+    style?: Record<string, string>;
+    paused?: ValueOrGetter<boolean>;
+}
 
 export function createIncrement(initialValue: number = 0) {
     const [value, setValue] = createSignal(initialValue);
@@ -6,23 +19,30 @@ export function createIncrement(initialValue: number = 0) {
 
     let timer;
 
-    function toggle() {
-        if (started()) {
-            clearInterval(timer);
-        } else {
-            timer = setInterval(inc, 1000);
+    function toggle(status?: boolean) {
+        if (status == null || started() !== status) {
+            if (started()) {
+                clearInterval(timer);
+            } else {
+                timer = setInterval(inc, 1000);
+            }
+            start((c) => !c);
         }
-        start((c) => !c);
     }
 
     function inc() {
         setValue((v) => v + 1);
     }
 
-    function Player({ color = "grey", style = {}, pause = false }) {
-        if (!pause) {
-            untrack(toggle);
-        }
+    function Player({
+        color = "grey",
+        style = {},
+        paused = false,
+    }: IncrementPlayerProps) {
+        createEffect(() => {
+            const pause = toValue(paused);
+            untrack(() => toggle(!pause));
+        });
 
         return () => (
             <div

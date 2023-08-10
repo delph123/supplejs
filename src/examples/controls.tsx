@@ -21,6 +21,21 @@ export function TestWhen() {
 
     return () => (
         <p>
+            Keyed:{" "}
+            <Show
+                when={content}
+                keyed
+                fallback={<font color="blue">Will soon show</font>}
+            >
+                {(v) => (
+                    <span>
+                        <font color="blue">{v}</font>
+                    </span>
+                )}
+            </Show>{" "}
+            me the money!
+            <br />
+            Non keyed:{" "}
             <Show
                 when={content}
                 fallback={<font color="blue">Will soon show</font>}
@@ -63,14 +78,15 @@ export function TestWhen() {
                 Will disappear in{" "}
                 <span style="font-weight: bold; color: green;">2 seconds</span>!
             </Show>
+            <br />
             <Show
-                when={true}
+                when={() => content()?.length || 1}
                 fallback={<div>Error - This should not be displayed</div>}
             >
-                <div>Before</div>
+                <span>Before -- </span>
                 {content}
-                {" me the money"}
-                <div>After</div>
+                {" me the money "}
+                <span> -- After</span>
             </Show>
         </p>
     );
@@ -254,7 +270,6 @@ export function SwitchApp() {
                 </>
                 {true}
                 {() => {
-                    console.warn("rerendering");
                     if (single()) {
                         return (
                             <Match when={() => x() == 13}>

@@ -1,4 +1,11 @@
-import { RWRChild, RWRComponent, RWRElement, RWRNodeEffect } from "./types";
+import {
+    RWRChild,
+    RWRComponent,
+    RWRElement,
+    RWRNodeEffect,
+    ValueOrGetter,
+} from "./types";
+import { toValue } from "./helper";
 
 export function h<Props>(
     type: string | RWRComponent<Props>,
@@ -73,7 +80,7 @@ function Input({
     ...props
 }: {
     id: string;
-    value: string | (() => string);
+    value: ValueOrGetter<string>;
     oninput: (e: InputElementInputEvent) => void;
     [x: string]: any;
 }) {
@@ -86,7 +93,7 @@ function Input({
             inputProps.id = id;
         }
         if (value != null) {
-            inputProps.value = typeof value === "function" ? value() : value;
+            inputProps.value = toValue(value);
         }
         if (oninput != null) {
             inputProps.oninput = (e: InputElementInputEvent) => {

@@ -2,6 +2,7 @@ import { RWRChild, RWRNode, RWRNodeEffect } from "./types";
 import { createRoot } from "./context";
 import { createMemo, createSignal } from "./reactivity";
 import { createRenderEffect } from "./dom";
+import { toValue } from "./helper";
 
 interface ForProps<T> {
     each: () => Iterable<T>;
@@ -36,11 +37,7 @@ export function For<T>({
         if (resolvedChildren().length > 0) {
             return resolvedChildren();
         } else {
-            if (typeof fallback === "function") {
-                return fallback();
-            } else {
-                return fallback ?? null;
-            }
+            return toValue(fallback) ?? null;
         }
     };
 }
@@ -73,11 +70,7 @@ export function Index<T>({ each, children, fallback }: IndexProps<T>) {
         if (resolvedChildren().length > 0) {
             return resolvedChildren();
         } else {
-            if (typeof fallback === "function") {
-                return fallback();
-            } else {
-                return fallback ?? null;
-            }
+            return toValue(fallback) ?? null;
         }
     };
 }

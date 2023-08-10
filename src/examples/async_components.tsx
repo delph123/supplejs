@@ -6,6 +6,8 @@ import {
     onCleanup,
     createChainedList,
     RWRNodeEffect,
+    Switch,
+    Match,
 } from "../rwr";
 
 function Dog(): RWRNodeEffect {
@@ -14,7 +16,7 @@ function Dog(): RWRNodeEffect {
             setTimeout(async () => {
                 try {
                     const res = await fetch(
-                        "https://dog.ceo/api/breeds/image/random"
+                        "https://dog.ceo/api/breeds/image/random",
                     );
                     const resJson = await res.json();
                     resolve(resJson.message);
@@ -59,7 +61,7 @@ function Dog(): RWRNodeEffect {
                 <button
                     onclick={() =>
                         mutate(
-                            "https://images.dog.ceo/breeds/hound-plott/hhh_plott002.JPG"
+                            "https://images.dog.ceo/breeds/appenzeller/n02107908_80.jpg",
                         )
                     }
                 >
@@ -98,5 +100,57 @@ export function AutoCounter(): RWRNodeEffect {
                 oninput={(e) => setDelay(e.target.value)}
             />
         </div>
+    );
+}
+
+export function AsyncSwitch() {
+    let resolvePromise, rejectPromise;
+    let num = 0;
+    const [data, { refetch, mutate }] = createResource(
+        () =>
+            new Promise((resolve, reject) => {
+                resolvePromise = resolve;
+                rejectPromise = reject;
+            }),
+    );
+    return () => (
+        <main>
+            <div
+                style={{ display: "flex", gap: "5px", alignItems: "baseline" }}
+            >
+                <button
+                    onClick={() =>
+                        resolvePromise("Hello world! (" + num++ + ")")
+                    }
+                >
+                    Finish!
+                </button>
+                <button
+                    onClick={() => rejectPromise("Ouch! Something went wrong!")}
+                >
+                    Error!
+                </button>
+                <button onClick={() => refetch()}>Refetch</button>
+                <button
+                    onClick={() =>
+                        mutate("Hello mutated world (" + num++ + ")")
+                    }
+                >
+                    Mutate
+                </button>
+                <span style="font-size: 90%; color: darkblue;">
+                    State: {() => data.state}
+                </span>
+            </div>
+            <Switch keyed>
+                <Match when={data.loading}>
+                    <p>Loading...</p>
+                </Match>
+                <Match when={data.error}>
+                    {(error) => <p style="color: red;">{error}</p>}
+                </Match>
+                <Match when={data}>{(response) => <p>{response}</p>}</Match>
+            </Switch>
+        </main>
     );
 }

@@ -60,3 +60,5 @@ export type RWRNodeEffect = () => RWRNode;
 export type RWRChild = RWRNode | RWRNodeEffect;
 
 export type RWRComponent<Props> = (props: Props) => RWRNodeEffect;
+
+export type ValueOrGetter<T> = T | (() => T);

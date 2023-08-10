@@ -46,7 +46,7 @@ export function DynamicApp() {
             <div style={{ marginTop: "20px" }}>
                 <Dynamic
                     component={Show}
-                    when={load()}
+                    when={load}
                     fallback={
                         <div>
                             <button
@@ -161,8 +161,8 @@ export function ChildrenPlayer() {
                     alignItems: "baseline",
                 }}
             >
-                Index: <IdxPlayer pause />
-                Clock: <ClockPlayer pause />
+                Index: <IdxPlayer paused />
+                Clock: <ClockPlayer paused />
             </div>
             <PlayWithChildren index={() => idx() % 5}>
                 <Clock level={0} probability={0.1} clock={clock} />
