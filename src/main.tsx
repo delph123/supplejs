@@ -5,7 +5,11 @@ import {
     NestedEffect,
     Referencing,
 } from "./examples/effects";
-import { AsyncApp, AutoCounter } from "./examples/async_components";
+import {
+    AsyncApp,
+    AsyncSwitch,
+    AutoCounter,
+} from "./examples/async_components";
 import { MultiApp, GoodBye } from "./examples/components";
 import { Todo } from "./examples/todo";
 import { GameOn, NestedChildren } from "./examples/fragments";
@@ -27,6 +31,6 @@ import { ChildrenPlayer, DynamicApp } from "./examples/dynamic";
 
 const exit = render(
     // () => <ReduxSlice nb={5} onexit={() => exit()} />,
-    () => <ChildrenPlayer nb={5} onexit={() => exit()} />,
+    () => <AsyncSwitch nb={5} onexit={() => exit()} />,
     document.getElementById("app")!,
 );

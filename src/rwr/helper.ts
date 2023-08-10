@@ -1,3 +1,5 @@
+import { ValueOrGetter } from "./types";
+
 /** Nested type */
 export type Nested<T> = (T | Nested<T>)[];
 
@@ -33,6 +35,14 @@ export function toArray<T>(v: T | T[] | null | undefined): T[] {
     } else {
         return [v];
     }
+}
+
+export function toValue<T>(target: ValueOrGetter<T>) {
+    return typeof target === "function" ? (target as () => T)() : target;
+}
+
+export function toGetter<T>(source: ValueOrGetter<T>) {
+    return typeof source === "function" ? (source as () => T) : () => source;
 }
 
 enum LOG_LEVEL {

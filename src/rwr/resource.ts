@@ -1,3 +1,4 @@
+import { ValueOrGetter } from "./types";
 import { createEffect, createMemo, createSignal } from "./reactivity";
 
 type FetcherParameter<P> = P | false | null;
@@ -12,7 +13,7 @@ type Resource<R, P> = [
     {
         mutate: (r?: R) => void;
         refetch: (p?: P) => void;
-    }
+    },
 ];
 
 /**
@@ -30,18 +31,15 @@ type Resource<R, P> = [
  * @param fetcher the asynchronous fetcher function
  */
 export function createResource<R, P>(
-    fetcher: (p: P) => R | Promise<R>
+    fetcher: (p: P) => R | Promise<R>,
 ): Resource<R, P>;
 export function createResource<R, P>(
-    source: FetcherParameter<P> | (() => FetcherParameter<P>),
-    fetcher: (p: P) => R | Promise<R>
+    source: ValueOrGetter<FetcherParameter<P>>,
+    fetcher: (p: P) => R | Promise<R>,
 ): Resource<R, P>;
 export function createResource<R, P>(
-    source:
-        | FetcherParameter<P>
-        | (() => FetcherParameter<P>)
-        | ((p: P) => R | Promise<R>),
-    fetcher?: (p: P) => R | Promise<R>
+    source: ValueOrGetter<FetcherParameter<P>> | ((p: P) => R | Promise<R>),
+    fetcher?: (p: P) => R | Promise<R>,
 ) {
     const [params, fetch] = createResourceParams<R, P>(source, fetcher);
 
@@ -135,6 +133,7 @@ export function createResource<R, P>(
         resource,
         {
             mutate(r?: R) {
+                previousData = r;
                 setResult({
                     data: r,
                     loading: false,
@@ -153,11 +152,8 @@ export function createResource<R, P>(
 }
 
 function createResourceParams<R, P>(
-    source:
-        | FetcherParameter<P>
-        | (() => FetcherParameter<P>)
-        | ((p: P) => R | Promise<R>),
-    fetcher?: (p: P) => R | Promise<R>
+    source: ValueOrGetter<FetcherParameter<P>> | ((p: P) => R | Promise<R>),
+    fetcher?: (p: P) => R | Promise<R>,
 ) {
     let params = typeof source === "function" ? source : () => source;
     let fetch = fetcher;
@@ -167,6 +163,6 @@ function createResourceParams<R, P>(
     }
     return [params, fetch] as [
         () => FetcherParameter<P>,
-        (p: P) => R | Promise<R>
+        (p: P) => R | Promise<R>,
     ];
 }
