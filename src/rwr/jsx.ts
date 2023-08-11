@@ -61,7 +61,7 @@ const OVERRIDES = {
 
 function overrideDomType<Props>(type: string | RWRComponent<Props>) {
     if (typeof type === "string" && OVERRIDES[type]) {
-        return OVERRIDES[type];
+        return OVERRIDES[type] as RWRComponent<Props>;
     } else {
         return type;
     }
@@ -82,8 +82,9 @@ function Input({
     id: string;
     value: ValueOrGetter<string>;
     oninput: (e: InputElementInputEvent) => void;
+    children: RWRChild[];
     [x: string]: any;
-}) {
+}): RWRNodeEffect {
     return () => {
         const inputProps = {
             ...props,
@@ -100,7 +101,7 @@ function Input({
                 const node = e.currentTarget.parentElement!;
                 const oldSelection = e.currentTarget.selectionStart;
                 oninput(e);
-                const input = node.querySelector("#" + id) as HTMLInputElement;
+                const input = node.querySelector<HTMLInputElement>("#" + id)!;
                 input.focus();
                 input.selectionStart = oldSelection;
             };
@@ -111,6 +112,6 @@ function Input({
             type: "input",
             props: inputProps,
             children,
-        };
+        } as RWRElement<Record<string, any>>;
     };
 }

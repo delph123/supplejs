@@ -13,11 +13,11 @@ interface IncrementPlayerProps {
     paused?: ValueOrGetter<boolean>;
 }
 
-export function createIncrement(initialValue: number = 0) {
+export function createIncrement(initialValue = 0) {
     const [value, setValue] = createSignal(initialValue);
     const [started, start] = createSignal(false);
 
-    let timer;
+    let timer: NodeJS.Timer;
 
     function toggle(status?: boolean) {
         if (status == null || started() !== status) {

@@ -140,7 +140,7 @@ export function createDOMComponent(component: RWRNode): DOMComponent {
             ([name, value]) => {
                 if (name === "ref") {
                     if (typeof value === "function") {
-                        value(element);
+                        (value as (t: HTMLElement) => void)(element);
                     } else {
                         value.current = element;
                     }

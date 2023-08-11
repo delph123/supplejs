@@ -1,3 +1,6 @@
+/* eslint-disable @typescript-eslint/no-unused-vars, @typescript-eslint/ban-ts-comment */
+// @ts-nocheck
+
 import { h, render } from "./rwr";
 import {
     CounterButton,

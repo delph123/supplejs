@@ -1,13 +1,22 @@
 import rainbowGradient from "rainbow-gradient";
-import { h, createSignal, createEffect, onCleanup, For } from "../rwr";
+import {
+    h,
+    createSignal,
+    createEffect,
+    onCleanup,
+    For,
+    RWRNodeEffect,
+} from "../rwr";
 
 import "./RainbowApp.css";
 
-type ColorProps = { colors: () => string[] };
+interface ColorProps {
+    colors: () => string[];
+}
 
 const NB_COLORS = 360 * 8;
 
-function ReactColors({ colors }: ColorProps) {
+function ReactColors({ colors }: ColorProps): RWRNodeEffect {
     const minWidth = `${100.0 / NB_COLORS}vw`;
     return () => (
         <div
@@ -17,7 +26,7 @@ function ReactColors({ colors }: ColorProps) {
             }}
         >
             <For each={colors}>
-                {(color) => (
+                {(color: string) => (
                     <div
                         style={{
                             minHeight: "100vh",
@@ -32,14 +41,14 @@ function ReactColors({ colors }: ColorProps) {
 }
 
 const rainbowColors = (rainbowGradient(360) as number[][]).map(
-    ([r, g, b]) => `rgb(${r},${g},${b})`
+    ([r, g, b]) => `rgb(${r},${g},${b})`,
 );
 
-function RainbowApp() {
+function RainbowApp(): RWRNodeEffect {
     const [colors, setColors] = createSignal(
         new Array(NB_COLORS)
             .fill(0)
-            .map((_, i) => rainbowColors[i % rainbowColors.length])
+            .map((_, i) => rainbowColors[i % rainbowColors.length]),
     );
 
     createEffect(() => {
@@ -47,7 +56,7 @@ function RainbowApp() {
         const update = () => {
             if (mounted) {
                 setColors((colors) => {
-                    const newColors = [...colors!];
+                    const newColors = [...colors];
                     newColors.push(newColors.shift()!);
                     return newColors;
                 });

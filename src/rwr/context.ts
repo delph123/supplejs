@@ -15,7 +15,7 @@ export enum ForwardParameter {
 }
 
 /** The tracking context stack. (Implemented as an Array) */
-const contextStack = [] as (TrackingContext<any> | null)[];
+const contextStack = [] as (TrackingContext<unknown> | null)[];
 
 /**
  * Gets the reactive scope that owns the currently running code (i.e. the
@@ -44,9 +44,9 @@ export function getOwner() {
  * @returns the result of the effect
  */
 export function runEffectInContext<T>(
-    context: TrackingContext | null,
+    context: TrackingContext<T> | null,
     effect: ((dispose: () => void) => T) | ((prev: T) => T) | (() => T),
-    forward: ForwardParameter = ForwardParameter.PREVIOUS_VALUE
+    forward: ForwardParameter = ForwardParameter.PREVIOUS_VALUE,
 ): T {
     let result: T;
 
@@ -220,10 +220,10 @@ export function onCleanup(cleanup: CleanupFunction) {
  * @param options.defer opt-in to only run the computation on change by
  *                      setting the defer option to true
  */
-export function on<T extends Array<() => any> | (() => any), U>(
+export function on<T extends (() => any)[] | (() => any), U>(
     deps: T,
-    fn: (input: T, prevInput: T, prevValue?: U) => U,
-    options: { defer?: boolean } = {}
+    fn: (input: any, prevInput: any, prevValue?: U) => U,
+    options: { defer?: boolean } = {},
 ) {
     let defer = options?.defer ?? false;
     let prevInput;

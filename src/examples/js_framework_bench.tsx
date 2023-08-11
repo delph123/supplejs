@@ -104,7 +104,7 @@ export const App = () => {
         [selected, setSelected] = createSignal<number | null>(null),
         run = () => setData(buildData(BATCH_SIZE)),
         runLots = () => setData(buildData(10 * BATCH_SIZE)),
-        add = () => setData((d) => [...d!, ...buildData(BATCH_SIZE)]),
+        add = () => setData((d) => [...d, ...buildData(BATCH_SIZE)]),
         update = () => {
             for (let i = 0, d = data(), len = d.length; i < len; i += 10)
                 d[i].setLabel((l) => l + " !!!");
@@ -121,8 +121,8 @@ export const App = () => {
         clear = () => setData([]),
         remove = (id) =>
             setData((d) => {
-                const idx = d!.findIndex((d) => d.id === id);
-                return [...d!.slice(0, idx), ...d!.slice(idx + 1)];
+                const idx = d.findIndex((d) => d.id === id);
+                return [...d.slice(0, idx), ...d.slice(idx + 1)];
             });
 
     return () => (

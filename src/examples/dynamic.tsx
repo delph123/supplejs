@@ -104,20 +104,20 @@ export function DynamicApp() {
 }
 
 function PlayWithChildren(props: { children?: any[]; index: () => number }) {
-    function rankString(idx) {
-        switch (idx()) {
-            case 0:
-                return "1st";
-            case 1:
-                return "2nd";
-            case 2:
-                return "3rd";
-            default:
-                return `${idx() + 1}th`;
-        }
-    }
+    // function rankString(idx) {
+    //     switch (idx()) {
+    //         case 0:
+    //             return "1st";
+    //         case 1:
+    //             return "2nd";
+    //         case 2:
+    //             return "3rd";
+    //         default:
+    //             return `${idx() + 1}th`;
+    //     }
+    // }
 
-    const resolved = children(() => props?.children);
+    const resolved = children(() => props.children);
     // const resolved = () => props?.children ?? [];
 
     return () => (

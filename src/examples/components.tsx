@@ -2,7 +2,7 @@ import {
     createEffect,
     createMemo,
     createSignal,
-    getOwner,
+    createLogger,
     h,
     onCleanup,
     untrack,
@@ -11,7 +11,6 @@ import {
     RWRNodeEffect,
     onMount,
 } from "../rwr";
-import { createLogger } from "../rwr/helper";
 
 function Header(): RWRNodeEffect {
     return () => (

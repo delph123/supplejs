@@ -1,27 +1,27 @@
 import { children } from "./component";
-import { onCleanup, onMount, untrack } from "./context";
+import { untrack } from "./context";
 import { createDOMComponent } from "./dom";
 import { toValue } from "./helper";
 import { createMemo } from "./reactivity";
 import {
     DOMComponent,
-    ValueOrGetter,
     RWRChild,
     RWRNode,
     RWRNodeEffect,
+    ValueOrGetter,
 } from "./types";
 
 type WhenCondition<T> = T | undefined | null | false;
 
-type MatchProps<T> = {
+interface MatchProps<T> {
     when: ValueOrGetter<WhenCondition<T>>;
     children?: RWRNode[] | [(item: T) => RWRNode];
-};
+}
 
-type ShowProps<T> = MatchProps<T> & {
+interface ShowProps<T> extends MatchProps<T> {
     keyed?: boolean;
     fallback?: RWRChild;
-};
+}
 
 export function Show<T>(props: ShowProps<T>): RWRNodeEffect {
     const whenValue = createMemo(() => toValue(props.when));
@@ -57,7 +57,7 @@ export function Switch(props: {
     fallback?: RWRChild;
     children?: RWRChild[];
 }): RWRNodeEffect {
-    const resolved = children(() => props?.children);
+    const resolved = children(() => props.children);
 
     const firstChildMatching = createMemo(
         () => {
@@ -135,7 +135,7 @@ export function Match<T>(props: MatchProps<T>) {
             ...createDOMComponent(null),
             type: Match,
             when: props.when,
-            children: props?.children,
+            children: props.children,
         };
     };
 }
