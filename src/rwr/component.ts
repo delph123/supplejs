@@ -108,8 +108,8 @@ export function Portal(props: {
     const dispose = render(
         () =>
             h("div", {
-                useShadow: props?.useShadow ?? false,
-                children: props?.children,
+                useShadow: props.useShadow ?? false,
+                children: props.children,
             }),
         props.mount ?? document.body,
     );

@@ -56,7 +56,7 @@ const FILTER_MAP: { [k in FiltersStrings]: (i: TodoItem) => boolean } = {
 
 export function Todo() {
     const [selectedFilter, setSelectedFilter] = createSignal<Filters>(
-        Filters.All
+        Filters.All,
     );
     const [value, setValue] = createSignal("");
     const [list, setList] = createSignal(DEFAULT_TODO_LIST);
@@ -155,7 +155,7 @@ function TodoListItem({ item, setList }: TodoListItemProps) {
                     class="btn btn__danger"
                     onclick={() => {
                         setList((l?: TodoItem[]) =>
-                            l!.filter((it) => it.key !== item.key)
+                            l!.filter((it) => it.key !== item.key),
                         );
                     }}
                 >
@@ -228,7 +228,7 @@ function FilterButton({ label, pressed, onpress }: FilterButtonProps) {
 
 interface FilterBarProps {
     selectedFilter: () => Filters;
-    setSelectedFilter: (v?: Filters) => void;
+    setSelectedFilter: (v: Filters) => void;
 }
 
 function FilterBar({ selectedFilter, setSelectedFilter }: FilterBarProps) {
