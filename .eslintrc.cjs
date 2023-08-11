@@ -19,15 +19,22 @@ module.exports = {
                 sourceType: "script",
             },
         },
+        {
+            files: ["**/?(*.)+(spec|test).[jt]s?(x)"],
+            extends: [
+                "plugin:testing-library/dom",
+                "plugin:jest-dom/recommended",
+            ],
+        },
     ],
     parser: "@typescript-eslint/parser",
     parserOptions: {
         ecmaVersion: "latest",
         sourceType: "module",
-        project: true,
+        project: ["./tsconfig.json", "./tsconfig.eslint.json"],
         tsconfigRootDir: __dirname,
     },
-    plugins: ["@typescript-eslint"],
+    plugins: ["@typescript-eslint", "testing-library", "jest-dom"],
     rules: {
         "@typescript-eslint/no-non-null-assertion": "off",
         "@typescript-eslint/no-explicit-any": "off",
