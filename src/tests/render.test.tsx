@@ -10,8 +10,7 @@ describe("render", () => {
     });
 
     it("Renders an h1 tag", () => {
-        const container = document.body;
-        render(() => <h1>Main Title</h1>, container);
+        render(() => <h1>Main Title</h1>);
         const main = screen.getByRole("heading");
         expect(main).toBeVisible();
         expect(main).toHaveTextContent("Main Title");

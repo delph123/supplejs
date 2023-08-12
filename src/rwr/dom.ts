@@ -14,13 +14,14 @@ import { createComputed } from "./reactivity";
 
 const logger = createLogger("dom");
 
-export function render(renderEffect: RWRNodeEffect, container: Node) {
+export function render(renderEffect: RWRNodeEffect, container?: Node) {
+    const parent = container ?? document.body;
     return createRoot((dispose) => {
         const component = createRenderEffect(renderEffect);
-        mount(component, container);
+        mount(component, parent);
         return () => {
             for (const node of component.nodes()) {
-                container.removeChild(node);
+                parent.removeChild(node);
             }
             dispose();
         };
