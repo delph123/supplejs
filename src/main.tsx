@@ -29,11 +29,12 @@ import {
     LoginApp,
 } from "./examples/controls";
 import { ChildrenPlayer, DynamicApp } from "./examples/dynamic";
+import { Game } from "./examples/square";
 
 // import "./style.css";
 
 const exit = render(
     // () => <ReduxSlice nb={5} onexit={() => exit()} />,
-    () => <AsyncSwitch nb={5} onexit={() => exit()} />,
+    () => <Game nb={5} onexit={() => exit()} />,
     document.getElementById("app")!,
 );
