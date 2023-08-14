@@ -1,7 +1,4 @@
-import { h, For, createSignal, createMemo } from "../rwr";
-
-import "./bootstrap.css";
-import "./js_bench.css";
+import { h, For, createSignal, createMemo, useCSS } from "../rwr";
 
 const BATCH_SIZE = 1000;
 
@@ -33,7 +30,7 @@ const adjectives = [
         "expensive",
         "fancy",
     ],
-    colours = [
+    colors = [
         "red",
         "yellow",
         "blue",
@@ -71,8 +68,8 @@ function buildData(count) {
     for (let i = 0; i < count; i++) {
         const [label, setLabel] = createSignal(
             `${adjectives[_random(adjectives.length)]} ${
-                colours[_random(colours.length)]
-            } ${nouns[_random(nouns.length)]}`
+                colors[_random(colors.length)]
+            } ${nouns[_random(nouns.length)]}`,
         );
         data[i] = {
             id: idCounter++,
@@ -85,21 +82,23 @@ function buildData(count) {
 
 const Button =
     ({ id, text, fn }) =>
-    () =>
-        (
-            <div class="col-sm-6 smallpad">
-                <button
-                    id={id}
-                    class="btn btn-primary btn-block"
-                    type="button"
-                    onclick={fn}
-                >
-                    {text}
-                </button>
-            </div>
-        );
+    () => (
+        <div class="col-sm-6 smallpad">
+            <button
+                id={id}
+                class="btn btn-primary btn-block"
+                type="button"
+                onclick={fn}
+            >
+                {text}
+            </button>
+        </div>
+    );
 
 export const App = () => {
+    useCSS("./bootstrap.css");
+    useCSS("./js_bench.css");
+
     const [data, setData] = createSignal<any[]>([]),
         [selected, setSelected] = createSignal<number | null>(null),
         run = () => setData(buildData(BATCH_SIZE)),
@@ -172,7 +171,7 @@ export const App = () => {
                         {(row) => {
                             const rowId = row.id;
                             const selectedRowClass = createMemo(() =>
-                                selected() === rowId ? "danger" : ""
+                                selected() === rowId ? "danger" : "",
                             );
 
                             return (
