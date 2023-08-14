@@ -1,6 +1,4 @@
-import { h, createSignal, For } from "../rwr";
-
-import "./todo.css";
+import { h, createSignal, For, useCSS } from "../rwr";
 
 interface TodoItem {
     key: string;
@@ -60,6 +58,8 @@ export function Todo() {
     );
     const [value, setValue] = createSignal("");
     const [list, setList] = createSignal(DEFAULT_TODO_LIST);
+
+    useCSS("./todo.css");
 
     const filteredList = () => list().filter(FILTER_MAP[selectedFilter()]);
 

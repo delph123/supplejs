@@ -4,7 +4,7 @@ import { ValueOrGetter } from "./types";
 export type Nested<T> = (T | Nested<T>)[];
 
 /**
- * Flatten childrens (developers may return an array containing nested arrays
+ * Flatten children (developers may return an array containing nested arrays
  * and expect them to be flatten out in the rendering phase).
  */
 export function flatten<T>(nestedChildren: Nested<T>) {

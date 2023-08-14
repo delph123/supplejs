@@ -3,20 +3,29 @@ body {
     margin: 0;
     overflow-y: scroll;
 }
+
+aside#nav {
+    margin: 0 15px 10px 15px;
+}
+
+aside#nav a.home {
+    margin: 0;
+}
+
 #duration {
     padding-top: 0px;
 }
 .jumbotron {
-    padding-top:10px;
-    padding-bottom:10px;
+    padding-top: 10px;
+    padding-bottom: 10px;
 }
 .test-data a {
     display: block;
 }
 .preloadicon {
     position: absolute;
-    top:-20px;
-    left:-20px;
+    top: -20px;
+    left: -20px;
 }
 .col-sm-6.smallpad {
     padding: 5px;

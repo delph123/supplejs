@@ -8,8 +8,6 @@ import {
     RWRNodeEffect,
 } from "../rwr";
 
-import "./RainbowApp.css";
-
 interface ColorProps {
     colors: () => string[];
 }
@@ -17,7 +15,8 @@ interface ColorProps {
 const NB_COLORS = 360 * 8;
 
 function ReactColors({ colors }: ColorProps): RWRNodeEffect {
-    const minWidth = `${100.0 / NB_COLORS}vw`;
+    // const minWidth = `${100.0 / NB_COLORS}vw`;
+    const minWidth = "1px";
     return () => (
         <div
             style={{

@@ -1,6 +1,4 @@
-import { h, createSignal } from "../rwr";
-
-import "./game.css";
+import { h, createSignal, useCSS } from "../rwr";
 
 const Square = (props) => {
     return () => (
@@ -49,6 +47,8 @@ const Game = () => {
         xIsNext: true,
     });
 
+    useCSS("./tic-tac-toe.css");
+
     function handleClick(i) {
         const history = state().history.slice(0, state().stepNumber + 1);
         const current = history[history.length - 1];
@@ -89,7 +89,7 @@ const Game = () => {
     };
 
     const moves = () =>
-        state().history.map((step, move) => {
+        state().history.map((_step, move) => {
             const desc = move ? "Go to move #" + move : "Go to game start";
             return (
                 <li>

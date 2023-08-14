@@ -1,4 +1,4 @@
-import { onCleanup, untrack } from "./context";
+import { onCleanup, onMount, untrack } from "./context";
 import { createDOMComponent, mount, render } from "./dom";
 import { shallowArrayEqual, toArray } from "./helper";
 import { h } from "./jsx";
@@ -73,7 +73,7 @@ export function lazy<Component extends RWRComponent<any>>(
         return promise;
     };
 
-    const lazyCompnent = (props) => {
+    const lazyComponent = (props) => {
         preload();
 
         return () => {
@@ -85,9 +85,9 @@ export function lazy<Component extends RWRComponent<any>>(
             return h(component().target!, props);
         };
     };
-    lazyCompnent.preload = preload;
+    lazyComponent.preload = preload;
 
-    return lazyCompnent;
+    return lazyComponent;
 }
 
 export function Dynamic<Props>({
@@ -115,4 +115,19 @@ export function Portal(props: {
     );
     onCleanup(dispose);
     return () => null;
+}
+
+export function useCSS(cssFilePath: string) {
+    let link;
+    onMount(() => {
+        // Creating link element
+        link = document.createElement("link");
+        link.href = cssFilePath;
+        link.type = "text/css";
+        link.rel = "stylesheet";
+        document.head.append(link);
+    });
+    onCleanup(() => {
+        document.head.removeChild(link);
+    });
 }

@@ -1,0 +1,63 @@
+#nav a,
+#nav button,
+#nav p,
+#nav div {
+    font-family: Avenir, Helvetica, Arial, sans-serif;
+}
+
+a.home > i {
+    margin-right: 5px;
+}
+
+#nav a.home {
+    display: block;
+    box-sizing: initial;
+    font-size: 12px;
+    text-decoration: none;
+    border-radius: 8px;
+    border: 1px solid transparent;
+    padding: 2px 8px;
+    margin: 10px 0;
+    width: 58px;
+    text-align: center;
+    color: white;
+    font-weight: 500;
+    background-color: #2f475b;
+    transition: color 0.25s;
+}
+
+#nav a.home:hover {
+    font-weight: 800;
+}
+
+#nav a:focus,
+#nav a:focus-visible {
+    outline: 4px auto -webkit-focus-ring-color;
+}
+
+.arrow {
+    border: solid white;
+    border-width: 0 2px 2px 0;
+    display: inline-block;
+    padding: 3px;
+}
+
+.right {
+    transform: rotate(-45deg);
+    -webkit-transform: rotate(-45deg);
+}
+
+.left {
+    transform: rotate(135deg);
+    -webkit-transform: rotate(135deg);
+}
+
+.up {
+    transform: rotate(-135deg);
+    -webkit-transform: rotate(-135deg);
+}
+
+.down {
+    transform: rotate(45deg);
+    -webkit-transform: rotate(45deg);
+}
