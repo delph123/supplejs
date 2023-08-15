@@ -8,13 +8,13 @@ import {
     RWRChild,
     RWRNode,
     RWRNodeEffect,
-    ValueOrGetter,
+    ValueOrAccessor,
 } from "./types";
 
 type WhenCondition<T> = T | undefined | null | false;
 
 interface MatchProps<T> {
-    when: ValueOrGetter<WhenCondition<T>>;
+    when: ValueOrAccessor<WhenCondition<T>>;
     children?: RWRNode[] | [(item: T) => RWRNode];
 }
 
