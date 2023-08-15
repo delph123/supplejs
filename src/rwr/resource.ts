@@ -1,4 +1,4 @@
-import { ValueOrGetter } from "./types";
+import { ValueOrAccessor } from "./types";
 import { createEffect, createMemo, createSignal } from "./reactivity";
 
 type FetcherParameter<P> = P | false | null;
@@ -34,11 +34,11 @@ export function createResource<R, P>(
     fetcher: (p: P) => R | Promise<R>,
 ): Resource<R, P>;
 export function createResource<R, P>(
-    source: ValueOrGetter<FetcherParameter<P>>,
+    source: ValueOrAccessor<FetcherParameter<P>>,
     fetcher: (p: P) => R | Promise<R>,
 ): Resource<R, P>;
 export function createResource<R, P>(
-    source: ValueOrGetter<FetcherParameter<P>> | ((p: P) => R | Promise<R>),
+    source: ValueOrAccessor<FetcherParameter<P>> | ((p: P) => R | Promise<R>),
     fetcher?: (p: P) => R | Promise<R>,
 ) {
     const [params, fetch] = createResourceParams<R, P>(source, fetcher);
@@ -152,7 +152,7 @@ export function createResource<R, P>(
 }
 
 function createResourceParams<R, P>(
-    source: ValueOrGetter<FetcherParameter<P>> | ((p: P) => R | Promise<R>),
+    source: ValueOrAccessor<FetcherParameter<P>> | ((p: P) => R | Promise<R>),
     fetcher?: (p: P) => R | Promise<R>,
 ) {
     let params = typeof source === "function" ? source : () => source;

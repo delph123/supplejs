@@ -3,14 +3,14 @@ import {
     createSignal,
     untrack,
     toValue,
-    ValueOrGetter,
+    ValueOrAccessor,
     createEffect,
 } from "../rwr";
 
 interface IncrementPlayerProps {
     color?: string;
     style?: Record<string, string>;
-    paused?: ValueOrGetter<boolean>;
+    paused?: ValueOrAccessor<boolean>;
 }
 
 export function createIncrement(initialValue = 0) {

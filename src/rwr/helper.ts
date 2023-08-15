@@ -1,4 +1,4 @@
-import { ValueOrGetter } from "./types";
+import { ValueOrAccessor } from "./types";
 
 /** Nested type */
 export type Nested<T> = (T | Nested<T>)[];
@@ -37,11 +37,11 @@ export function toArray<T>(v: T | T[] | null | undefined): T[] {
     }
 }
 
-export function toValue<T>(target: ValueOrGetter<T>) {
+export function toValue<T>(target: ValueOrAccessor<T>) {
     return typeof target === "function" ? (target as () => T)() : target;
 }
 
-export function toGetter<T>(source: ValueOrGetter<T>) {
+export function toGetter<T>(source: ValueOrAccessor<T>) {
     return typeof source === "function" ? (source as () => T) : () => source;
 }
 

@@ -3,7 +3,7 @@ import {
     RWRComponent,
     RWRElement,
     RWRNodeEffect,
-    ValueOrGetter,
+    ValueOrAccessor,
 } from "./types";
 import { toValue } from "./helper";
 
@@ -80,7 +80,7 @@ function Input({
     ...props
 }: {
     id: string;
-    value: ValueOrGetter<string>;
+    value: ValueOrAccessor<string>;
     oninput: (e: InputElementInputEvent) => void;
     children: RWRChild[];
     [x: string]: any;

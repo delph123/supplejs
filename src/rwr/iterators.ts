@@ -105,7 +105,7 @@ export function mapArray<T, U>(
     mapFn: (v: T, i: () => number) => U,
     equals?: (prev: T, next: T) => boolean,
 ) {
-    // Define the finder function (eiter uses the provided equals function
+    // Define the finder function (either uses the provided equals function
     // or use strict equality defined by === to compare underlying elements)
     const compare = equals ?? ((p, n) => p === n);
     const finder = function finder(nextElement: T) {

@@ -61,4 +61,12 @@ export type RWRChild = RWRNode | RWRNodeEffect;
 
 export type RWRComponent<Props> = (props: Props) => RWRNodeEffect;
 
-export type ValueOrGetter<T> = T | (() => T);
+export type Accessor<T> = () => T;
+
+// Transforms a tuple to a tuple of accessors in a way that allows generics
+// to be inferred (from solidjs implementation)
+export type AccessorArray<T> = [
+    ...Extract<{ [K in keyof T]: Accessor<T[K]> }, readonly unknown[]>,
+];
+
+export type ValueOrAccessor<T> = T | Accessor<T>;

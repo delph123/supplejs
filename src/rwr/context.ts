@@ -1,3 +1,5 @@
+import { Accessor, AccessorArray } from "./types";
+
 type CleanupFunction = () => void;
 
 export interface TrackingContext<T = any> {
@@ -71,6 +73,10 @@ export function runEffectInContext<T>(
 
 export function createChildContext<T>(effect: (prev: T) => T, value?: T) {
     const execute = () => {
+        // TODO: call cleanup before value is changed in signal.
+        // When cleanup is called, the new value of the signal was set, and
+        // therefore, the cleanup function accesses the new value instead of
+        // the old value -> this may not be what is expected by the developer
         cleanup(context);
         runEffectInContext(context, effect);
     };
@@ -220,17 +226,17 @@ export function onCleanup(cleanup: CleanupFunction) {
  * @param options.defer opt-in to only run the computation on change by
  *                      setting the defer option to true
  */
-export function on<T extends (() => any)[] | (() => any), U>(
-    deps: T,
-    fn: (input: any, prevInput: any, prevValue?: U) => U,
+export function on<T, U>(
+    deps: Accessor<T> | AccessorArray<T>,
+    fn: (input: T, prevInput?: T, prevValue?: U) => U,
     options: { defer?: boolean } = {},
 ) {
     let defer = options?.defer ?? false;
-    let prevInput;
-    let input;
+    let prevInput: T | undefined;
+    let input: T;
     return (prevValue?: U) => {
         prevInput = input;
-        input = Array.isArray(deps) ? deps.map((dep) => dep()) : deps();
+        input = Array.isArray(deps) ? (deps.map((dep) => dep()) as T) : deps();
         if (!defer) {
             return untrack(() => fn(input, prevInput, prevValue));
         } else {
