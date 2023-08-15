@@ -29,7 +29,7 @@ interface EqualsOption<T> {
  * can set equals to false to always rerun dependents after the setter is
  * called, or you can pass your own function for testing equality.
  *
- * @param initialValue the inital value returned by the getter
+ * @param initialValue the initial value returned by the getter
  * @param options.equals the equality function to test if signal has changed
  * @returns [get, set] const array (typically destructured)
  */
@@ -109,7 +109,7 @@ export function createComputed<T>(effect: (v: T) => T, value?: T) {
  */
 export function createEffect<T>(effect: (v: T) => T, value?: T) {
     const childContext = createChildContext(effect, value);
-    setTimeout(() => runEffectInContext(childContext, effect), 0);
+    queueMicrotask(() => runEffectInContext(childContext, effect));
 }
 
 /**
@@ -126,7 +126,7 @@ export function createEffect<T>(effect: (v: T) => T, value?: T) {
 export function createMemo<T>(
     memo: (v: T) => T,
     value?: T,
-    options?: EqualsOption<T>
+    options?: EqualsOption<T>,
 ) {
     const [memoizedValue, setMemoizedValue] = createSignal<T>(value, options);
     createComputed((previousValue) => {
@@ -166,7 +166,7 @@ export function createReaction(onReaction: () => void) {
  */
 export function createSelector<T, U>(
     source: () => T,
-    equals?: (a: U, b: T) => boolean
+    equals?: (a: U, b: T) => boolean,
 ) {
     const comparator = equals ?? ((a: U, b: T) => (a as unknown) === b);
     return function selector(k: U) {
@@ -178,7 +178,7 @@ export function createSelector<T, U>(
  * Creates a mutable ref object, whose .current property is initialized to the
  * passed argument (initialValue).
  *
- * @param initialValue the inital value for the ref's current property
+ * @param initialValue the initial value for the ref's current property
  * @returns a ref object with mutable current property
  */
 export function createRef<T>(initialValue?: T) {
@@ -200,14 +200,17 @@ export function createDeferred<T>(
     options?: {
         timeoutMs?: number;
         equals?: false | ((prev: T, next: T) => boolean);
-    }
+    },
 ): () => T {
     // TODO not implemented yet!
 
     // XXX only here to prevent lint warning
-    setTimeout(() => {
-        console.log("Deferred timed-out!");
-    }, options?.timeoutMs);
+    setTimeout(
+        () => {
+            console.log("Deferred timed-out!");
+        },
+        options?.timeoutMs,
+    );
 
     return source;
 }
