@@ -40,7 +40,7 @@ export function getOwner() {
  *
  * @param context the wrapping context to use
  * @param effect the effect to run
- * @param forwardDispose forward dispose function to the effect as 1st paramter
+ * @param forwardDispose forward dispose function to the effect as 1st parameter
  * @returns the result of the effect
  */
 export function runEffectInContext<T>(
@@ -105,7 +105,7 @@ export function createChildContext<T>(effect: (prev: T) => T, value?: T) {
  * @private
  *
  * @param context the tracking context to cleanup
- * @param dispose dipose of the current context (deactivate it)
+ * @param dispose dispose of the current context (deactivate it)
  */
 export function cleanup<T>(context: TrackingContext<T>, dispose = false) {
     // Recursively dispose of the context and it's children,
@@ -150,7 +150,7 @@ export function untrack<T>(effect: () => T) {
  * This is useful for nested reactive scopes that you do not wish to release
  * when the parent re-evaluates.
  *
- * @param effect the computation, which will be called with dispose as paramter
+ * @param effect the computation, which will be called with dispose as parameter
  * @returns the result of the effect
  */
 export function createRoot<T>(effect: (dispose: () => void) => T) {
@@ -189,7 +189,7 @@ export function runWithOwner<T>(owner: TrackingContext<T>, effect: () => T) {
  * @param runOnce the computation which runs once at startup
  */
 export function onMount(runOnce: () => void) {
-    setTimeout(() => untrack(runOnce), 0);
+    queueMicrotask(() => untrack(runOnce));
 }
 
 /**
