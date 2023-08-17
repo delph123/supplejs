@@ -1,11 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { screen } from "@testing-library/dom";
-import { h, render } from "../rwr";
+import { render, screen } from "./utils";
+import { h } from "../rwr";
 
 describe("render", () => {
     it("Renders a string", () => {
-        const container = document.body;
-        render(() => "Hello world!", container);
+        const { container } = render(() => "Hello world!");
         expect(container).toHaveTextContent("Hello world!");
     });
 

@@ -250,6 +250,8 @@ export function catchError() {
     // TODO
 }
 
-export function onError() {
+export function onError(_arg: any) {
     // TODO
+
+    console.log(_arg);
 }
