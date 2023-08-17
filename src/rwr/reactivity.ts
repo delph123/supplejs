@@ -104,6 +104,16 @@ export function createComputed<T>(effect: (v: T) => T, value?: T) {
  * from the effect function's last execution, or on the first call, equal to
  * the optional second argument to createEffect.
  *
+ * The first execution of the effect function is not immediate; it's scheduled
+ * to run after the current rendering phase (e.g., after calling the function
+ * passed to render, createRoot, or runWithOwner).
+ *
+ * This delay in first execution is useful because it means an effect defined
+ * in a component scope runs after the JSX returned by the component gets added
+ * to the DOM. In particular, refs will already be set. Thus you can use an
+ * effect to manipulate the DOM manually, call vanilla JS libraries, or other
+ * side effects.
+ *
  * @param effect the computation with side effects
  * @param value the initial value to provide to the function
  */
