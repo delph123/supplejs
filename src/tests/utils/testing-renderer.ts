@@ -47,6 +47,7 @@ const mountedContainers = new Set<Ref>();
  */
 function render(renderEffect: RWRNodeEffect, options: Options = {}): Result {
     let { container, baseElement = container } = options;
+    let transientContainer: HTMLElement | undefined = undefined;
 
     if (!baseElement) {
         // Default to document.body instead of documentElement to avoid output of potentially-large
@@ -55,7 +56,8 @@ function render(renderEffect: RWRNodeEffect, options: Options = {}): Result {
     }
 
     if (!container) {
-        container = baseElement.appendChild(document.createElement("div"));
+        transientContainer = document.createElement("div");
+        container = baseElement.appendChild(transientContainer);
     }
 
     const wrappedUi: RWRNodeEffect =
@@ -71,7 +73,7 @@ function render(renderEffect: RWRNodeEffect, options: Options = {}): Result {
     // We'll add it to the mounted components regardless of whether it's actually
     // added to document.body so the cleanup method works regardless of whether
     // they're passing us a custom container or not.
-    mountedContainers.add({ container, dispose });
+    mountedContainers.add({ container: transientContainer, dispose });
 
     const queryHelpers = getQueriesForElement(container, options.queries);
 
@@ -170,10 +172,14 @@ export function testEffect<T = void>(
 
 function cleanupAtContainer(ref: Ref) {
     const { container, dispose } = ref;
-    dispose();
+    try {
+        dispose();
+    } catch (e) {
+        // consume & ignore error
+    }
 
-    if (container?.parentNode === document.body) {
-        document.body.removeChild(container);
+    if (container != null && container.parentNode != null) {
+        container.parentNode.removeChild(container);
     }
 
     mountedContainers.delete(ref);
