@@ -1,3 +1,4 @@
+import { MutableRef } from "./types";
 import {
     cleanup,
     createChildContext,
@@ -191,7 +192,7 @@ export function createSelector<T, U>(
  * @param initialValue the initial value for the ref's current property
  * @returns a ref object with mutable current property
  */
-export function createRef<T>(initialValue?: T) {
+export function createRef<T>(initialValue?: T): MutableRef<T> {
     return {
         current: initialValue as T,
     };

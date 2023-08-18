@@ -3,6 +3,7 @@ import {
     RWRComponent,
     RWRElement,
     RWRNodeEffect,
+    Ref,
     ValueOrAccessor,
 } from "./types";
 import { toValue } from "./helper";
@@ -73,38 +74,50 @@ type InputElementInputEvent = InputEvent & {
 };
 
 function Input({
-    id,
+    ref,
     value,
     oninput,
+    onInput,
     children,
     ...props
 }: {
-    id: string;
-    value: ValueOrAccessor<string>;
-    oninput: (e: InputElementInputEvent) => void;
-    children: RWRChild[];
+    ref?: Ref<HTMLInputElement | undefined>;
+    value?: ValueOrAccessor<string>;
+    oninput?: (e: InputElementInputEvent) => void;
+    children?: RWRChild[];
     [x: string]: any;
 }): RWRNodeEffect {
-    return () => {
-        const inputProps = {
-            ...props,
-        };
+    let inputRef: HTMLInputElement | undefined;
 
-        if (id != null) {
-            inputProps.id = id;
+    const inputProps = {
+        ...props,
+    };
+
+    inputProps.ref = (el: HTMLInputElement) => {
+        inputRef = el;
+        if (ref != null) {
+            if (typeof ref === "function") {
+                ref(el);
+            } else {
+                ref.current = el;
+            }
         }
+    };
+
+    if (oninput != null || onInput != null) {
+        inputProps.onInput = (e: InputElementInputEvent) => {
+            const oldSelection = e.currentTarget.selectionStart;
+            (onInput ?? oninput)(e);
+            if (inputRef) {
+                inputRef.focus();
+                inputRef.selectionStart = oldSelection;
+            }
+        };
+    }
+
+    return () => {
         if (value != null) {
             inputProps.value = toValue(value);
-        }
-        if (oninput != null) {
-            inputProps.oninput = (e: InputElementInputEvent) => {
-                const node = e.currentTarget.parentElement!;
-                const oldSelection = e.currentTarget.selectionStart;
-                oninput(e);
-                const input = node.querySelector<HTMLInputElement>("#" + id)!;
-                input.focus();
-                input.selectionStart = oldSelection;
-            };
         }
 
         return {

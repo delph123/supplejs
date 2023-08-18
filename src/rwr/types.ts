@@ -70,3 +70,8 @@ export type AccessorArray<T> = [
 ];
 
 export type ValueOrAccessor<T> = T | Accessor<T>;
+
+export type MutableRef<T> = { current: T };
+export type RefCallback<T> = (ref: T) => void;
+
+export type Ref<T> = MutableRef<T> | RefCallback<T>;
