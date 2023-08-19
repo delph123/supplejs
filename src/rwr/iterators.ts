@@ -2,7 +2,7 @@ import { RWRChild, RWRNode, RWRNodeEffect } from "./types";
 import { createRoot } from "./context";
 import { createMemo, createSignal } from "./reactivity";
 import { createRenderEffect } from "./dom";
-import { toValue } from "./helper";
+import { sameValueZero, toValue } from "./helper";
 
 interface ForProps<T> {
     each: () => Iterable<T>;
@@ -106,8 +106,8 @@ export function mapArray<T, U>(
     equals?: (prev: T, next: T) => boolean,
 ) {
     // Define the finder function (either uses the provided equals function
-    // or use strict equality defined by === to compare underlying elements)
-    const compare = equals ?? ((p, n) => p === n);
+    // or use defaults sameValueZero algorithm to compare underlying elements)
+    const compare = equals ?? sameValueZero;
     const finder = function finder(nextElement: T) {
         return (previousEntry: Entry<T, U>) => {
             return (
