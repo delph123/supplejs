@@ -19,11 +19,30 @@ export function flatten<T>(nestedChildren: Nested<T>) {
     return children;
 }
 
+/**
+ * Performs a SameValueZero comparison between two values to determine if they
+ * are equivalent.
+ *
+ * The only difference between SameValueZero & === equalities is how they treat
+ * NaN. With SameValueZero, NaN are considered equivalent, while they are not
+ * with === equality.
+ *
+ * @see http://ecma-international.org/ecma-262/7.0/#sec-samevaluezero
+ *
+ * @param value the value to compare
+ * @param other the other value to compare
+ * @returns true if the two values are equivalent, false otherwise
+ */
+export function sameValueZero<T>(value: T, other: T) {
+    // Uses the fact that NaN is the only value which is not equal to itself
+    return value === other || (value !== value && other !== other);
+}
+
 export function shallowArrayEqual<T>(first: T[], second: T[]) {
     return (
         first === second ||
         (first.length === second.length &&
-            first.every((v, i) => v === second[i]))
+            first.every((v, i) => sameValueZero(v, second[i])))
     );
 }
 
@@ -39,10 +58,6 @@ export function toArray<T>(v: T | T[] | null | undefined): T[] {
 
 export function toValue<T>(target: ValueOrAccessor<T>) {
     return typeof target === "function" ? (target as () => T)() : target;
-}
-
-export function toGetter<T>(source: ValueOrAccessor<T>) {
-    return typeof source === "function" ? (source as () => T) : () => source;
 }
 
 enum LOG_LEVEL {

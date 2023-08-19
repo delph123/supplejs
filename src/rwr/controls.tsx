@@ -84,7 +84,7 @@ export function Switch(props: {
             equals(prev, next) {
                 if (!props.keyed) {
                     // If the Switch is not keyed, the memo will only re-render when the
-                    // matched branch actually changes, independantly of the value of the
+                    // matched branch actually changes, independently of the value of the
                     // underlying model (the "when" attribute's value)
                     return (
                         (prev == null && next == null) ||
@@ -92,7 +92,7 @@ export function Switch(props: {
                     );
                 } else {
                     // Whereas, if the Switch is keyed, we want the memo to re-render
-                    // both when the matched branche changes, but also when the underlying
+                    // both when the matched branch changes, but also when the underlying
                     // model changes value, therefore we compare both
                     return (
                         (prev == null && next == null) ||

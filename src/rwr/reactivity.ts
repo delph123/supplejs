@@ -1,4 +1,5 @@
 import { MutableRef } from "./types";
+import { sameValueZero } from "./helper";
 import {
     cleanup,
     createChildContext,
@@ -38,7 +39,7 @@ export function createSignal<T>(initialValue?: T, options?: EqualsOption<T>) {
     const equals =
         options?.equals === false
             ? () => false
-            : options?.equals ?? ((p, n) => p === n);
+            : options?.equals ?? sameValueZero;
 
     let state = initialValue;
     let observers = new Set<TrackingContext>();
@@ -179,7 +180,7 @@ export function createSelector<T, U>(
     source: () => T,
     equals?: (a: U, b: T) => boolean,
 ) {
-    const comparator = equals ?? ((a: U, b: T) => (a as unknown) === b);
+    const comparator = equals ?? sameValueZero;
     return function selector(k: U) {
         return createMemo(() => comparator(k, source()))();
     };
