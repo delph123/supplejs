@@ -254,7 +254,7 @@ function domComponent(node: Node): RealDOMComponent {
     };
 }
 
-function multiComponents(components: DOMComponent[]): MultiDOMComponent {
+export function multiComponents(components: DOMComponent[]): MultiDOMComponent {
     return {
         __kind: "multi_components",
         components,
