@@ -1,4 +1,4 @@
-import { h, createSignal, useCSS } from "../rwr";
+import { h, createSignal, useCSS } from "../core";
 
 const Square = (props) => {
     return () => (

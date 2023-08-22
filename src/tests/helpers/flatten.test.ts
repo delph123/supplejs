@@ -1,5 +1,5 @@
 import { expect, describe, it } from "vitest";
-import { flatten } from "../../rwr";
+import { flatten } from "../../core";
 
 describe("Flatten", () => {
     it("Flatten empty array", () => {

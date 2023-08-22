@@ -1,4 +1,4 @@
-import { h, render } from "./rwr";
+import { h, render } from "./core";
 import Navigation from "./examples/Navigation";
 
 import "./main.css";

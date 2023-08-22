@@ -6,16 +6,16 @@ import {
     createReaction,
     createSignal,
     onCleanup,
-    RWRNodeEffect,
+    SuppleNodeEffect,
     getOwner,
     createMemo,
     runWithOwner,
     createSelector,
     createRef,
     onMount,
-} from "../rwr";
+} from "../core";
 
-export function NestedEffect(): RWRNodeEffect {
+export function NestedEffect(): SuppleNodeEffect {
     const [a, setA] = createSignal(1);
     const [b, setB] = createSignal(10);
     const [c, setC] = createSignal(100);
@@ -31,14 +31,14 @@ export function NestedEffect(): RWRNodeEffect {
             createEffect(() => {
                 console.log(`Effect ${a()}.${b()}.${c()}`);
                 onCleanup(() =>
-                    console.log(`Cleaning-up effect ${a()}.${b()}.${c()}`)
+                    console.log(`Cleaning-up effect ${a()}.${b()}.${c()}`),
                 );
             });
 
             createEffect(() => {
                 console.log(`Effect ${a()}.${b()}.2`);
                 onCleanup(() =>
-                    console.log(`Cleaning-up effect ${a()}.${b()}.2`)
+                    console.log(`Cleaning-up effect ${a()}.${b()}.2`),
                 );
             });
         });
@@ -46,20 +46,20 @@ export function NestedEffect(): RWRNodeEffect {
         createEffect(() => {
             console.log(`Effect ${a()}.${b() + 1}`);
             onCleanup(() =>
-                console.log(`Cleaning-up effect ${a()}.${b() + 1}`)
+                console.log(`Cleaning-up effect ${a()}.${b() + 1}`),
             );
 
             createEffect(() => {
                 console.log(`Effect ${a()}.${b() + 1}.${c()}`);
                 onCleanup(() =>
-                    console.log(`Cleaning-up effect ${a()}.${b() + 1}.${c()}`)
+                    console.log(`Cleaning-up effect ${a()}.${b() + 1}.${c()}`),
                 );
             });
 
             createEffect(() => {
                 console.log(`Effect ${a()}.${b() + 1}.2`);
                 onCleanup(() =>
-                    console.log(`Cleaning-up effect ${a()}.${b() + 1}.2`)
+                    console.log(`Cleaning-up effect ${a()}.${b() + 1}.2`),
                 );
             });
         });
@@ -92,7 +92,7 @@ export function NestedEffect(): RWRNodeEffect {
     return () => 123456789012345678901234567890n;
 }
 
-export function MyNameIs(): RWRNodeEffect {
+export function MyNameIs(): SuppleNodeEffect {
     const [firstName, setFirstName] = createSignal("John");
     const [lastName, setLastName] = createSignal("Doe");
     const [showLastName, setShowLastName] = createSignal(true);

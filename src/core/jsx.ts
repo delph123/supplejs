@@ -1,18 +1,18 @@
 import {
-    RWRChild,
-    RWRComponent,
-    RWRElement,
-    RWRNodeEffect,
+    SuppleChild,
+    SuppleComponent,
+    JSXElement,
+    SuppleNodeEffect,
     Ref,
     ValueOrAccessor,
 } from "./types";
 import { toValue } from "./helper";
 
 export function h<Props>(
-    type: string | RWRComponent<Props>,
-    props?: Props & { children?: RWRChild[] },
-    ...children: RWRChild[]
-): RWRElement<Props> {
+    type: string | SuppleComponent<Props>,
+    props?: Props & { children?: SuppleChild[] },
+    ...children: SuppleChild[]
+): JSXElement<Props> {
     let altChildren = props?.children ?? children;
     if (!Array.isArray(altChildren)) {
         altChildren = [altChildren];
@@ -33,7 +33,7 @@ export function h<Props>(
     // removed (as could be the case with a Show component alternating states)
     if (typeof type === "function") {
         return {
-            __kind: "rwr_element",
+            __kind: "supple_element",
             type,
             props: attributes as Props,
             children: altChildren,
@@ -51,8 +51,8 @@ export function h<Props>(
 export function Fragment({
     children,
 }: {
-    children: RWRChild[];
-}): RWRNodeEffect {
+    children: SuppleChild[];
+}): SuppleNodeEffect {
     return () => children;
 }
 
@@ -60,9 +60,9 @@ const OVERRIDES = {
     input: Input,
 };
 
-function overrideDomType<Props>(type: string | RWRComponent<Props>) {
+function overrideDomType<Props>(type: string | SuppleComponent<Props>) {
     if (typeof type === "string" && OVERRIDES[type]) {
-        return OVERRIDES[type] as RWRComponent<Props>;
+        return OVERRIDES[type] as SuppleComponent<Props>;
     } else {
         return type;
     }
@@ -84,9 +84,9 @@ function Input({
     ref?: Ref<HTMLInputElement | undefined>;
     value?: ValueOrAccessor<string>;
     oninput?: (e: InputElementInputEvent) => void;
-    children?: RWRChild[];
+    children?: SuppleChild[];
     [x: string]: any;
-}): RWRNodeEffect {
+}): SuppleNodeEffect {
     let inputRef: HTMLInputElement | undefined;
 
     const inputProps = {
@@ -125,6 +125,6 @@ function Input({
             type: "input",
             props: inputProps,
             children,
-        } as RWRElement<Record<string, any>>;
+        } as JSXElement<Record<string, any>>;
     };
 }

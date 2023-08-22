@@ -8,7 +8,7 @@ import {
     onCleanup,
     untrack,
     onMount,
-} from "../rwr";
+} from "../core";
 import { Counter } from "./components";
 
 export function Mapper() {

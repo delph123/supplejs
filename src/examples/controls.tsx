@@ -6,11 +6,11 @@ import {
     Switch,
     Match,
     For,
-    RWRNode,
+    SuppleNode,
     onCleanup,
     onMount,
     Portal,
-} from "../rwr";
+} from "../core";
 import { Clock } from "./components";
 import { CounterButton } from "./effects";
 
@@ -136,7 +136,7 @@ export function ForElse({
     each;
     fallback?;
     equals?;
-    children?: [(el, i) => RWRNode];
+    children?: [(el, i) => SuppleNode];
 }) {
     onMount(() => console.log("Mounting ForElse"));
     onCleanup(() => console.log("Cleaning-up ForElse"));

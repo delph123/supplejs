@@ -3,9 +3,9 @@ import {
     MultiDOMComponent,
     ProxyDOMComponent,
     RealDOMComponent,
-    RWRComponent,
-    RWRNode,
-    RWRNodeEffect,
+    SuppleComponent,
+    SuppleNode,
+    SuppleNodeEffect,
     DOMContainer,
 } from "./types";
 import { createLogger, flatten } from "./helper";
@@ -14,7 +14,7 @@ import { createComputed } from "./reactivity";
 
 const logger = createLogger("dom");
 
-export function render(renderEffect: RWRNodeEffect, container?: Node) {
+export function render(renderEffect: SuppleNodeEffect, container?: Node) {
     const parent = container ?? document.body;
     return createRoot((dispose) => {
         const component = createRenderEffect(renderEffect);
@@ -31,8 +31,8 @@ export function render(renderEffect: RWRNodeEffect, container?: Node) {
 let nb = 0;
 
 export function createRenderEffect<Props>(
-    renderEffect: RWRNodeEffect,
-    Component?: RWRComponent<Props>,
+    renderEffect: SuppleNodeEffect,
+    Component?: SuppleComponent<Props>,
 ): ProxyDOMComponent {
     const renderNb = nb++;
 
@@ -93,7 +93,7 @@ function overwriteParent(
     }
 }
 
-export function createDOMComponent(component: RWRNode): DOMComponent {
+export function createDOMComponent(component: SuppleNode): DOMComponent {
     if (component == null || typeof component === "boolean") {
         // take the spot for mount
         return domComponent(document.createComment("void"));
@@ -122,7 +122,7 @@ export function createDOMComponent(component: RWRNode): DOMComponent {
             // take the spot for mount
             return domComponent(document.createComment("empty_fragment"));
         }
-    } else if (component.__kind === "rwr_element") {
+    } else if (component.__kind === "supple_element") {
         // When we create a component, we will pass children untouched so that the
         // component itself can define the semantics of the children prop as it
         // sees fit. This is useful for example for the iterators components which

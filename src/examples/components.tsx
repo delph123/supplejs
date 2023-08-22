@@ -8,11 +8,11 @@ import {
     untrack,
     version,
     createChainedList,
-    RWRNodeEffect,
+    SuppleNodeEffect,
     onMount,
-} from "../rwr";
+} from "../core";
 
-function Header(): RWRNodeEffect {
+function Header(): SuppleNodeEffect {
     return () => (
         <div>
             <h2>Hello!</h2>
@@ -23,10 +23,10 @@ function Header(): RWRNodeEffect {
     );
 }
 
-function Footer({ version }: { version: string }): RWRNodeEffect {
+function Footer({ version }: { version: string }): SuppleNodeEffect {
     return () => (
         <p class="read-the-docs">
-            This page was created with React-Without-React v{version}
+            This page was created with SuppleJS v{version}
         </p>
     );
 }
@@ -41,7 +41,7 @@ export function Clock({
     level: number;
     probability?: number;
     clock?: () => number;
-}): RWRNodeEffect {
+}): SuppleNodeEffect {
     let notif: () => boolean;
 
     if (clock) {
@@ -98,7 +98,7 @@ function withPrevious<T>(variable: () => T, initialValue: T) {
 export function Counter(props: {
     index: number;
     total: () => string | number;
-}): RWRNodeEffect {
+}): SuppleNodeEffect {
     const [counter, setCounter] = createSignal(10);
 
     const label = () => {
@@ -133,7 +133,7 @@ export function Total() {
     return () => <p>TOTAL = {sum}</p>;
 }
 
-export function App(): RWRNodeEffect {
+export function App(): SuppleNodeEffect {
     const [ChainedList, push, pop, size] = createChainedList({
         tag: "div",
         attributes: {
@@ -175,7 +175,7 @@ export function App(): RWRNodeEffect {
     );
 }
 
-export function MultiApp(): RWRNodeEffect {
+export function MultiApp(): SuppleNodeEffect {
     const [ChainedList, push, pop] = createChainedList();
 
     return () => (
@@ -187,7 +187,7 @@ export function MultiApp(): RWRNodeEffect {
     );
 }
 
-export function GoodBye({ onexit }): RWRNodeEffect {
+export function GoodBye({ onexit }): SuppleNodeEffect {
     let n = 0;
     const [c, setC] = createSignal(false);
     setInterval(() => setC((c) => !c), 2000);

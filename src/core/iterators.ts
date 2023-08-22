@@ -1,4 +1,4 @@
-import { RWRChild, RWRNode, RWRNodeEffect } from "./types";
+import { SuppleChild, SuppleNode, SuppleNodeEffect } from "./types";
 import { createRoot } from "./context";
 import { createMemo, createSignal } from "./reactivity";
 import { createRenderEffect } from "./dom";
@@ -6,8 +6,8 @@ import { sameValueZero, toValue } from "./helper";
 
 interface ForProps<T> {
     each: () => Iterable<T>;
-    children?: [(item: T, index: () => number) => RWRNode];
-    fallback?: RWRChild;
+    children?: [(item: T, index: () => number) => SuppleNode];
+    fallback?: SuppleChild;
     equals?: (prev: T, next: T) => boolean;
 }
 
@@ -16,7 +16,7 @@ interface ForProps<T> {
  *
  * @param props.each an iterator<T> which elements are displayed
  * @param props.children a mapping function with two parameters:
- *          (item: T, index: () => number) => RWRNode
+ *          (item: T, index: () => number) => SuppleNode
  *            - item is the element of the array
  *            - index is a signal representing the position in the array
  * @returns a reactive fragment composed of mapped element of the iterator
@@ -26,7 +26,7 @@ export function For<T>({
     children,
     equals,
     fallback,
-}: ForProps<T>): RWRNodeEffect {
+}: ForProps<T>): SuppleNodeEffect {
     const resolvedChildren = mapArray(
         each,
         (element, index) =>
@@ -44,8 +44,8 @@ export function For<T>({
 
 interface IndexProps<T> {
     each: () => Iterable<T>;
-    children?: [(item: () => T, index: number) => RWRNode];
-    fallback?: RWRChild;
+    children?: [(item: () => T, index: number) => SuppleNode];
+    fallback?: SuppleChild;
 }
 
 /**
@@ -56,7 +56,7 @@ interface IndexProps<T> {
  *
  * @param props.each an iterator<T> which elements are displayed
  * @param props.children a mapping function with two parameters:
- *          (item: () => T, index: number) => RWRNode
+ *          (item: () => T, index: number) => SuppleNode
  *            - item is a signal which is called for each element of the array
  *              and again each time the array's content is changed
  *            - index is the position (a constant number) in the array

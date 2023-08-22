@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { render, screen } from "./utils";
-import { h } from "../rwr";
+import { h } from "../core";
 
 describe("render", () => {
     it("Renders a string", () => {

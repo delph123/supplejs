@@ -1,4 +1,4 @@
-import { createSignal, h, Fragment } from "../rwr";
+import { createSignal, h, Fragment } from "../core";
 import { Clock } from "./components";
 
 export function GameOn({ nb, onexit }) {

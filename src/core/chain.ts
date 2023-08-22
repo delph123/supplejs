@@ -1,9 +1,9 @@
-import { RWRChild, RWRNodeEffect } from "./types";
+import { SuppleChild, SuppleNodeEffect } from "./types";
 import { createSignal } from "./reactivity";
 import { h } from "./jsx";
 
 interface Chain {
-    current?: RWRChild;
+    current?: SuppleChild;
     next?: () => Chain;
     setItem?: (c: Chain) => void;
 }
@@ -31,7 +31,7 @@ export function createChainedList<Props>({
 
     const root = createChainItem();
 
-    const push = (component: RWRChild) => {
+    const push = (component: SuppleChild) => {
         const next = createChainItem();
 
         const last = getLast(root(), (c) => !!c.next)!;
@@ -71,7 +71,7 @@ export function ChainedList<Props>(props: {
     tag: string;
     attributes?: Props & { children?: never };
     item: () => Chain;
-}): RWRNodeEffect {
+}): SuppleNodeEffect {
     return () => {
         if (props.item().next) {
             return h(
@@ -82,7 +82,7 @@ export function ChainedList<Props>(props: {
                     tag: props.tag,
                     attributes: props.attributes,
                     item: props.item().next!,
-                })
+                }),
             );
         } else {
             return h(props.tag, props.attributes);
