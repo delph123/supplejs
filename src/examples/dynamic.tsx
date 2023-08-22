@@ -117,7 +117,8 @@ function PlayWithChildren(props: { children?: any[]; index: () => number }) {
     //     }
     // }
 
-    const resolved = children(() => props.children);
+    const proxy = children(() => props?.children);
+    const resolved = children(() => props.index() !== 2 && proxy());
     // const resolved = () => props?.children ?? [];
 
     return () => (

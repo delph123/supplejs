@@ -1,8 +1,15 @@
-import { onCleanup, onMount, untrack } from "./context";
-import { createDOMComponent, mount, render } from "./dom";
-import { shallowArrayEqual, toArray } from "./helper";
+import { onCleanup, onMount } from "./context";
+import {
+    createDOMComponent,
+    createRenderEffect,
+    mount,
+    multiComponents,
+    render,
+} from "./dom";
+import { flatten, shallowArrayEqual, toArray } from "./helper";
+import { mapArray } from "./iterators";
 import { h } from "./jsx";
-import { createComputed, createMemo, createSignal } from "./reactivity";
+import { createComputed, createSignal } from "./reactivity";
 import {
     DOMComponent,
     RWRChild,
@@ -26,16 +33,29 @@ export function children(childrenGetter: () => RWRNode | undefined) {
         equals: shallowArrayEqual,
     });
 
-    const target = createMemo(() =>
-        createDOMComponent(toArray(childrenGetter())),
+    const childrenArray = mapArray(
+        () => flatten(toArray(childrenGetter())),
+        (child) => {
+            if (typeof child === "function") {
+                return createRenderEffect(child);
+            } else {
+                return createDOMComponent(child);
+            }
+        },
     );
 
     createComputed(() => {
-        mount(target(), (component) => {
-            console.log("children notified with", component, target);
-            setComponents(extractRealDOMComponents(untrack(target)));
+        const root = multiComponents(childrenArray());
+        const handler = (component) => {
+            console.log("children notified with", component, root);
+            setComponents(extractRealDOMComponents(root));
+        };
+        mount(root, handler);
+        onCleanup(() => {
+            root.components.forEach((c) => c.mount(null, root));
+            root.components.length = 0;
+            root.mount(null, handler);
         });
-        onCleanup(() => mount(target(), null));
     });
 
     return components;
