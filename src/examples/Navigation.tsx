@@ -1,4 +1,12 @@
-import { Dynamic, For, RWRComponent, Show, h, render, useCSS } from "../rwr";
+import {
+    Dynamic,
+    For,
+    SuppleComponent,
+    Show,
+    h,
+    render,
+    useCSS,
+} from "../core";
 
 import { Todo } from "./todo";
 import { GameOn, NestedChildren } from "./fragments";
@@ -23,7 +31,7 @@ import { MultiApp, GoodBye } from "./components";
 function c(
     name: string,
     description: string,
-    component: RWRComponent<never>,
+    component: SuppleComponent<never>,
     props?: Record<string, any>,
 ) {
     return {
@@ -73,7 +81,7 @@ export default function Navigation() {
         const exit = render(() => {
             return (
                 <Dynamic
-                    component={line.component as RWRComponent<{ onexit }>}
+                    component={line.component as SuppleComponent<{ onexit }>}
                     onexit={() => exit()}
                     {...line.props}
                 />

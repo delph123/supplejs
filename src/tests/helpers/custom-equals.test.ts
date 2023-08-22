@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { sameValueZero, shallowArrayEqual } from "../../rwr";
+import { sameValueZero, shallowArrayEqual } from "../../core";
 
 describe("sameValueZero", () => {
     it("compares equal same values", () => {

@@ -1,4 +1,4 @@
-import { h, createSignal, For, useCSS } from "../rwr";
+import { h, createSignal, For, useCSS } from "../core";
 
 interface TodoItem {
     key: string;
@@ -31,8 +31,8 @@ function createItem(label: string, completed = false): TodoItem {
 }
 
 const DEFAULT_TODO_LIST = [
-    createItem("react-without-react", true),
-    createItem("solidjs", false),
+    createItem("SuppleJS", true),
+    createItem("SolidJS", false),
     createItem("vue + Mobx", false),
 ];
 

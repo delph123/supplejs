@@ -1,15 +1,15 @@
-export type RWRElement<Props> =
+export type JSXElement<Props> =
     | {
           __kind: "html_element";
           type: string;
           props: Props;
-          children: RWRChild[];
+          children: SuppleChild[];
       }
     | {
-          __kind: "rwr_element";
-          type: RWRComponent<Props>;
+          __kind: "supple_element";
+          type: SuppleComponent<Props>;
           props: Props;
-          children: RWRChild[];
+          children: SuppleChild[];
       };
 
 export interface AbstractDOMComponent {
@@ -30,7 +30,7 @@ export interface MultiDOMComponent extends AbstractDOMComponent {
 
 export interface ProxyDOMComponent extends AbstractDOMComponent {
     __kind: "proxy_component";
-    type?: RWRComponent<never>;
+    type?: SuppleComponent<never>;
     target: DOMComponent;
     id: number;
 }
@@ -46,20 +46,20 @@ export type DOMContainer =
     | ((component: DOMComponent, previousNodes?: Node[]) => void)
     | null;
 
-export type RWRNode =
+export type SuppleNode =
     | DOMComponent
-    | RWRElement<any>
-    | RWRChild[]
+    | JSXElement<any>
+    | SuppleChild[]
     | string
     | number
     | bigint
     | boolean
     | null;
 
-export type RWRNodeEffect = () => RWRNode;
-export type RWRChild = RWRNode | RWRNodeEffect;
+export type SuppleNodeEffect = () => SuppleNode;
+export type SuppleChild = SuppleNode | SuppleNodeEffect;
 
-export type RWRComponent<Props> = (props: Props) => RWRNodeEffect;
+export type SuppleComponent<Props> = (props: Props) => SuppleNodeEffect;
 
 export type Accessor<T> = () => T;
 

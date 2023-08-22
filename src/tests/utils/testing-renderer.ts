@@ -7,15 +7,15 @@ import type {
     RenderHookOptions,
 } from "./types";
 import {
-    RWRNodeEffect,
+    SuppleNodeEffect,
     TrackingContext,
     createRoot,
     getOwner,
     h,
     onError,
     runWithOwner,
-    render as rwrRender,
-} from "../../rwr";
+    render as core_render,
+} from "../../core";
 
 const mountedContainers = new Set<Ref>();
 
@@ -45,7 +45,7 @@ const mountedContainers = new Set<Ref>();
  * - `result.unmount()` - unmounts the component, usually automatically called in cleanup
  * - `result.`[queries] - testing library queries, see https://testing-library.com/docs/queries/about)
  */
-function render(renderEffect: RWRNodeEffect, options: Options = {}): Result {
+function render(renderEffect: SuppleNodeEffect, options: Options = {}): Result {
     let { container, baseElement = container } = options;
     let transientContainer: HTMLElement | undefined = undefined;
 
@@ -60,7 +60,7 @@ function render(renderEffect: RWRNodeEffect, options: Options = {}): Result {
         container = baseElement.appendChild(transientContainer);
     }
 
-    const wrappedUi: RWRNodeEffect =
+    const wrappedUi: SuppleNodeEffect =
         typeof options.wrapper === "function"
             ? () =>
                   h(options.wrapper!, {
@@ -68,7 +68,7 @@ function render(renderEffect: RWRNodeEffect, options: Options = {}): Result {
                   })
             : renderEffect;
 
-    const dispose = rwrRender(wrappedUi, container);
+    const dispose = core_render(wrappedUi, container);
 
     // We'll add it to the mounted components regardless of whether it's actually
     // added to document.body so the cleanup method works regardless of whether

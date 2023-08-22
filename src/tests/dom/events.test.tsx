@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { render, fireEvent } from "../utils";
-import { h, Dynamic, createRef } from "../../rwr";
+import { h, Dynamic, createRef } from "../../core";
 
 const eventTypes = [
     {

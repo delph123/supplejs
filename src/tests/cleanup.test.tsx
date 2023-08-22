@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { cleanup, render, screen } from "./utils/testing-renderer";
-import { h, Fragment, onCleanup, createComputed, createEffect } from "../rwr";
+import { h, Fragment, onCleanup, createComputed, createEffect } from "../core";
 import { createWaitableMock } from "./utils";
 
 describe("Cleans up the document tree", () => {

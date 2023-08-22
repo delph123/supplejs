@@ -1,4 +1,4 @@
-import { h, For, createSignal, createMemo, useCSS } from "../rwr";
+import { h, For, createSignal, createMemo, useCSS } from "../core";
 
 const BATCH_SIZE = 1000;
 
@@ -129,7 +129,7 @@ export const App = () => {
             <div class="jumbotron">
                 <div class="row">
                     <div class="col-md-6">
-                        <h1>React-Without-React</h1>
+                        <h1>SuppleJS</h1>
                     </div>
                     <div class="col-md-6">
                         <div class="row">

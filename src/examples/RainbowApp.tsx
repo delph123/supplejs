@@ -5,8 +5,8 @@ import {
     createEffect,
     onCleanup,
     For,
-    RWRNodeEffect,
-} from "../rwr";
+    SuppleNodeEffect,
+} from "../core";
 
 interface ColorProps {
     colors: () => string[];
@@ -14,7 +14,7 @@ interface ColorProps {
 
 const NB_COLORS = 360 * 8;
 
-function ReactColors({ colors }: ColorProps): RWRNodeEffect {
+function ReactColors({ colors }: ColorProps): SuppleNodeEffect {
     // const minWidth = `${100.0 / NB_COLORS}vw`;
     const minWidth = "1px";
     return () => (
@@ -43,7 +43,7 @@ const rainbowColors = (rainbowGradient(360) as number[][]).map(
     ([r, g, b]) => `rgb(${r},${g},${b})`,
 );
 
-function RainbowApp(): RWRNodeEffect {
+function RainbowApp(): SuppleNodeEffect {
     const [colors, setColors] = createSignal(
         new Array(NB_COLORS)
             .fill(0)

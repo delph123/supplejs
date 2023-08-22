@@ -5,9 +5,9 @@ import { toValue } from "./helper";
 import { createMemo } from "./reactivity";
 import {
     DOMComponent,
-    RWRChild,
-    RWRNode,
-    RWRNodeEffect,
+    SuppleChild,
+    SuppleNode,
+    SuppleNodeEffect,
     ValueOrAccessor,
 } from "./types";
 
@@ -15,15 +15,15 @@ type WhenCondition<T> = T | undefined | null | false;
 
 interface MatchProps<T> {
     when: ValueOrAccessor<WhenCondition<T>>;
-    children?: RWRNode[] | [(item: T) => RWRNode];
+    children?: SuppleNode[] | [(item: T) => SuppleNode];
 }
 
 interface ShowProps<T> extends MatchProps<T> {
     keyed?: boolean;
-    fallback?: RWRChild;
+    fallback?: SuppleChild;
 }
 
-export function Show<T>(props: ShowProps<T>): RWRNodeEffect {
+export function Show<T>(props: ShowProps<T>): SuppleNodeEffect {
     const whenValue = createMemo(() => toValue(props.when));
     const display = createMemo(() => {
         return whenValue() != null && whenValue() !== false;
@@ -44,7 +44,7 @@ export function Show<T>(props: ShowProps<T>): RWRNodeEffect {
                     return props.children[0](untrack(whenValue) as T);
                 }
             } else {
-                return props.children as RWRNode[];
+                return props.children as SuppleNode[];
             }
         } else {
             return toValue(props.fallback) ?? null;
@@ -54,9 +54,9 @@ export function Show<T>(props: ShowProps<T>): RWRNodeEffect {
 
 export function Switch(props: {
     keyed?: boolean;
-    fallback?: RWRChild;
-    children?: RWRChild[];
-}): RWRNodeEffect {
+    fallback?: SuppleChild;
+    children?: SuppleChild[];
+}): SuppleNodeEffect {
     const resolved = children(() => props.children);
 
     const firstChildMatching = createMemo(
@@ -115,7 +115,7 @@ export function Switch(props: {
             ) {
                 return matching[0].children[0](matching[1]);
             } else {
-                return matching[0].children as RWRNode[];
+                return matching[0].children as SuppleNode[];
             }
         } else {
             return toValue(props.fallback) ?? null;

@@ -7,7 +7,7 @@ import {
     Show,
     children,
     For,
-} from "../rwr";
+} from "../core";
 import { Clock } from "./components";
 import { ForElse } from "./controls";
 import { createIncrement } from "./util";

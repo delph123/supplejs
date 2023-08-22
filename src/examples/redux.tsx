@@ -3,7 +3,7 @@ import {
     ActionPayload,
     createReduxSlice,
     createReduxSelector,
-} from "../rwr";
+} from "../core";
 
 interface Slice {
     some: number;

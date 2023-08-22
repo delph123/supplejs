@@ -5,7 +5,7 @@ import {
     toValue,
     ValueOrAccessor,
     createEffect,
-} from "../rwr";
+} from "../core";
 
 interface IncrementPlayerProps {
     color?: string;

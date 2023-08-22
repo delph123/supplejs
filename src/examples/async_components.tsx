@@ -5,12 +5,12 @@ import {
     createSignal,
     onCleanup,
     createChainedList,
-    RWRNodeEffect,
+    SuppleNodeEffect,
     Switch,
     Match,
-} from "../rwr";
+} from "../core";
 
-function Dog(): RWRNodeEffect {
+function Dog(): SuppleNodeEffect {
     const [dog, { mutate, refetch }] = createResource(() => {
         return new Promise((resolve, reject) => {
             setTimeout(async () => {
@@ -72,7 +72,7 @@ function Dog(): RWRNodeEffect {
     };
 }
 
-export function AsyncApp(): RWRNodeEffect {
+export function AsyncApp(): SuppleNodeEffect {
     const [ChainedList, push, pop] = createChainedList();
 
     return () => (
@@ -84,7 +84,7 @@ export function AsyncApp(): RWRNodeEffect {
     );
 }
 
-export function AutoCounter(): RWRNodeEffect {
+export function AutoCounter(): SuppleNodeEffect {
     const [count, setCount] = createSignal(0);
     const [delay, setDelay] = createSignal(1000);
     createEffect(() => {

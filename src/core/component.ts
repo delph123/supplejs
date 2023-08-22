@@ -12,9 +12,9 @@ import { h } from "./jsx";
 import { createComputed, createSignal } from "./reactivity";
 import {
     DOMComponent,
-    RWRChild,
-    RWRComponent,
-    RWRNode,
+    SuppleChild,
+    SuppleComponent,
+    SuppleNode,
     RealDOMComponent,
 } from "./types";
 
@@ -28,7 +28,7 @@ function extractRealDOMComponents(component: DOMComponent): RealDOMComponent[] {
     }
 }
 
-export function children(childrenGetter: () => RWRNode | undefined) {
+export function children(childrenGetter: () => SuppleNode | undefined) {
     const [components, setComponents] = createSignal<RealDOMComponent[]>([], {
         equals: shallowArrayEqual,
     });
@@ -69,9 +69,9 @@ export function useContext() {
     // TODO
 }
 
-export function lazy<Component extends RWRComponent<any>>(
+export function lazy<Component extends SuppleComponent<any>>(
     componentLoader: () => Promise<{ default: Component }>,
-): RWRComponent<any> & { preload: () => Promise<Component> } {
+): SuppleComponent<any> & { preload: () => Promise<Component> } {
     let promise: Promise<Component> | undefined;
     const [component, setComponent] = createSignal<{
         target?: Component;
@@ -115,7 +115,7 @@ export function Dynamic<Props>({
     ...props
 }: Props & {
     children?: any[];
-    component: RWRComponent<Props> | string;
+    component: SuppleComponent<Props> | string;
 }) {
     return () => h(component, props as Props & { children? });
 }
@@ -123,7 +123,7 @@ export function Dynamic<Props>({
 export function Portal(props: {
     mount?: HTMLElement;
     useShadow?: boolean;
-    children?: RWRChild[];
+    children?: SuppleChild[];
 }) {
     const dispose = render(
         () =>
