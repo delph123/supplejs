@@ -1,16 +1,17 @@
 {
   "name": "supplejs",
-  "private": true,
   "description": "SuppleJS is a toy project to re-implement SolidJS from scratch",
   "version": "0.5.0",
-  "type": "module",
   "author": {
     "name": "delph123"
   },
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/delph123/supplejs.git"
   },
+  "private": true,
+  "type": "module",
   "prettier": {
     "editorconfig": true
   },
