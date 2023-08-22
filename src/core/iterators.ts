@@ -106,7 +106,7 @@ export function mapArray<T, U>(
     equals?: (prev: T, next: T) => boolean,
 ) {
     // Define the finder function (either uses the provided equals function
-    // or use defaults sameValueZero algorithm to compare underlying elements)
+    // or use default sameValueZero algorithm to compare underlying elements)
     const compare = equals ?? sameValueZero;
     const finder = function finder(nextElement: T) {
         return (previousEntry: Entry<T, U>) => {
