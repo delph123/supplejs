@@ -1,11 +1,11 @@
 # SuppleJS
 
-SuppleJS is a toy project to re-implement [SolidJS](https://github.com/solidjs/solid) from scratch. My goal is not to make something better or more performant than the SolidJS implementation, but to build a full modern JavaScript library from the ground up and play around with the [fine-grained reactivity model](https://dev.to/ryansolid/a-hands-on-introduction-to-fine-grained-reactivity-3ndf) of SolidJS.
+SuppleJS is a toy project to re-implement [SolidJS](https://github.com/solidjs/solid) from scratch. My goal is not to make something better or more performant than the SolidJS implementation, but to discover new coding patterns and ideas by building a modern JavaScript library from the ground up and playing around with the [fine-grained reactivity model](https://dev.to/ryansolid/a-hands-on-introduction-to-fine-grained-reactivity-3ndf) of SolidJS.
 
-SuppleJS is a JavaScript framework to build web user interfaces. It shares with [React](https://react.dev/) (which inspired Solid), [SolidJS](https://www.solidjs.com/) and [Vue.js](https://vuejs.org/) the same principles of a component-based, declarative and reactive programming model. The unique feature of SolidJS (and therefore SuppleJS), in comparison with React, is that it relies on a powerful fine-grained reactive system which allows it to recompute and re-render only the part of the screen that is actually change in a very efficient way.
+SuppleJS is a JavaScript framework to build web user interfaces. It shares with [React](https://react.dev/) (which inspired Solid), [SolidJS](https://www.solidjs.com/) and [Vue.js](https://vuejs.org/) the same principles of a component-based, declarative and reactive programming model. The unique feature of SolidJS (and therefore SuppleJS), in comparison with React, is that it relies on a powerful fine-grained reactive system which allows it to recompute and re-render only the part of the screen that actually changed in a very efficient way (without resorting to virtual DOM diffing).
 
 SuppleJS aims at reproducing most of the SolidJS API, with a different implementation. The main difference is that there is no compiler in SuppleJS, therefore all of your code is used as is by the framework. As a corollary, it is necessary for the developers to not call reactive primitive inside JSX, so as to let SuppleJS unwrap the value of these functions inside the reactive system. For example, this code for SolidJS `<p>{count()}</p>` should be replaced by `<p>{count}</p>`
-so that the reactivity is not lost and SuppleJS can make sure to re-render only the button's label when the count changes.
+so that the reactivity is not lost and SuppleJS can make sure to re-render only the paragraph's content when the count changes.
 
 ## Example
 
@@ -23,16 +23,20 @@ function Counter() {
         // is not called and will be unwrapped by Supple's reactive
         // system, so that only count value needs to be changed in the
         // DOM when the button is clicked.
-        // The onClick handler uses the signal writer to update the signal
-        // and notify all its dependencies automatically.
-        <button onClick={() => setCount((c) => c + 1)}>
+        <button
+            onClick={
+                // The onClick handler uses the signal writer to update
+                // the signal and notify all its dependencies automatically
+                () => setCount((c) => c + 1)
+            }
+        >
             // Count = {count}
         </button>
     );
 }
 
 // The render function takes an effect (a function) so that JSX can be
-// safely used in root handler without breaking the reactivity.
+// safely wrapped in a reactive root before it is evaluated
 render(() => <Counter />, document.getElementByID("app")!);
 ```
 
