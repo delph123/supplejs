@@ -4,7 +4,6 @@ import {
     createRenderEffect,
     mount,
     multiComponents,
-    render,
 } from "./dom";
 import { flatten, shallowArrayEqual, toArray } from "./helper";
 import { mapArray } from "./iterators";
@@ -12,7 +11,6 @@ import { h } from "./jsx";
 import { createComputed, createSignal } from "./reactivity";
 import {
     DOMComponent,
-    SuppleChild,
     SuppleComponent,
     SuppleNode,
     RealDOMComponent,
@@ -108,33 +106,6 @@ export function lazy<Component extends SuppleComponent<any>>(
     lazyComponent.preload = preload;
 
     return lazyComponent;
-}
-
-export function Dynamic<Props>({
-    component,
-    ...props
-}: Props & {
-    children?: any[];
-    component: SuppleComponent<Props> | string;
-}) {
-    return () => h(component, props as Props & { children? });
-}
-
-export function Portal(props: {
-    mount?: HTMLElement;
-    useShadow?: boolean;
-    children?: SuppleChild[];
-}) {
-    const dispose = render(
-        () =>
-            h("div", {
-                useShadow: props.useShadow ?? false,
-                children: props.children,
-            }),
-        props.mount ?? document.body,
-    );
-    onCleanup(dispose);
-    return () => null;
 }
 
 export function useCSS(cssFilePath: string) {
