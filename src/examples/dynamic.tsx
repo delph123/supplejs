@@ -42,10 +42,10 @@ export function DynamicApp() {
                 !
             </Dynamic>
             <Dynamic component={"br"} />
-            <Dynamic component={Clock} level={0} />
+            <Dynamic component={() => Clock} level={0} />
             <div style={{ marginTop: "20px" }}>
                 <Dynamic
-                    component={Show}
+                    component={() => Show}
                     when={load}
                     fallback={
                         <div>
@@ -82,7 +82,7 @@ export function DynamicApp() {
                             More
                         </Dynamic>{" "}
                         <Dynamic
-                            component={"button"}
+                            component={() => "button"}
                             type="button"
                             onclick={() => setElems((s) => s.slice(1))}
                         >

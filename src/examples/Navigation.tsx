@@ -6,6 +6,11 @@ import {
     h,
     render,
     useCSS,
+    createSignal,
+    createEffect,
+    toValue,
+    ValueOrAccessor,
+    SuppleChild,
 } from "../core";
 
 import { Todo } from "./todo";
@@ -74,51 +79,69 @@ const components = [
 ];
 
 export default function Navigation() {
-    const path = document.location.pathname.substring(1);
-    const line = components.find((l) => l.component.name === path);
+    const [path] = createSignal(document.location.pathname.substring(1));
+    const componentDescriptor = () =>
+        components.find((l) => l.component.name === path());
 
-    if (line) {
-        const exit = render(() => {
-            return (
-                <Dynamic
-                    component={line.component as SuppleComponent<{ onexit }>}
-                    onexit={() => exit()}
-                    {...line.props}
-                />
-            );
-        }, document.getElementById("app")!);
-    }
+    createEffect(() => {
+        const descriptor = componentDescriptor();
+        if (descriptor) {
+            const exit = render(() => {
+                return (
+                    <Dynamic
+                        component={() =>
+                            descriptor.component as SuppleComponent<{ onexit }>
+                        }
+                        onexit={() => exit()}
+                        {...descriptor.props}
+                    />
+                );
+            }, document.getElementById("app")!);
+        }
+    });
 
-    if (!line) {
-        useCSS("./navigation.css");
-    }
+    createEffect(() => {
+        if (!componentDescriptor()) {
+            useCSS("./navigation.css");
+        }
+    });
 
     return () => (
-        <Show
-            when={path == ""}
-            fallback={
-                <a class="home" href="/">
-                    <i class="arrow left" />
-                    HOME
-                </a>
-            }
-        >
-            <table>
-                <tr>
-                    <th>Name</th>
-                    <th>Description</th>
-                </tr>
-                <For each={() => components}>
-                    {(el) => (
-                        <tr>
-                            <td>
-                                <a href={`${el.component.name}`}>{el.name}</a>
-                            </td>
-                            <td>{el.description}</td>
-                        </tr>
-                    )}
-                </For>
-            </table>
+        <Show when={componentDescriptor} fallback={<Summary />}>
+            <a class="home" href="/">
+                <i class="arrow left" />
+                HOME
+            </a>
         </Show>
+    );
+}
+
+interface LinkProps {
+    href: ValueOrAccessor<string>;
+    children?: SuppleChild[];
+}
+
+function Link({ href, children }: LinkProps) {
+    return () => <a href={toValue(href)}>{children}</a>;
+}
+
+function Summary() {
+    return () => (
+        <table>
+            <tr>
+                <th>Name</th>
+                <th>Description</th>
+            </tr>
+            <For each={() => components}>
+                {(el) => (
+                    <tr>
+                        <td>
+                            <Link href={`${el.component.name}`}>{el.name}</Link>
+                        </td>
+                        <td>{el.description}</td>
+                    </tr>
+                )}
+            </For>
+        </table>
     );
 }

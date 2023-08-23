@@ -1,11 +1,13 @@
 import { children } from "./component";
-import { untrack } from "./context";
-import { createDOMComponent } from "./dom";
+import { onCleanup, untrack } from "./context";
+import { h } from "./jsx";
+import { createDOMComponent, render } from "./dom";
 import { toValue } from "./helper";
 import { createMemo } from "./reactivity";
 import {
     DOMComponent,
     SuppleChild,
+    SuppleComponent,
     SuppleNode,
     SuppleNodeEffect,
     ValueOrAccessor,
@@ -138,6 +140,42 @@ export function Match<T>(props: MatchProps<T>) {
             children: props.children,
         };
     };
+}
+
+export function Dynamic<Props>({
+    component,
+    ...props
+}: Props & {
+    children?: any[];
+    component: ValueOrAccessor<
+        SuppleComponent<Props> | string | null | undefined
+    >;
+}) {
+    return createMemo(() => {
+        const comp = toValue(component);
+        if (comp != null) {
+            return h(comp, props as Props & { children? });
+        } else {
+            return null;
+        }
+    });
+}
+
+export function Portal(props: {
+    mount?: HTMLElement;
+    useShadow?: boolean;
+    children?: SuppleChild[];
+}) {
+    const dispose = render(
+        () =>
+            h("div", {
+                useShadow: props.useShadow ?? false,
+                children: props.children,
+            }),
+        props.mount ?? document.body,
+    );
+    onCleanup(dispose);
+    return () => null;
 }
 
 export function ErrorBoundary() {
