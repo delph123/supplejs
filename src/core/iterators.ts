@@ -46,6 +46,7 @@ interface IndexProps<T> {
     each: () => Iterable<T>;
     children?: [(item: () => T, index: number) => SuppleNode];
     fallback?: SuppleChild;
+    equals?: (prev: T, next: T) => boolean;
 }
 
 /**
@@ -62,9 +63,12 @@ interface IndexProps<T> {
  *            - index is the position (a constant number) in the array
  * @returns a reactive fragment composed of mapped element of the iterator
  */
-export function Index<T>({ each, children, fallback }: IndexProps<T>) {
-    const resolvedChildren = indexArray(each, (element, index) =>
-        createRenderEffect(() => children?.[0]?.(element, index) ?? null),
+export function Index<T>({ each, children, fallback, equals }: IndexProps<T>) {
+    const resolvedChildren = indexArray(
+        each,
+        (element, index) =>
+            createRenderEffect(() => children?.[0]?.(element, index) ?? null),
+        equals,
     );
     return () => {
         if (resolvedChildren().length > 0) {
@@ -198,6 +202,7 @@ interface IndexEntry<T, U> {
 export function indexArray<T, U>(
     iterator: () => Iterable<T>,
     mapFn: (v: () => T, i: number) => U,
+    equals?: false | ((prev: T, next: T) => boolean),
 ) {
     // The previous input & mapped lists
     let previousEntries = [] as IndexEntry<T, U>[];
@@ -217,7 +222,9 @@ export function indexArray<T, U>(
                 nextEntry.setElement(nextElement);
             } else {
                 nextEntry = createRoot((dispose) => {
-                    const [element, setElement] = createSignal(nextElement);
+                    const [element, setElement] = createSignal(nextElement, {
+                        equals,
+                    });
                     const mappedElement = mapFn(element, i);
                     return {
                         setElement,
