@@ -6,6 +6,7 @@ import { toValue } from "./helper";
 import { createMemo } from "./reactivity";
 import {
     DOMComponent,
+    Ref,
     SuppleChild,
     SuppleComponent,
     SuppleNode,
@@ -162,18 +163,23 @@ export function Dynamic<Props>({
 }
 
 export function Portal(props: {
-    mount?: HTMLElement;
+    mount?: ValueOrAccessor<HTMLElement>;
+    ref?: Ref<HTMLDivElement | undefined>;
     useShadow?: boolean;
     children?: SuppleChild[];
 }) {
-    const dispose = render(
-        () =>
-            h("div", {
+    const parent = toValue(props.mount) ?? document.body;
+    const dispose = render(() => {
+        if (parent instanceof HTMLHeadElement) {
+            return props.children ?? [];
+        } else {
+            return h("div", {
                 useShadow: props.useShadow ?? false,
                 children: props.children,
-            }),
-        props.mount ?? document.body,
-    );
+                ref: props.ref,
+            });
+        }
+    }, parent);
     onCleanup(dispose);
     return () => null;
 }
