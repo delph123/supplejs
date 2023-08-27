@@ -142,7 +142,7 @@ export function createDOMComponent(component: SuppleNode): DOMComponent {
                 if (name === "ref") {
                     if (typeof value === "function") {
                         (value as (t: HTMLElement) => void)(element);
-                    } else {
+                    } else if (value != null) {
                         value.current = element;
                     }
                 } else if (name === "useShadow") {
