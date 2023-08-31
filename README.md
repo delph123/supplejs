@@ -30,7 +30,7 @@ function Counter() {
                 () => setCount((c) => c + 1)
             }
         >
-            // Count = {count}
+            Count = {count}
         </button>
     );
 }
@@ -60,7 +60,7 @@ The usual steps as for many other JavaScript project is to clone the project in 
 > pnpm install
 ```
 
-Once all dependencies are downloaded and install, you can run a local server with fast refresh with:
+Once all dependencies are downloaded and installed, you can run a local server with fast refresh with:
 
 ```sh
 > pnpm dev
