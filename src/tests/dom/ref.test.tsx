@@ -1,6 +1,12 @@
 import { describe, expect, it, vi } from "vitest";
-import { createWaitableMock, render, screen } from "./utils";
-import { createComputed, createEffect, createRef, h, onMount } from "../core";
+import { createWaitableMock, render, screen } from "../utils";
+import {
+    createComputed,
+    createEffect,
+    createRef,
+    h,
+    onMount,
+} from "../../core";
 
 describe("createRef", () => {
     it("creates an uninitialized reference", () => {
@@ -31,6 +37,18 @@ describe("Rendering ref in the DOM", () => {
         const main = screen.getByRole("main");
         expect(ref).toHaveBeenCalledOnce();
         expect(ref).toHaveBeenCalledWith(main);
+    });
+
+    it("ignores nullish refs", () => {
+        const ref = null;
+        expect(() => render(() => <p ref={undefined}>Hi!</p>)).not.toThrow();
+        expect(() => render(() => <p ref={ref}>Hi!</p>)).not.toThrow();
+    });
+
+    it("throws for invalid refs", () => {
+        const ref = 36;
+        expect(() => render(() => <p ref>Hi!</p>)).toThrow();
+        expect(() => render(() => <div ref={ref}>Hi!</div>)).toThrow();
     });
 });
 
