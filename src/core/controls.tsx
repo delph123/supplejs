@@ -28,15 +28,10 @@ interface ShowProps<T> extends MatchProps<T> {
 
 export function Show<T>(props: ShowProps<T>): SuppleNodeEffect {
     const whenValue = createMemo(() => toValue(props.when));
-    const display = createMemo(() => {
-        return whenValue() != null && whenValue() !== false;
-    });
+    const display = createMemo(() => Boolean(whenValue()));
     return () => {
         if (display()) {
-            if (
-                props.children?.length === 1 &&
-                typeof props.children?.[0] === "function"
-            ) {
+            if (props.children?.length === 1 && typeof props.children?.[0] === "function") {
                 if (props.keyed) {
                     // Pass the value and track it so that the child function
                     // is re-executed whenever the underlying model is changed
@@ -64,20 +59,14 @@ export function Switch(props: {
 
     const firstChildMatching = createMemo(
         () => {
-            const matchChildren = resolved().filter(
-                (c) => "type" in c && c.type === Match,
-            ) as (DOMComponent & MatchProps<unknown>)[];
+            const matchChildren = resolved().filter((c) => "type" in c && c.type === Match) as (DOMComponent &
+                MatchProps<unknown>)[];
             console.log("Filtered =>", matchChildren);
 
             const displayMatches = matchChildren.map((m) => toValue(m.when));
-            const matchingIndex = displayMatches.findIndex(
-                (v) => v != null && v !== false,
-            );
+            const matchingIndex = displayMatches.findIndex((v) => v != null && v !== false);
             if (matchingIndex >= 0) {
-                return [
-                    matchChildren[matchingIndex],
-                    displayMatches[matchingIndex],
-                ] as const;
+                return [matchChildren[matchingIndex], displayMatches[matchingIndex]] as const;
             } else {
                 return null;
             }
@@ -99,10 +88,7 @@ export function Switch(props: {
                     // model changes value, therefore we compare both
                     return (
                         (prev == null && next == null) ||
-                        (prev != null &&
-                            next != null &&
-                            prev[0] === next[0] &&
-                            prev[1] === next[1])
+                        (prev != null && next != null && prev[0] === next[0] && prev[1] === next[1])
                     );
                 }
             },
@@ -112,10 +98,7 @@ export function Switch(props: {
     return () => {
         const matching = firstChildMatching();
         if (matching) {
-            if (
-                matching[0].children?.length === 1 &&
-                typeof matching[0].children?.[0] === "function"
-            ) {
+            if (matching[0].children?.length === 1 && typeof matching[0].children?.[0] === "function") {
                 return matching[0].children[0](matching[1]);
             } else {
                 return matching[0].children as SuppleNode[];
@@ -148,9 +131,7 @@ export function Dynamic<Props>({
     ...props
 }: Props & {
     children?: any[];
-    component: ValueOrAccessor<
-        SuppleComponent<Props> | string | null | undefined
-    >;
+    component: ValueOrAccessor<SuppleComponent<Props> | string | null | undefined>;
 }) {
     return createMemo(() => {
         const comp = toValue(component);

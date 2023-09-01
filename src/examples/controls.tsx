@@ -22,11 +22,7 @@ export function TestWhen() {
     return () => (
         <p>
             Keyed:{" "}
-            <Show
-                when={content}
-                keyed
-                fallback={<font color="blue">Will soon show</font>}
-            >
+            <Show when={content} keyed fallback={<font color="blue">Will soon show</font>}>
                 {(v) => (
                     <span>
                         <font color="blue">{v}</font>
@@ -36,10 +32,7 @@ export function TestWhen() {
             me the money!
             <br />
             Non keyed:{" "}
-            <Show
-                when={content}
-                fallback={<font color="blue">Will soon show</font>}
-            >
+            <Show when={content} fallback={<font color="blue">Will soon show</font>}>
                 {(v) => (
                     <span>
                         <font color="blue">{v}</font>
@@ -51,32 +44,15 @@ export function TestWhen() {
             <Show
                 when={false}
                 fallback={
-                    <Show
-                        when={content}
-                        fallback={
-                            <div style={{ color: "magenta" }}>
-                                fall-fall-back
-                            </div>
-                        }
-                    >
-                        {() => (
-                            <div style={{ color: "magenta" }}>
-                                {"Fallback: " + content()}
-                            </div>
-                        )}
+                    <Show when={content} fallback={<div style={{ color: "magenta" }}>fall-fall-back</div>}>
+                        {() => <div style={{ color: "magenta" }}>{"Fallback: " + content()}</div>}
                     </Show>
                 }
             >
-                <p style={{ color: "magenta" }}>
-                    Error - This shouldn't be displayed
-                </p>
+                <p style={{ color: "magenta" }}>Error - This shouldn't be displayed</p>
             </Show>
-            <Show
-                when={() => content() == null}
-                fallback={<font color="green">HIDDEN NOW</font>}
-            >
-                Will disappear in{" "}
-                <span style="font-weight: bold; color: green;">2 seconds</span>!
+            <Show when={() => content() == null} fallback={<font color="green">HIDDEN NOW</font>}>
+                Will disappear in <span style="font-weight: bold; color: green;">2 seconds</span>!
             </Show>
             <br />
             <Show
@@ -100,26 +76,16 @@ export function ForElseApp() {
             <div>
                 <button
                     type="button"
-                    onClick={() =>
-                        setElems((s) =>
-                            s.length === 0 ? [0] : [...s, s[s.length - 1] + 1],
-                        )
-                    }
+                    onClick={() => setElems((s) => (s.length === 0 ? [0] : [...s, s[s.length - 1] + 1]))}
                 >
                     More
                 </button>{" "}
-                <button
-                    type="button"
-                    onClick={() => setElems((s) => s.slice(1))}
-                >
+                <button type="button" onClick={() => setElems((s) => s.slice(1))}>
                     Less
                 </button>
             </div>
             <ul>
-                <ForElse
-                    each={elems}
-                    fallback={<li style={{ color: "red" }}>No element!</li>}
-                >
+                <ForElse each={elems} fallback={<li style={{ color: "red" }}>No element!</li>}>
                     {(el) => <li>{el}</li>}
                 </ForElse>
             </ul>
@@ -157,9 +123,7 @@ export function WhenAppWithSignal() {
             <Show when={first}>
                 <CounterButton nb={5} onexit={() => 0} />
             </Show>
-            <Show when={second}>
-                {() => <Clock level={0} probability={1} />}
-            </Show>
+            <Show when={second}>{() => <Clock level={0} probability={1} />}</Show>
             <div>
                 <button type="button" onclick={() => setFirst((s) => !s)}>
                     Display First
@@ -193,10 +157,7 @@ export function LoginApp() {
     const toggle = () => setLoggedIn(!loggedIn());
 
     return () => (
-        <Show
-            when={loggedIn}
-            fallback={<button oncapture:click={toggle}>Log in</button>}
-        >
+        <Show when={loggedIn} fallback={<button oncapture:click={toggle}>Log in</button>}>
             <button on:click={toggle}>Log out</button>
             <Portal mount={document.getElementById("portal")!} useShadow>
                 <h1>Hello world!</h1>
