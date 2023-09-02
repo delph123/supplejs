@@ -15,25 +15,22 @@ import {
 
 import { Todo } from "./todo";
 import { GameOn, NestedChildren } from "./fragments";
-import { Indexer, Looper, Mapper } from "./iterators";
+import { Looper } from "./iterators";
 import { App } from "./js_framework_bench";
 import { ReduxSlice } from "./redux";
 import RainbowApp from "./RainbowApp";
-import {
-    ForElseApp,
-    SwitchApp,
-    TestSwitch,
-    TestWhen,
-    WhenAppWithSignal,
-    LoginApp,
-} from "./controls";
+import { ForElseApp, SwitchApp, TestSwitch, LoginApp, WhenAppWithSignal } from "./controls";
 import { ChildrenPlayer, DynamicApp } from "./dynamic";
 import { Game } from "./square";
-import { CounterButton, MyNameIs, NestedEffect, Referencing } from "./effects";
+import { CounterButton, MyNameIs, NestedEffect } from "./effects";
 import { AsyncApp, AsyncSwitch, AutoCounter } from "./async_components";
 import { MultiApp, GoodBye } from "./components";
 
-function c(
+function section(header: string, rows: ReturnType<typeof row>[]) {
+    return { header, rows };
+}
+
+function row(
     name: string,
     description: string,
     component: SuppleComponent<never>,
@@ -48,40 +45,47 @@ function c(
 }
 
 const components = [
-    c("Counter", "Playing with reactions", CounterButton, { nb: 5 }),
-    c("My name is...", "Playing with Signal & Computed", MyNameIs),
-    c("Nesting Effects", "Nested effects running in timeout", NestedEffect),
-    c("Playing with Refs", "Mounting ref in DOM", Referencing),
-    c("Automatic Counter", "A counter incrementing with interval", AutoCounter),
-    c("Resource Switch", "A switch to manage resource state", AsyncSwitch),
-    c("Dog API", "An asynchronous app using resource to fetch dogs", AsyncApp),
-    c("Multi-counter App", "The iconic multi-counter application", MultiApp),
-    c("GoodBye", "Swapping Clock & Goodbye components", GoodBye),
-    c("GameOn", "Deleting clocks until exiting completely", GameOn, { nb: 5 }),
-    c("NestedChildren", "Deeply nested children (in arrays)", NestedChildren),
-    c("Indexer", "Playing with indexArray()", Indexer),
-    c("Looper", "Playing with <For>", Looper),
-    c("Mapper", "Playing with mapArray()", Mapper),
-    c("JS Bench", "JS Framework Bench application", App),
-    c("Redux Slice", "Implementation of redux-like store", ReduxSlice),
-    c("For/Else", "Combining For & Show", ForElseApp),
-    c("Number Matcher", "Matching alternating number (13, 14, ...)", SwitchApp),
-    c("Switch", "Basic switch tester", TestSwitch),
-    c("Show the money", "Testing <Show> with signals", TestWhen),
-    c("Two switch buttons", "Show/hide buttons", WhenAppWithSignal),
-    c("Login", "Login/Logout with Portal", LoginApp),
-    c("Children Player", "Play with children() helper", ChildrenPlayer),
-    c("Dynamic", "Play with dynamic & lazy components", DynamicApp),
-    // Apps
-    c("TODO", "A simple TODO application", Todo),
-    c("Rainbow", "A rotating rainbow", RainbowApp),
-    c("Tic-Tac-Toe", "The tic-tac-toe game", Game),
+    section("To be covered by unit tests", [
+        row("Counter", "Playing with reactions", CounterButton, { nb: 5 }),
+        row("My name is...", "Playing with Signal & Computed", MyNameIs),
+        row("Nesting Effects", "Nested effects running in timeout", NestedEffect),
+        row("Automatic Counter", "A counter incrementing with interval", AutoCounter),
+        row("Resource Switch", "A switch to manage resource state", AsyncSwitch),
+        row("Dog API", "An asynchronous app using resource to fetch dogs", AsyncApp),
+        row("Multi-counter App", "The iconic multi-counter application", MultiApp),
+        row("GoodBye", "Swapping Clock & Goodbye components", GoodBye),
+        row("GameOn", "Deleting clocks until exiting completely", GameOn, { nb: 5 }),
+        row("NestedChildren", "Deeply nested children (in arrays)", NestedChildren),
+        row("Looper", "Playing with <For>", Looper),
+        row("Redux Slice", "Implementation of redux-like store", ReduxSlice),
+        row("For/Else", "Combining For & Show", ForElseApp),
+        row("Children Player", "Play with children() helper", ChildrenPlayer),
+        row("Number Matcher", "Matching alternating number (13, 14, ...)", SwitchApp),
+        row("Switch", "Basic switch tester", TestSwitch),
+    ]),
+    section("Covered by unit tests", [
+        // Covered by unit tests
+        // c("Playing with Refs", "Mounting ref in DOM", Referencing), // Unit tested
+        // c("Indexer", "Playing with indexArray()", Indexer), // Unit tested
+        // c("Mapper", "Playing with mapArray()", Mapper), // Unit tested
+        // c("Show the money", "Testing <Show> with signals", TestWhen),   // Unit tested
+        row("Two switch buttons", "Show/hide buttons", WhenAppWithSignal), // Unit tested
+        row("Login", "Login/Logout with Portal", LoginApp), // Unit tested
+        row("Dynamic", "Play with dynamic & lazy components", DynamicApp), // Unit tested
+    ]),
+    section("Applications", [
+        // Apps
+        row("TODO", "A simple TODO application", Todo),
+        row("JS Bench", "JS Framework Bench application", App),
+        row("Rainbow", "A rotating rainbow", RainbowApp),
+        row("Tic-Tac-Toe", "The tic-tac-toe game", Game),
+    ]),
 ];
 
 export default function Navigation() {
     const [path] = createSignal(document.location.pathname.substring(1));
     const componentDescriptor = () =>
-        components.find((l) => l.component.name === path());
+        components.map((s) => s.rows.find((l) => l.component.name === path())).find((r) => r != null);
 
     createEffect(() => {
         const descriptor = componentDescriptor();
@@ -89,9 +93,7 @@ export default function Navigation() {
             const exit = render(() => {
                 return (
                     <Dynamic
-                        component={() =>
-                            descriptor.component as SuppleComponent<{ onexit }>
-                        }
+                        component={() => descriptor.component as SuppleComponent<{ onexit }>}
                         onexit={() => exit()}
                         {...descriptor.props}
                     />
@@ -128,18 +130,32 @@ function Link({ href, children }: LinkProps) {
 function Summary() {
     return () => (
         <table>
-            <tr>
-                <th>Name</th>
-                <th>Description</th>
-            </tr>
+            <thead>
+                <tr>
+                    <th scope="col">Name</th>
+                    <th scope="col">Description</th>
+                </tr>
+            </thead>
+
             <For each={() => components}>
-                {(el) => (
-                    <tr>
-                        <td>
-                            <Link href={`${el.component.name}`}>{el.name}</Link>
-                        </td>
-                        <td>{el.description}</td>
-                    </tr>
+                {(el: ReturnType<typeof section>) => (
+                    <tbody>
+                        <tr>
+                            <th scope="rowgroup" colspan="2">
+                                {el.header}
+                            </th>
+                        </tr>
+                        <For each={() => el.rows}>
+                            {(el: ReturnType<typeof row>) => (
+                                <tr>
+                                    <td>
+                                        <Link href={`${el.component.name}`}>{el.name}</Link>
+                                    </td>
+                                    <td>{el.description}</td>
+                                </tr>
+                            )}
+                        </For>
+                    </tbody>
                 )}
             </For>
         </table>

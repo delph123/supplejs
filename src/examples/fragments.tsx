@@ -1,4 +1,4 @@
-import { createSignal, h, Fragment } from "../core";
+import { createSignal, h, Fragment, createMemo } from "../core";
 import { Clock } from "./components";
 
 export function GameOn({ nb, onexit }) {
@@ -13,19 +13,17 @@ export function GameOn({ nb, onexit }) {
                         equals: false,
                     });
                     setInterval(notify, 1000);
-                    return () => {
+                    return createMemo(() => {
                         subscribe();
                         return (
                             <div>
                                 <p>
                                     <label>This is: </label>
-                                    <font color="red">
-                                        {new Date().toLocaleTimeString()}
-                                    </font>
+                                    <font color="red">{new Date().toLocaleTimeString()}</font>
                                 </p>
                             </div>
                         );
-                    };
+                    });
                 })}
             <button
                 onclick={() => {
@@ -45,12 +43,12 @@ export function GameOn({ nb, onexit }) {
 export function NestedChildren() {
     const nestedList = ["a", ["a", ["a", ["a", "b", "c"], "c"], "c"], "c"];
 
-    function maplist(l) {
-        return l.map((e) => (Array.isArray(e) ? maplist(e) : <p>{e}</p>));
+    function mapList(l) {
+        return l.map((e) => (Array.isArray(e) ? mapList(e) : <p>{e}</p>));
     }
 
     function print(l) {
-        const c = maplist(l);
+        const c = mapList(l);
         console.log(c);
         return c;
     }
@@ -66,10 +64,10 @@ export function NestedChildren() {
                     <>
                         <div>before</div>
                         <>
-                            <Child>{maplist(nestedList)}</Child>
+                            <Child>{mapList(nestedList)}</Child>
                             <div>between</div>
                         </>
-                        {print(nestedList)}
+                        {() => print(nestedList)}
                         <Clock level={0} />
                         <div>after</div>
                     </>
