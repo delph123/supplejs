@@ -41,8 +41,7 @@ export function sameValueZero<T>(value: T, other: T) {
 export function shallowArrayEqual<T>(first: T[], second: T[]) {
     return (
         first === second ||
-        (first.length === second.length &&
-            first.every((v, i) => sameValueZero(v, second[i])))
+        (first.length === second.length && first.every((v, i) => sameValueZero(v, second[i])))
     );
 }
 
@@ -70,6 +69,7 @@ enum LOG_LEVEL {
 
 const DEFAULT_LOG_LEVELS = {
     dom: LOG_LEVEL.ERROR,
+    children: LOG_LEVEL.INFO,
     clock: LOG_LEVEL.INFO,
 };
 

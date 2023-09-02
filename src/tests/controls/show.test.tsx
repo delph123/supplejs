@@ -1,17 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import { render, screen } from "../utils";
-import { h, Show, createSignal, onCleanup, Fragment } from "../../core";
-
-function createMockComponent(signal) {
-    const mountSpy = vi.fn();
-    const cleanupSpy = vi.fn();
-    const Cmp = () => {
-        mountSpy();
-        onCleanup(cleanupSpy);
-        return () => <h1>{signal}</h1>;
-    };
-    return [Cmp, mountSpy, cleanupSpy] as const;
-}
+import { h, Show, createSignal, Fragment } from "../../core";
+import { createMockComponent } from "../mocks/mock_component";
 
 describe("Non-keyed <Show /> component", () => {
     it("takes an only child", () => {
@@ -400,14 +390,7 @@ describe("Keyed <Show /> component", () => {
 
     it("recreates children from scratch at each state changes", () => {
         const [count, setCount] = createSignal(5);
-
-        const mountSpy = vi.fn();
-        const cleanupSpy = vi.fn();
-        const Cmp = () => {
-            mountSpy();
-            onCleanup(cleanupSpy);
-            return () => <h1>{count}</h1>;
-        };
+        const [Cmp, mountSpy, cleanupSpy] = createMockComponent(count);
 
         render(() => (
             <Show when={count} keyed>

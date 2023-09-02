@@ -5,7 +5,7 @@ import {
     mount,
     multiComponents,
 } from "./dom";
-import { flatten, shallowArrayEqual, toArray } from "./helper";
+import { createLogger, flatten, shallowArrayEqual, toArray } from "./helper";
 import { mapArray } from "./iterators";
 import { h } from "./jsx";
 import { createComputed, createSignal } from "./reactivity";
@@ -15,6 +15,8 @@ import {
     SuppleNode,
     RealDOMComponent,
 } from "./types";
+
+const logger = createLogger("children");
 
 function extractRealDOMComponents(component: DOMComponent): RealDOMComponent[] {
     if (component.__kind === "dom_component") {
@@ -45,7 +47,7 @@ export function children(childrenGetter: () => SuppleNode | undefined) {
     createComputed(() => {
         const root = multiComponents(childrenArray());
         const handler = (component) => {
-            console.log("children notified with", component, root);
+            logger.log("children notified with", component, root);
             setComponents(extractRealDOMComponents(root));
         };
         mount(root, handler);

@@ -60,18 +60,17 @@ const components = [
         row("Redux Slice", "Implementation of redux-like store", ReduxSlice),
         row("For/Else", "Combining For & Show", ForElseApp),
         row("Children Player", "Play with children() helper", ChildrenPlayer),
-        row("Number Matcher", "Matching alternating number (13, 14, ...)", SwitchApp),
-        row("Switch", "Basic switch tester", TestSwitch),
     ]),
     section("Covered by unit tests", [
-        // Covered by unit tests
         // c("Playing with Refs", "Mounting ref in DOM", Referencing), // Unit tested
         // c("Indexer", "Playing with indexArray()", Indexer), // Unit tested
         // c("Mapper", "Playing with mapArray()", Mapper), // Unit tested
         // c("Show the money", "Testing <Show> with signals", TestWhen),   // Unit tested
-        row("Two switch buttons", "Show/hide buttons", WhenAppWithSignal), // Unit tested
-        row("Login", "Login/Logout with Portal", LoginApp), // Unit tested
-        row("Dynamic", "Play with dynamic & lazy components", DynamicApp), // Unit tested
+        row("Two switch buttons", "Show/hide buttons", WhenAppWithSignal),
+        row("Login", "Login/Logout with Portal", LoginApp),
+        row("Dynamic", "Play with dynamic & lazy components", DynamicApp),
+        row("Number Matcher", "Matching alternating number (13, 14, ...)", SwitchApp),
+        row("Switch", "Basic switch tester", TestSwitch),
     ]),
     section("Applications", [
         // Apps

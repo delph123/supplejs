@@ -2,7 +2,7 @@ import { children } from "./component";
 import { onCleanup, untrack } from "./context";
 import { h } from "./jsx";
 import { createDOMComponent, render } from "./dom";
-import { toValue } from "./helper";
+import { createLogger, toValue } from "./helper";
 import { createMemo } from "./reactivity";
 import {
     DOMComponent,
@@ -50,6 +50,8 @@ export function Show<T>(props: ShowProps<T>): SuppleNodeEffect {
     };
 }
 
+const logger = createLogger("children");
+
 export function Switch(props: {
     keyed?: boolean;
     fallback?: SuppleChild;
@@ -61,10 +63,10 @@ export function Switch(props: {
         () => {
             const matchChildren = resolved().filter((c) => "type" in c && c.type === Match) as (DOMComponent &
                 MatchProps<unknown>)[];
-            console.log("Filtered =>", matchChildren);
+            logger.log("Filtered =>", matchChildren);
 
             const displayMatches = matchChildren.map((m) => toValue(m.when));
-            const matchingIndex = displayMatches.findIndex((v) => v != null && v !== false);
+            const matchingIndex = displayMatches.findIndex((v) => Boolean(v));
             if (matchingIndex >= 0) {
                 return [matchChildren[matchingIndex], displayMatches[matchingIndex]] as const;
             } else {
