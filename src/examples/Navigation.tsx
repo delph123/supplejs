@@ -14,7 +14,7 @@ import {
 } from "../core";
 
 import { Todo } from "./todo";
-import { GameOn, NestedChildren } from "./fragments";
+import { GameOn } from "./fragments";
 import { Looper } from "./iterators";
 import { App } from "./js_framework_bench";
 import { ReduxSlice } from "./redux";
@@ -53,7 +53,6 @@ const components = [
         row("Multi-counter App", "The iconic multi-counter application", MultiApp),
         row("GoodBye", "Swapping Clock & Goodbye components", GoodBye),
         row("GameOn", "Deleting clocks until exiting completely", GameOn, { nb: 5 }),
-        row("NestedChildren", "Deeply nested children (in arrays)", NestedChildren),
         row("Looper", "Playing with <For>", Looper),
         row("Redux Slice", "Implementation of redux-like store", ReduxSlice),
         row("For/Else", "Combining For & Show", ForElseApp),
@@ -66,6 +65,7 @@ const components = [
         // row("Show the money", "Testing <Show> with signals", TestWhen), // Unit tested
         // row("My name is...", "Playing with Signal & Computed", MyNameIs), // Unit tested
         // row("Nesting Effects", "Nested effects running in timeout", NestedEffect), // Unit tested
+        // row("NestedChildren", "Deeply nested children (in arrays)", NestedChildren), // Unit tested
         row("Two switch buttons", "Show/hide buttons", WhenAppWithSignal),
         row("Login", "Login/Logout with Portal", LoginApp),
         row("Dynamic", "Play with dynamic & lazy components", DynamicApp),
