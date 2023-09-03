@@ -22,7 +22,7 @@ import RainbowApp from "./RainbowApp";
 import { ForElseApp, SwitchApp, TestSwitch, LoginApp, WhenAppWithSignal } from "./controls";
 import { ChildrenPlayer, DynamicApp } from "./dynamic";
 import { Game } from "./square";
-import { CounterButton, MyNameIs, NestedEffect } from "./effects";
+import { CounterButton } from "./effects";
 import { AsyncApp, AsyncSwitch, AutoCounter } from "./async_components";
 import { MultiApp, GoodBye } from "./components";
 
@@ -47,8 +47,6 @@ function row(
 const components = [
     section("To be covered by unit tests", [
         row("Counter", "Playing with reactions", CounterButton, { nb: 5 }),
-        row("My name is...", "Playing with Signal & Computed", MyNameIs),
-        row("Nesting Effects", "Nested effects running in timeout", NestedEffect),
         row("Automatic Counter", "A counter incrementing with interval", AutoCounter),
         row("Resource Switch", "A switch to manage resource state", AsyncSwitch),
         row("Dog API", "An asynchronous app using resource to fetch dogs", AsyncApp),
@@ -62,10 +60,12 @@ const components = [
         row("Children Player", "Play with children() helper", ChildrenPlayer),
     ]),
     section("Covered by unit tests", [
-        // c("Playing with Refs", "Mounting ref in DOM", Referencing), // Unit tested
-        // c("Indexer", "Playing with indexArray()", Indexer), // Unit tested
-        // c("Mapper", "Playing with mapArray()", Mapper), // Unit tested
-        // c("Show the money", "Testing <Show> with signals", TestWhen),   // Unit tested
+        // row("Playing with Refs", "Mounting ref in DOM", Referencing), // Unit tested
+        // row("Indexer", "Playing with indexArray()", Indexer), // Unit tested
+        // row("Mapper", "Playing with mapArray()", Mapper), // Unit tested
+        // row("Show the money", "Testing <Show> with signals", TestWhen), // Unit tested
+        // row("My name is...", "Playing with Signal & Computed", MyNameIs), // Unit tested
+        // row("Nesting Effects", "Nested effects running in timeout", NestedEffect), // Unit tested
         row("Two switch buttons", "Show/hide buttons", WhenAppWithSignal),
         row("Login", "Login/Logout with Portal", LoginApp),
         row("Dynamic", "Play with dynamic & lazy components", DynamicApp),

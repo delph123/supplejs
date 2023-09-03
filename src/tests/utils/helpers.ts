@@ -35,3 +35,26 @@ export function createWaitableMock<Args extends any[] = any, R = any>() {
 
     return mock;
 }
+
+export function createSideEffectSpy() {
+    const spy = vi.fn();
+    const beforeActionListeners = new Set<() => void>();
+    const afterActionListeners = new Set<() => void>();
+
+    const act = function act<T>(actionWithSideEffect: () => T) {
+        beforeActionListeners.forEach((l) => l());
+        const r = actionWithSideEffect();
+        afterActionListeners.forEach((l) => l());
+        return r;
+    };
+
+    act.beforeEach = function beforeEachAction(listener: () => void) {
+        beforeActionListeners.add(listener);
+    };
+
+    act.afterEach = function afterEachAction(listener: () => void) {
+        afterActionListeners.add(listener);
+    };
+
+    return [spy, act] as const;
+}
