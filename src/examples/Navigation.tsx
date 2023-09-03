@@ -15,7 +15,7 @@ import {
 
 import { Todo } from "./todo";
 import { GameOn } from "./fragments";
-import { Looper } from "./iterators";
+import { LooperApp } from "./iterators";
 import { App } from "./js_framework_bench";
 import { ReduxSlice } from "./redux";
 import RainbowApp from "./RainbowApp";
@@ -53,9 +53,7 @@ const components = [
         row("Multi-counter App", "The iconic multi-counter application", MultiApp),
         row("GoodBye", "Swapping Clock & Goodbye components", GoodBye),
         row("GameOn", "Deleting clocks until exiting completely", GameOn, { nb: 5 }),
-        row("Looper", "Playing with <For>", Looper),
         row("Redux Slice", "Implementation of redux-like store", ReduxSlice),
-        row("For/Else", "Combining For & Show", ForElseApp),
         row("Children Player", "Play with children() helper", ChildrenPlayer),
     ]),
     section("Covered by unit tests", [
@@ -71,6 +69,8 @@ const components = [
         row("Dynamic", "Play with dynamic & lazy components", DynamicApp),
         row("Number Matcher", "Matching alternating number (13, 14, ...)", SwitchApp),
         row("Switch", "Basic switch tester", TestSwitch),
+        row("For/Else", "Combining For & Show", ForElseApp),
+        row("Looper", "Playing with <For>", LooperApp),
     ]),
     section("Applications", [
         // Apps

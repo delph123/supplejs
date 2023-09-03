@@ -91,3 +91,7 @@ export function createLogger(scope: keyof typeof DEFAULT_LOG_LEVELS) {
         debug: logMessage(LOG_LEVEL.DEBUG, logLevel),
     };
 }
+
+export function randomInt(n: number) {
+    return Math.floor(Math.random() * n);
+}

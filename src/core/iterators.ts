@@ -21,16 +21,10 @@ interface ForProps<T> {
  *            - index is a signal representing the position in the array
  * @returns a reactive fragment composed of mapped element of the iterator
  */
-export function For<T>({
-    each,
-    children,
-    equals,
-    fallback,
-}: ForProps<T>): SuppleNodeEffect {
+export function For<T>({ each, children, equals, fallback }: ForProps<T>): SuppleNodeEffect {
     const resolvedChildren = mapArray(
         each,
-        (element, index) =>
-            createRenderEffect(() => children?.[0]?.(element, index) ?? null),
+        (element, index) => createRenderEffect(() => children?.[0]?.(element, index) ?? null),
         equals,
     );
     return () => {
@@ -66,8 +60,7 @@ interface IndexProps<T> {
 export function Index<T>({ each, children, fallback, equals }: IndexProps<T>) {
     const resolvedChildren = indexArray(
         each,
-        (element, index) =>
-            createRenderEffect(() => children?.[0]?.(element, index) ?? null),
+        (element, index) => createRenderEffect(() => children?.[0]?.(element, index) ?? null),
         equals,
     );
     return () => {
@@ -114,10 +107,7 @@ export function mapArray<T, U>(
     const compare = equals ?? sameValueZero;
     const finder = function finder(nextElement: T) {
         return (previousEntry: Entry<T, U>) => {
-            return (
-                previousEntry.element !== REMOVED &&
-                compare(previousEntry.element, nextElement)
-            );
+            return previousEntry.element !== REMOVED && compare(previousEntry.element, nextElement);
         };
     };
 
@@ -263,8 +253,6 @@ function listEquals<T, U>(
 ) {
     return (
         nextList.length === previousEntries.length &&
-        previousEntries.every(
-            (e, i) => e.element !== REMOVED && equals(e.element, nextList[i]),
-        )
+        previousEntries.every((e, i) => e.element !== REMOVED && equals(e.element, nextList[i]))
     );
 }
