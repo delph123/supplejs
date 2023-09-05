@@ -26,9 +26,9 @@ interface EqualsOption<T> {
  * to all observers.
  *
  * By default, when calling a signal's setter, the signal only updates (and
- * causes dependents to rerun) if the new value is actually different than
- * the old one, according to JavaScript's === operator. Alternatively, you
- * can set equals to false to always rerun dependents after the setter is
+ * causes dependents to rerun) if the new value is actually different than the
+ * old one, according to JavaScript's SameValueZero algorithm. Alternatively,
+ * you can set equals to false to always rerun dependents after the setter is
  * called, or you can pass your own function for testing equality.
  *
  * @param initialValue the initial value returned by the getter
@@ -36,10 +36,7 @@ interface EqualsOption<T> {
  * @returns [get, set] const array (typically destructured)
  */
 export function createSignal<T>(initialValue?: T, options?: EqualsOption<T>) {
-    const equals =
-        options?.equals === false
-            ? () => false
-            : options?.equals ?? sameValueZero;
+    const equals = options?.equals === false ? () => false : options?.equals ?? sameValueZero;
 
     let state = initialValue;
     let observers = new Set<TrackingContext>();
@@ -135,11 +132,7 @@ export function createEffect<T>(effect: (v: T) => T, value?: T) {
  * @param options.equals the equality function to test if memo has changed
  * @returns the memoized value (a read-only signal)
  */
-export function createMemo<T>(
-    memo: (v: T) => T,
-    value?: T,
-    options?: EqualsOption<T>,
-) {
+export function createMemo<T>(memo: (v: T) => T, value?: T, options?: EqualsOption<T>) {
     const [memoizedValue, setMemoizedValue] = createSignal<T>(value, options);
     createComputed((previousValue) => {
         const nextValue = memo(previousValue);
@@ -176,10 +169,7 @@ export function createReaction(onReaction: () => void) {
  * @param equals the comparison function
  * @returns the result of the comparison
  */
-export function createSelector<T, U>(
-    source: () => T,
-    equals?: (a: U, b: T) => boolean,
-) {
+export function createSelector<T, U>(source: () => T, equals?: (a: U, b: T) => boolean) {
     const comparator = equals ?? sameValueZero;
     return function selector(k: U) {
         return createMemo(() => comparator(k, source()))();

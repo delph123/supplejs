@@ -35,7 +35,7 @@ export function flatten<T>(nestedChildren: Nested<T>) {
  */
 export function sameValueZero<T>(value: T, other: T) {
     // Uses the fact that NaN is the only value which is not equal to itself
-    return value === other || (value !== value && other !== other);
+    return value === other || (Number.isNaN(value) && Number.isNaN(other));
 }
 
 export function shallowArrayEqual<T>(first: T[], second: T[]) {
