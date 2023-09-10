@@ -63,7 +63,7 @@ export function createRenderEffect<Props>(
         proxy.target = createDOMComponent(renderEffect());
         overwriteParent(proxy.target, proxy, null);
         logger.log("re-rendered", renderNb, proxy.target);
-        mount(proxy, proxy.parent, previousNodes);
+        remount(proxy, previousNodes);
     });
 
     // Run the render effect a first time
@@ -270,12 +270,12 @@ function getParentHTMLElement(container: DOMContainer) {
     }
 }
 
-export function mount(component: DOMComponent, container: DOMContainer, previousNodes?: Node[]) {
-    const newNodes = component.nodes();
+function mount(component: DOMComponent, container: Node) {
+    component.nodes().forEach((n) => container.appendChild(n));
+}
 
-    // component.mount(container, null);
-
-    const parent = getParentHTMLElement(container);
+function remount(component: DOMComponent, previousNodes?: Node[]) {
+    const parent = getParentHTMLElement(component.parent);
 
     if (
         (parent == null || typeof parent === "function") &&
@@ -294,6 +294,7 @@ export function mount(component: DOMComponent, container: DOMContainer, previous
     }
 
     if (parent == null) {
+        console.error("Error: no parent container!");
         return;
     }
 
@@ -301,14 +302,12 @@ export function mount(component: DOMComponent, container: DOMContainer, previous
         // if (parent !== previousNodes[0].parentNode) {
         //     console.error("Different parent provided", parent, previousNodes[0].parentNode);
         // }
+        const newNodes = component.nodes();
         const nextSibling = previousNodes[previousNodes.length - 1].nextSibling;
         const [newItems, oldItems] = convertToItems(newNodes, previousNodes);
         replaceNodes(previousNodes[0].parentNode, newItems, oldItems, nextSibling);
     } else {
-        if (previousNodes && previousNodes.length > 0) {
-            console.error("No parent for previous nodes", previousNodes);
-        }
-        newNodes.forEach((n) => parent.appendChild(n));
+        console.error("No parent for previous nodes", previousNodes);
     }
 }
 
