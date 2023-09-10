@@ -18,6 +18,7 @@ export function render(renderEffect: SuppleNodeEffect, container?: Node) {
     const parent = container ?? document.body;
     return createRoot((dispose) => {
         const component = createRenderEffect(renderEffect);
+        component.mount(parent, null);
         mount(component, parent);
         return () => {
             for (const node of component.nodes()) {
@@ -49,7 +50,7 @@ export function createRenderEffect<Props>(
             logger.log("mounting", renderNb, parent, this.target);
             overwriteParent(this, parent, oldParent);
             logger.log("end");
-            this.target.mount(this, null);
+            // this.target.mount(this, null);
         },
     };
 
@@ -57,9 +58,10 @@ export function createRenderEffect<Props>(
     const childContext = createChildContext(() => {
         const previousNodes = proxy.target.nodes();
         // Unmount current target
-        proxy.target.mount(null, proxy);
+        // proxy.target.mount(null, proxy);
         // Re-render DOM component
         proxy.target = createDOMComponent(renderEffect());
+        overwriteParent(proxy.target, proxy, null);
         logger.log("re-rendered", renderNb, proxy.target);
         mount(proxy, proxy.parent, previousNodes);
     });
@@ -67,6 +69,7 @@ export function createRenderEffect<Props>(
     // Run the render effect a first time
     runEffectInContext(childContext, () => {
         proxy.target = createDOMComponent(renderEffect());
+        overwriteParent(proxy.target, proxy, null);
         logger.log("rendered", renderNb, proxy.target);
     });
 
@@ -84,7 +87,8 @@ function overwriteParent(component: DOMComponent, parent: DOMContainer, oldParen
         logger.warn("Overwriting", component, parent);
         component.parent = parent;
     } else {
-        logger.error("Bad overwrite", component, parent);
+        logger.warn("Bad overwrite", component, parent);
+        component.parent = parent;
     }
 }
 
@@ -164,6 +168,8 @@ export function createDOMComponent(component: SuppleNode): DOMComponent {
         if ("useShadow" in component.props && component.props.useShadow) {
             container = element.shadowRoot ?? element.attachShadow({ mode: "open" });
         }
+        const domElement = domComponent(element);
+        (element as any).__supple_component = domElement;
         // Treat children same as for multi-components, except this time we directly
         // mount the children to avoid one unnecessary level of indirection
         flatten(component.children)
@@ -175,9 +181,10 @@ export function createDOMComponent(component: SuppleNode): DOMComponent {
                 }
             })
             .forEach((domChild) => {
+                domChild.mount(domElement, null);
                 mount(domChild, container);
             });
-        return domComponent(element);
+        return domElement;
     } else {
         return component;
     }
@@ -240,7 +247,7 @@ function domComponent(node: Node): RealDOMComponent {
 }
 
 export function multiComponents(components: DOMComponent[]): MultiDOMComponent {
-    return {
+    const component = {
         __kind: "multi_components",
         components,
         parent: null,
@@ -248,9 +255,11 @@ export function multiComponents(components: DOMComponent[]): MultiDOMComponent {
         mount(parent, oldParent) {
             logger.log("mounting-multi into", parent);
             overwriteParent(this, parent, oldParent);
-            components.forEach((child) => child.mount(this, null));
+            // components.forEach((child) => child.mount(this, null));
         },
-    };
+    } satisfies MultiDOMComponent;
+    components.forEach((c) => overwriteParent(c, component, null));
+    return component;
 }
 
 function getParentHTMLElement(container: DOMContainer) {
@@ -264,25 +273,20 @@ function getParentHTMLElement(container: DOMContainer) {
 export function mount(component: DOMComponent, container: DOMContainer, previousNodes?: Node[]) {
     const newNodes = component.nodes();
 
-    component.mount(container, null);
+    // component.mount(container, null);
 
     const parent = getParentHTMLElement(container);
 
-    // if (
-    //     (parent == null || typeof parent === "function") &&
-    //     previousNodes &&
-    //     previousNodes.length > 0 &&
-    //     previousNodes[0].parentNode
-    // ) {
-    //     console.error(
-    //         "Previous nodes had parent",
-    //         previousNodes[0],
-    //         previousNodes[0].parentNode,
-    //         parent
-    //     );
-    //     const previousParent = previousNodes[0].parentNode;
-    //     previousNodes.forEach((n) => previousParent.removeChild(n));
-    // }
+    if (
+        (parent == null || typeof parent === "function") &&
+        previousNodes &&
+        previousNodes.length > 0 &&
+        previousNodes[0].parentNode
+    ) {
+        console.error("Previous nodes had parent", previousNodes[0], previousNodes[0].parentNode, parent);
+        const previousParent = previousNodes[0].parentNode;
+        previousNodes.forEach((n) => previousParent.removeChild(n));
+    }
 
     if (typeof parent === "function") {
         parent(component, previousNodes);
@@ -294,9 +298,9 @@ export function mount(component: DOMComponent, container: DOMContainer, previous
     }
 
     if (previousNodes && previousNodes.length > 0 && previousNodes[0].parentNode) {
-        if (parent !== previousNodes[0].parentNode) {
-            console.error("Different parent provided", parent, previousNodes[0].parentNode);
-        }
+        // if (parent !== previousNodes[0].parentNode) {
+        //     console.error("Different parent provided", parent, previousNodes[0].parentNode);
+        // }
         const nextSibling = previousNodes[previousNodes.length - 1].nextSibling;
         const [newItems, oldItems] = convertToItems(newNodes, previousNodes);
         replaceNodes(previousNodes[0].parentNode, newItems, oldItems, nextSibling);
