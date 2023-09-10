@@ -299,7 +299,7 @@ export function mount(component: DOMComponent, container: DOMContainer, previous
         }
         const nextSibling = previousNodes[previousNodes.length - 1].nextSibling;
         const [newItems, oldItems] = convertToItems(newNodes, previousNodes);
-        replaceNodes(parent, newItems, oldItems, nextSibling);
+        replaceNodes(previousNodes[0].parentNode, newItems, oldItems, nextSibling);
     } else {
         if (previousNodes && previousNodes.length > 0) {
             console.error("No parent for previous nodes", previousNodes);
