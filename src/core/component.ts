@@ -88,6 +88,7 @@ export function children(childrenGetter: () => SuppleNode | undefined) {
             logger.log("children notified with", component, root);
             setComponents(extractRealDOMComponents(root));
         };
+        root.mount(handler, null);
         mount(root, handler);
         onCleanup(() => {
             root.components.forEach((c) => c.mount(null, root));
