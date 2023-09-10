@@ -1,5 +1,5 @@
 import { onCleanup } from "./context";
-import { createDOMComponent, createRenderEffect, mount, multiComponents } from "./dom";
+import { createDOMComponent, createRenderEffect, multiComponents } from "./dom";
 import { createLogger, flatten, shallowArrayEqual, toArray } from "./helper";
 import { mapArray } from "./iterators";
 import { h } from "./jsx";
@@ -89,7 +89,8 @@ export function children(childrenGetter: () => SuppleNode | undefined) {
             setComponents(extractRealDOMComponents(root));
         };
         root.mount(handler, null);
-        mount(root, handler);
+        handler(root);
+        // mount(root, handler);
         onCleanup(() => {
             root.components.forEach((c) => c.mount(null, root));
             root.components.length = 0;
