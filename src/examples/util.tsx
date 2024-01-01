@@ -17,7 +17,7 @@ export function createIncrement(initialValue = 0) {
     const [value, setValue] = createSignal(initialValue);
     const [started, start] = createSignal(false);
 
-    let timer: NodeJS.Timer;
+    let timer;
 
     function toggle(status?: boolean) {
         if (status == null || started() !== status) {
