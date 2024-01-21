@@ -18,6 +18,7 @@ export function render(renderEffect: SuppleNodeEffect, container?: Node) {
     const parent = container ?? document.body;
     return createRoot((dispose) => {
         const component = createRenderEffect(renderEffect);
+        component.mount(parent, null);
         mount(component, parent);
         return () => {
             for (const node of component.nodes()) {
@@ -49,7 +50,7 @@ export function createRenderEffect<Props>(
             logger.log("mounting", renderNb, parent, this.target);
             overwriteParent(this, parent, oldParent);
             logger.log("end");
-            this.target.mount(this, null);
+            // this.target.mount(this, null);
         },
     };
 
@@ -57,39 +58,37 @@ export function createRenderEffect<Props>(
     const childContext = createChildContext(() => {
         const previousNodes = proxy.target.nodes();
         // Unmount current target
-        proxy.target.mount(null, proxy);
+        // proxy.target.mount(null, proxy);
         // Re-render DOM component
         proxy.target = createDOMComponent(renderEffect());
+        overwriteParent(proxy.target, proxy, null);
         logger.log("re-rendered", renderNb, proxy.target);
-        mount(proxy, proxy.parent, previousNodes);
+        remount(proxy, previousNodes);
     });
 
     // Run the render effect a first time
     runEffectInContext(childContext, () => {
         proxy.target = createDOMComponent(renderEffect());
+        overwriteParent(proxy.target, proxy, null);
         logger.log("rendered", renderNb, proxy.target);
     });
 
     return proxy;
 }
 
-function overwriteParent(
-    component: DOMComponent,
-    parent: DOMContainer,
-    oldParent: DOMContainer,
-) {
+function overwriteParent(component: DOMComponent, parent: DOMContainer, oldParent: DOMContainer) {
     if (component.parent === oldParent || component.parent === parent) {
         component.parent = parent;
     } else if (
         (typeof getParentHTMLElement(component.parent) === "function" &&
             getParentHTMLElement(parent) instanceof Node) ||
-        (getParentHTMLElement(component.parent) == null &&
-            getParentHTMLElement(parent) != null)
+        (getParentHTMLElement(component.parent) == null && getParentHTMLElement(parent) != null)
     ) {
         logger.warn("Overwriting", component, parent);
         component.parent = parent;
     } else {
-        logger.error("Bad overwrite", component, parent);
+        logger.warn("Bad overwrite", component, parent);
+        component.parent = parent;
     }
 }
 
@@ -137,44 +136,40 @@ export function createDOMComponent(component: SuppleNode): DOMComponent {
         );
     } else if (component.__kind === "html_element") {
         const element = document.createElement(component.type);
-        Object.entries(component.props as Record<string, any>).forEach(
-            ([name, value]) => {
-                if (name === "ref") {
-                    if (typeof value === "function") {
-                        (value as (t: HTMLElement) => void)(element);
-                    } else if (value != null) {
-                        value.current = element;
-                    }
-                } else if (name === "useShadow") {
-                    // do nothing
-                } else if (!name.startsWith("on")) {
-                    if (typeof value === "function") {
-                        createComputed(() => {
-                            setDOMAttribute(element, name, value());
-                        });
-                    } else {
-                        setDOMAttribute(element, name, value);
-                    }
-                } else if (name.startsWith("on:")) {
-                    // Adds an event listener verbatim (for unusual names)
-                    element.addEventListener(name.substring(3), value);
-                } else if (name.startsWith("oncapture:")) {
-                    // Adds an event listener verbatim (for unusual names)
-                    element.addEventListener(name.substring(10), value);
-                } else {
-                    // Add an event listener for common UI event (name is lower cased)
-                    element.addEventListener(
-                        name.substring(2).toLowerCase(),
-                        value,
-                    );
+        Object.entries(component.props as Record<string, any>).forEach(([name, value]) => {
+            if (name === "ref") {
+                if (typeof value === "function") {
+                    (value as (t: HTMLElement) => void)(element);
+                } else if (value != null) {
+                    value.current = element;
                 }
-            },
-        );
+            } else if (name === "useShadow") {
+                // do nothing
+            } else if (!name.startsWith("on")) {
+                if (typeof value === "function") {
+                    createComputed(() => {
+                        setDOMAttribute(element, name, value());
+                    });
+                } else {
+                    setDOMAttribute(element, name, value);
+                }
+            } else if (name.startsWith("on:")) {
+                // Adds an event listener verbatim (for unusual names)
+                element.addEventListener(name.substring(3), value);
+            } else if (name.startsWith("oncapture:")) {
+                // Adds an event listener verbatim (for unusual names)
+                element.addEventListener(name.substring(10), value);
+            } else {
+                // Add an event listener for common UI event (name is lower cased)
+                element.addEventListener(name.substring(2).toLowerCase(), value);
+            }
+        });
         let container: Node = element;
         if ("useShadow" in component.props && component.props.useShadow) {
-            container =
-                element.shadowRoot ?? element.attachShadow({ mode: "open" });
+            container = element.shadowRoot ?? element.attachShadow({ mode: "open" });
         }
+        const domElement = domComponent(element);
+        (element as any).__supple_component = domElement;
         // Treat children same as for multi-components, except this time we directly
         // mount the children to avoid one unnecessary level of indirection
         flatten(component.children)
@@ -186,9 +181,10 @@ export function createDOMComponent(component: SuppleNode): DOMComponent {
                 }
             })
             .forEach((domChild) => {
+                domChild.mount(domElement, null);
                 mount(domChild, container);
             });
-        return domComponent(element);
+        return domElement;
     } else {
         return component;
     }
@@ -203,11 +199,9 @@ function setDOMAttribute(element: HTMLElement, name: string, value: any) {
                     element.style.cssText = "";
                 }
                 // Set values through JS setter (supports both JS-style & CSS-style properties)
-                Object.entries(value as Record<string, string>).forEach(
-                    ([prop, val]) => {
-                        element.style[prop] = val;
-                    },
-                );
+                Object.entries(value as Record<string, string>).forEach(([prop, val]) => {
+                    element.style[prop] = val;
+                });
                 return;
             }
             break;
@@ -219,9 +213,7 @@ function setDOMAttribute(element: HTMLElement, name: string, value: any) {
                 // Only set or unset changed elements from the record and leave other
                 // classes unchanged (in case class & classList attributes are combined)
                 ([className, status]) => {
-                    if (
-                        Boolean(status) != element.classList.contains(className)
-                    ) {
+                    if (Boolean(status) != element.classList.contains(className)) {
                         element.classList.toggle(className);
                     }
                 },
@@ -255,7 +247,7 @@ function domComponent(node: Node): RealDOMComponent {
 }
 
 export function multiComponents(components: DOMComponent[]): MultiDOMComponent {
-    return {
+    const component = {
         __kind: "multi_components",
         components,
         parent: null,
@@ -263,9 +255,11 @@ export function multiComponents(components: DOMComponent[]): MultiDOMComponent {
         mount(parent, oldParent) {
             logger.log("mounting-multi into", parent);
             overwriteParent(this, parent, oldParent);
-            components.forEach((child) => child.mount(this, null));
+            // components.forEach((child) => child.mount(this, null));
         },
-    };
+    } satisfies MultiDOMComponent;
+    components.forEach((c) => overwriteParent(c, component, null));
+    return component;
 }
 
 function getParentHTMLElement(container: DOMContainer) {
@@ -276,32 +270,23 @@ function getParentHTMLElement(container: DOMContainer) {
     }
 }
 
-export function mount(
-    component: DOMComponent,
-    container: DOMContainer,
-    previousNodes?: Node[],
-) {
-    const newNodes = component.nodes();
+function mount(component: DOMComponent, container: Node) {
+    component.nodes().forEach((n) => container.appendChild(n));
+}
 
-    component.mount(container, null);
+function remount(component: DOMComponent, previousNodes?: Node[]) {
+    const parent = getParentHTMLElement(component.parent);
 
-    const parent = getParentHTMLElement(container);
-
-    // if (
-    //     (parent == null || typeof parent === "function") &&
-    //     previousNodes &&
-    //     previousNodes.length > 0 &&
-    //     previousNodes[0].parentNode
-    // ) {
-    //     console.error(
-    //         "Previous nodes had parent",
-    //         previousNodes[0],
-    //         previousNodes[0].parentNode,
-    //         parent
-    //     );
-    //     const previousParent = previousNodes[0].parentNode;
-    //     previousNodes.forEach((n) => previousParent.removeChild(n));
-    // }
+    if (
+        (parent == null || typeof parent === "function") &&
+        previousNodes &&
+        previousNodes.length > 0 &&
+        previousNodes[0].parentNode
+    ) {
+        console.error("Previous nodes had parent", previousNodes[0], previousNodes[0].parentNode, parent);
+        const previousParent = previousNodes[0].parentNode;
+        previousNodes.forEach((n) => previousParent.removeChild(n));
+    }
 
     if (typeof parent === "function") {
         parent(component, previousNodes);
@@ -309,38 +294,24 @@ export function mount(
     }
 
     if (parent == null) {
+        console.error("Error: no parent container!");
         return;
     }
 
-    if (
-        previousNodes &&
-        previousNodes.length > 0 &&
-        previousNodes[0].parentNode
-    ) {
-        if (parent !== previousNodes[0].parentNode) {
-            console.error(
-                "Different parent provided",
-                parent,
-                previousNodes[0].parentNode,
-            );
-        }
+    if (previousNodes && previousNodes.length > 0 && previousNodes[0].parentNode) {
+        // if (parent !== previousNodes[0].parentNode) {
+        //     console.error("Different parent provided", parent, previousNodes[0].parentNode);
+        // }
+        const newNodes = component.nodes();
         const nextSibling = previousNodes[previousNodes.length - 1].nextSibling;
         const [newItems, oldItems] = convertToItems(newNodes, previousNodes);
-        replaceNodes(parent, newItems, oldItems, nextSibling);
+        replaceNodes(previousNodes[0].parentNode, newItems, oldItems, nextSibling);
     } else {
-        if (previousNodes && previousNodes.length > 0) {
-            console.error("No parent for previous nodes", previousNodes);
-        }
-        newNodes.forEach((n) => parent.appendChild(n));
+        console.error("No parent for previous nodes", previousNodes);
     }
 }
 
-function replaceNodes(
-    container: Node,
-    newItems: NodeItem[],
-    oldItems: NodeItem[],
-    nextSibling: Node | null,
-) {
+function replaceNodes(container: Node, newItems: NodeItem[], oldItems: NodeItem[], nextSibling: Node | null) {
     let newCursor = 0;
     let oldCursor = 0;
 
@@ -363,10 +334,7 @@ function replaceNodes(
         } else if (oldItem.newSlot !== NO_SLOT && newItem.oldSlot === NO_SLOT) {
             if (isNextExisting(oldItem, newItems, newCursor + 1)) {
                 while (newItems[newCursor].oldSlot === NO_SLOT) {
-                    container.insertBefore(
-                        newItems[newCursor].node,
-                        oldItem.node,
-                    );
+                    container.insertBefore(newItems[newCursor].node, oldItem.node);
                     newCursor++;
                 }
             } else {
@@ -419,12 +387,7 @@ function convertToItems(newNodes: Node[], oldNodes: Node[]) {
     return [newItems, oldItems];
 }
 
-function nodeToItem(
-    map: Map<Node, NodeItem>,
-    indexProp: "oldSlot" | "newSlot",
-    node: Node,
-    index: number,
-) {
+function nodeToItem(map: Map<Node, NodeItem>, indexProp: "oldSlot" | "newSlot", node: Node, index: number) {
     let item: NodeItem;
 
     if (map.has(node)) {
