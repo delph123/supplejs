@@ -24,6 +24,7 @@ import { Game } from "./square";
 import { CounterButton } from "./effects";
 import { AsyncApp, AsyncSwitch, AutoCounter } from "./async_components";
 import { MultiApp, GoodBye } from "./components";
+import { ContextPassingApp, MultiContextApp } from "./context";
 import useCSS from "./useCss";
 
 function section(header: string, rows: ReturnType<typeof row>[]) {
@@ -55,6 +56,8 @@ const components = [
         row("GameOn", "Deleting clocks until exiting completely", GameOn, { nb: 5 }),
         row("Redux Slice", "Implementation of redux-like store", ReduxSlice),
         row("Children Player", "Play with children() helper", ChildrenPlayer),
+        row("Context Passing", "Passing context to lower-level components", ContextPassingApp),
+        row("Multi Counter", "Multiple contexts", MultiContextApp),
     ]),
     section("Covered by unit tests", [
         // row("Playing with Refs", "Mounting ref in DOM", Referencing), // Unit tested
