@@ -1,16 +1,17 @@
-export type JSXElement<Props> =
-    | {
+export type JSXHTMLElement<Props> = {
           __kind: "html_element";
           type: string;
           props: Props;
           children: SuppleChild[];
-      }
-    | {
+};
+export type JSXSuppleElement<Props> = {
           __kind: "supple_element";
           type: SuppleComponent<Props>;
           props: Props;
           children: SuppleChild[];
       };
+
+export type JSXElement<Props> = JSXHTMLElement<Props> | JSXSuppleElement<Props>;
 
 export interface AbstractDOMComponent {
     parent: DOMContainer;
