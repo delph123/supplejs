@@ -7,10 +7,12 @@ import {
     SuppleNode,
     SuppleNodeEffect,
     DOMContainer,
+    JSXHTMLElement,
 } from "./types";
 import { createLogger, flatten } from "./helper";
 import { createChildContext, createRoot, runEffectInContext } from "./context";
 import { createComputed } from "./reactivity";
+import { createComponent, runEffectInComponentContext } from "./component";
 
 const logger = createLogger("dom");
 
@@ -29,30 +31,11 @@ export function render(renderEffect: SuppleNodeEffect, container?: Node) {
     });
 }
 
-let nb = 0;
-
-export function createRenderEffect<Props>(
+export function createRenderEffect(
     renderEffect: SuppleNodeEffect,
-    Component?: SuppleComponent<Props>,
+    inputProxyComponent?: ProxyDOMComponent,
 ): ProxyDOMComponent {
-    const renderNb = nb++;
-
-    const proxy: ProxyDOMComponent = {
-        __kind: "proxy_component",
-        type: Component,
-        target: undefined as unknown as DOMComponent,
-        parent: null,
-        id: renderNb,
-        nodes() {
-            return this.target.nodes();
-        },
-        mount(parent, oldParent) {
-            logger.log("mounting", renderNb, parent, this.target);
-            overwriteParent(this, parent, oldParent);
-            logger.log("end");
-            // this.target.mount(this, null);
-        },
-    };
+    const proxy = inputProxyComponent ?? proxyComponent();
 
     // Define the update context
     const childContext = createChildContext(() => {
@@ -60,17 +43,17 @@ export function createRenderEffect<Props>(
         // Unmount current target
         // proxy.target.mount(null, proxy);
         // Re-render DOM component
-        proxy.target = createDOMComponent(renderEffect());
+        proxy.target = createDOMComponent(runEffectInComponentContext(proxy, renderEffect));
         overwriteParent(proxy.target, proxy, null);
-        logger.log("re-rendered", renderNb, proxy.target);
+        logger.log("re-rendered", proxy.id, proxy.target);
         remount(proxy, previousNodes);
     });
 
     // Run the render effect a first time
     runEffectInContext(childContext, () => {
-        proxy.target = createDOMComponent(renderEffect());
+        proxy.target = createDOMComponent(runEffectInComponentContext(proxy, renderEffect));
         overwriteParent(proxy.target, proxy, null);
-        logger.log("rendered", renderNb, proxy.target);
+        logger.log("rendered", proxy.id, proxy.target);
     });
 
     return proxy;
@@ -122,20 +105,19 @@ export function createDOMComponent(component: SuppleNode): DOMComponent {
             return domComponent(document.createComment("empty_fragment"));
         }
     } else if (component.__kind === "supple_element") {
-        // When we create a component, we will pass children untouched so that the
-        // component itself can define the semantics of the children prop as it
-        // sees fit. This is useful for example for the iterators components which
-        // expects a mapping function with item as a parameter instead of a raw
-        // component.
-        return createRenderEffect(
-            component.type({
-                ...component.props,
-                children: component.children,
-            }),
-            component.type,
-        );
+        // Delegate component creation to `component.ts` so that we can set-up
+        // the component context at the same time (for create/useContext APIs)
+        return createComponent(component);
     } else if (component.__kind === "html_element") {
+        return createHtmlElement(component);
+    } else {
+        return component;
+    }
+}
+
+function createHtmlElement(component: JSXHTMLElement<any>) {
         const element = document.createElement(component.type);
+
         Object.entries(component.props as Record<string, any>).forEach(([name, value]) => {
             if (name === "ref") {
                 if (typeof value === "function") {
@@ -164,12 +146,15 @@ export function createDOMComponent(component: SuppleNode): DOMComponent {
                 element.addEventListener(name.substring(2).toLowerCase(), value);
             }
         });
+
         let container: Node = element;
         if ("useShadow" in component.props && component.props.useShadow) {
             container = element.shadowRoot ?? element.attachShadow({ mode: "open" });
         }
+
         const domElement = domComponent(element);
         (element as any).__supple_component = domElement;
+
         // Treat children same as for multi-components, except this time we directly
         // mount the children to avoid one unnecessary level of indirection
         flatten(component.children)
@@ -184,10 +169,8 @@ export function createDOMComponent(component: SuppleNode): DOMComponent {
                 domChild.mount(domElement, null);
                 mount(domChild, container);
             });
+
         return domElement;
-    } else {
-        return component;
-    }
 }
 
 function setDOMAttribute(element: HTMLElement, name: string, value: any) {
@@ -260,6 +243,28 @@ export function multiComponents(components: DOMComponent[]): MultiDOMComponent {
     } satisfies MultiDOMComponent;
     components.forEach((c) => overwriteParent(c, component, null));
     return component;
+}
+
+let nb = 0;
+
+export function proxyComponent<Props>(Component?: SuppleComponent<Props>): ProxyDOMComponent {
+    const renderNb = nb++;
+    return {
+        __kind: "proxy_component",
+        type: Component,
+        target: undefined as unknown as DOMComponent,
+        parent: null,
+        id: renderNb,
+        nodes() {
+            return this.target.nodes();
+        },
+        mount(parent, oldParent) {
+            logger.log("mounting", renderNb, parent, this.target);
+            overwriteParent(this, parent, oldParent);
+            logger.log("end");
+            // this.target.mount(this, null);
+        },
+    };
 }
 
 function getParentHTMLElement(container: DOMContainer) {

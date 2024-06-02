@@ -1,4 +1,12 @@
-import { SuppleChild, SuppleComponent, JSXElement, SuppleNodeEffect, Ref, ValueOrAccessor } from "./types";
+import {
+    SuppleChild,
+    SuppleComponent,
+    JSXElement,
+    SuppleNodeEffect,
+    Ref,
+    ValueOrAccessor,
+    JSXHTMLElement,
+} from "./types";
 import { toValue } from "./helper";
 
 export function h<Props>(
@@ -114,6 +122,6 @@ function Input({
             type: "input",
             props: inputProps,
             children,
-        } as JSXElement<Record<string, any>>;
+        } as JSXHTMLElement<Record<string, any>>;
     };
 }
