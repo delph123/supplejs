@@ -209,8 +209,9 @@ export function Dynamic<Props>({
     children?: any[];
     component: ValueOrAccessor<SuppleComponent<Props> | string | null | undefined>;
 }) {
+    const componentMemo = createMemo(() => toValue(component));
     return createMemo(() => {
-        const comp = toValue(component);
+        const comp = componentMemo();
         if (comp != null) {
             return h(comp, props as Props & { children? });
         } else {
