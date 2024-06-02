@@ -1,12 +1,5 @@
 import { Mock, describe, expect, it, vi } from "vitest";
-import {
-    createComputed,
-    createMemo,
-    createSignal,
-    getOwner,
-    indexArray,
-    onCleanup,
-} from "../../core";
+import { createComputed, createMemo, createSignal, getOwner, indexArray, onCleanup } from "../../core";
 import { renderHook } from "../utils";
 
 const [A, B, C, D] = [{ key: "a" }, { key: "b" }, { key: "c" }, { key: "d" }];
@@ -105,6 +98,19 @@ describe("indexArray", () => {
         wt(2);
 
         expect(spy).not.toHaveBeenCalled();
+    });
+
+    it("accepts functions argument which return a function", () => {
+        const [rd, wt] = createSignal([() => 1, () => 2]);
+        const spy = vi.fn();
+        renderIndexArray(rd, (v) => createMemo(() => spy(v()()))());
+
+        expect(spy.mock.calls).toEqual([[1], [2]]);
+
+        spy.mockReset();
+
+        wt([() => 4, () => 5]);
+        expect(spy.mock.calls).toEqual([[4], [5]]);
     });
 });
 

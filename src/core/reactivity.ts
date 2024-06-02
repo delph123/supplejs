@@ -136,7 +136,7 @@ export function createMemo<T>(memo: (v: T) => T, value?: T, options?: EqualsOpti
     const [memoizedValue, setMemoizedValue] = createSignal<T>(value, options);
     createComputed((previousValue) => {
         const nextValue = memo(previousValue);
-        setMemoizedValue(nextValue);
+        setMemoizedValue(() => nextValue);
         return nextValue;
     }, value);
     return memoizedValue;

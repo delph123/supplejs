@@ -17,7 +17,7 @@ export function createReduxSlice<T>(initialValue: T, reducers: Reducers<T>) {
     const [store, setStore] = createSignal(initialValue);
     const dispatch = function (action: ActionPayload<any>) {
         if (action.type in reducers) {
-            setStore(reducers[action.type](store(), action));
+            setStore(() => reducers[action.type](store(), action));
         }
     };
     return [store, dispatch] as const;

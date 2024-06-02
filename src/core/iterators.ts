@@ -172,7 +172,7 @@ export function mapArray<T, U>(
 }
 
 interface IndexEntry<T, U> {
-    setElement: (e: T) => void;
+    setElement: (e: () => T) => void;
     mappedElement: U;
     dispose: () => void;
 }
@@ -209,7 +209,7 @@ export function indexArray<T, U>(
 
             if (i < previousEntries.length) {
                 nextEntry = previousEntries[i];
-                nextEntry.setElement(nextElement);
+                nextEntry.setElement(() => nextElement);
             } else {
                 nextEntry = createRoot((dispose) => {
                     const [element, setElement] = createSignal(nextElement, {
