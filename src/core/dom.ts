@@ -20,7 +20,7 @@ export function render(renderEffect: SuppleNodeEffect, container?: Node) {
     const parent = container ?? document.body;
     return createRoot((dispose) => {
         const component = createRenderEffect(renderEffect);
-        component.mount(parent, null);
+        // component.mount(parent, null);
         mount(component, parent);
         return () => {
             for (const node of component.nodes()) {
@@ -116,61 +116,61 @@ export function createDOMComponent(component: SuppleNode): DOMComponent {
 }
 
 function createHtmlElement(component: JSXHTMLElement<any>) {
-        const element = document.createElement(component.type);
+    const element = document.createElement(component.type);
 
-        Object.entries(component.props as Record<string, any>).forEach(([name, value]) => {
-            if (name === "ref") {
-                if (typeof value === "function") {
-                    (value as (t: HTMLElement) => void)(element);
-                } else if (value != null) {
-                    value.current = element;
-                }
-            } else if (name === "useShadow") {
-                // do nothing
-            } else if (!name.startsWith("on")) {
-                if (typeof value === "function") {
-                    createComputed(() => {
-                        setDOMAttribute(element, name, value());
-                    });
-                } else {
-                    setDOMAttribute(element, name, value);
-                }
-            } else if (name.startsWith("on:")) {
-                // Adds an event listener verbatim (for unusual names)
-                element.addEventListener(name.substring(3), value);
-            } else if (name.startsWith("oncapture:")) {
-                // Adds an event listener verbatim (for unusual names)
-                element.addEventListener(name.substring(10), value);
-            } else {
-                // Add an event listener for common UI event (name is lower cased)
-                element.addEventListener(name.substring(2).toLowerCase(), value);
+    Object.entries(component.props as Record<string, any>).forEach(([name, value]) => {
+        if (name === "ref") {
+            if (typeof value === "function") {
+                (value as (t: HTMLElement) => void)(element);
+            } else if (value != null) {
+                value.current = element;
             }
+        } else if (name === "useShadow") {
+            // do nothing
+        } else if (!name.startsWith("on")) {
+            if (typeof value === "function") {
+                createComputed(() => {
+                    setDOMAttribute(element, name, value());
+                });
+            } else {
+                setDOMAttribute(element, name, value);
+            }
+        } else if (name.startsWith("on:")) {
+            // Adds an event listener verbatim (for unusual names)
+            element.addEventListener(name.substring(3), value);
+        } else if (name.startsWith("oncapture:")) {
+            // Adds an event listener verbatim (for unusual names)
+            element.addEventListener(name.substring(10), value);
+        } else {
+            // Add an event listener for common UI event (name is lower cased)
+            element.addEventListener(name.substring(2).toLowerCase(), value);
+        }
+    });
+
+    let container: Node = element;
+    if ("useShadow" in component.props && component.props.useShadow) {
+        container = element.shadowRoot ?? element.attachShadow({ mode: "open" });
+    }
+
+    const domElement = domComponent(element);
+    (element as any).__supple_component = domElement;
+
+    // Treat children same as for multi-components, except this time we directly
+    // mount the children to avoid one unnecessary level of indirection
+    flatten(component.children)
+        .map((child) => {
+            if (typeof child === "function") {
+                return createRenderEffect(child);
+            } else {
+                return createDOMComponent(child);
+            }
+        })
+        .forEach((domChild) => {
+            domChild.mount(domElement, null);
+            mount(domChild, container);
         });
 
-        let container: Node = element;
-        if ("useShadow" in component.props && component.props.useShadow) {
-            container = element.shadowRoot ?? element.attachShadow({ mode: "open" });
-        }
-
-        const domElement = domComponent(element);
-        (element as any).__supple_component = domElement;
-
-        // Treat children same as for multi-components, except this time we directly
-        // mount the children to avoid one unnecessary level of indirection
-        flatten(component.children)
-            .map((child) => {
-                if (typeof child === "function") {
-                    return createRenderEffect(child);
-                } else {
-                    return createDOMComponent(child);
-                }
-            })
-            .forEach((domChild) => {
-                domChild.mount(domElement, null);
-                mount(domChild, container);
-            });
-
-        return domElement;
+    return domElement;
 }
 
 function setDOMAttribute(element: HTMLElement, name: string, value: any) {
@@ -282,26 +282,34 @@ function mount(component: DOMComponent, container: Node) {
 function remount(component: DOMComponent, previousNodes?: Node[]) {
     const parent = getParentHTMLElement(component.parent);
 
-    if (
-        (parent == null || typeof parent === "function") &&
-        previousNodes &&
-        previousNodes.length > 0 &&
-        previousNodes[0].parentNode
-    ) {
-        console.error("Previous nodes had parent", previousNodes[0], previousNodes[0].parentNode, parent);
-        const previousParent = previousNodes[0].parentNode;
-        previousNodes.forEach((n) => previousParent.removeChild(n));
+    let current = component;
+    while (current.parent != null && "__kind" in current.parent) {
+        if (typeof current.notifyContextMounted === "function") {
+            current.notifyContextMounted();
+        }
+        current = current.parent;
     }
+
+    // if (
+    //     (parent == null || typeof parent === "function") &&
+    //     previousNodes &&
+    //     previousNodes.length > 0 &&
+    //     previousNodes[0].parentNode
+    // ) {
+    //     console.error("Previous nodes had parent", previousNodes[0], previousNodes[0].parentNode, parent);
+    //     const previousParent = previousNodes[0].parentNode;
+    //     previousNodes.forEach((n) => previousParent.removeChild(n));
+    // }
 
     if (typeof parent === "function") {
         parent(component, previousNodes);
         return;
     }
 
-    if (parent == null) {
-        console.error("Error: no parent container!");
-        return;
-    }
+    // if (parent == null) {
+    //     console.error("Error: no parent container!");
+    //     return;
+    // }
 
     if (previousNodes && previousNodes.length > 0 && previousNodes[0].parentNode) {
         // if (parent !== previousNodes[0].parentNode) {

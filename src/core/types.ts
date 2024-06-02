@@ -1,15 +1,15 @@
 export type JSXHTMLElement<Props> = {
-          __kind: "html_element";
-          type: string;
-          props: Props;
-          children: SuppleChild[];
+    __kind: "html_element";
+    type: string;
+    props: Props;
+    children: SuppleChild[];
 };
 export type JSXSuppleElement<Props> = {
-          __kind: "supple_element";
-          type: SuppleComponent<Props>;
-          props: Props;
-          children: SuppleChild[];
-      };
+    __kind: "supple_element";
+    type: SuppleComponent<Props>;
+    props: Props;
+    children: SuppleChild[];
+};
 
 export type JSXElement<Props> = JSXHTMLElement<Props> | JSXSuppleElement<Props>;
 
@@ -17,6 +17,8 @@ export interface AbstractDOMComponent {
     parent: DOMContainer;
     mount: (parent: DOMContainer, oldParent: DOMContainer) => void;
     nodes: () => Node[];
+    notifyContextMounted?: () => void;
+    contextValue?: unknown;
 }
 
 export interface RealDOMComponent extends AbstractDOMComponent {
@@ -58,6 +60,15 @@ export type SuppleNodeEffect = () => SuppleNode;
 export type SuppleChild = SuppleNode | SuppleNodeEffect;
 
 export type SuppleComponent<Props> = (props: Props) => SuppleNodeEffect;
+
+export interface Context<T> {
+    id: symbol;
+    Provider: (props: { value: T; children?: SuppleChild[] }) => SuppleNodeEffect;
+    defaultValue: T;
+    // internal methods
+    _onMount: (listener: () => void) => void;
+    _onCleanup: (listener: () => void) => void;
+}
 
 export type Accessor<T> = () => T;
 

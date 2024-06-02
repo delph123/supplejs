@@ -11,6 +11,7 @@ import {
     RealDOMComponent,
     JSXSuppleElement,
     ProxyDOMComponent,
+    Context,
 } from "./types";
 
 const logger = createLogger("children");
@@ -138,12 +139,82 @@ export function createComponent<Props>({ type: Component, props, children }: JSX
     return createRenderEffect(effect, proxy);
 }
 
-export function createContext() {
-    // TODO
+export function createContext(): Context<unknown>;
+export function createContext<T>(defaultValue: T): Context<T>;
+export function createContext<T>(defaultValue?: T) {
+    const listeners = new Set<() => void>();
+
+    function ContextProvider({ value, children }: Parameters<Context<T>["Provider"]>[0]) {
+        const domComponent = createDOMComponent(children ?? []);
+        domComponent.notifyContextMounted = () => {
+            [...listeners].forEach((l) => l());
+        };
+        Object.defineProperties(domComponent, {
+            parent: {
+                get() {
+                    return this.__parent;
+                },
+                set(newParent) {
+                    this.__parent = newParent;
+                    this.contextValue = value;
+                    this.notifyContextMounted();
+                },
+            },
+        });
+
+        return () => {
+            return domComponent;
+        };
+    }
+
+    return {
+        id: Symbol("context"),
+        Provider: ContextProvider,
+        defaultValue: defaultValue,
+        // internal methods
+        _onMount(listener: () => void) {
+            listeners.add(listener);
+        },
+        _onCleanup(listener: () => void) {
+            listeners.delete(listener);
+        },
+    };
 }
 
-export function useContext() {
-    // TODO
+export function useContext<T>(context: Context<T>) {
+    const proxy = currentComponentContext;
+    const [contextValue, setContextValue] = createSignal(context.defaultValue);
+
+    const resetContextValue = () => {
+        let component: DOMComponent | null = proxy;
+        console.log("received context notification", proxy);
+
+        // Walk-up parent tree until we find a matching ContextProvider (if any)
+        while (
+            component?.parent != null &&
+            "__kind" in component.parent &&
+            (component.parent.__kind !== "proxy_component" || component.parent.type !== context.Provider)
+        ) {
+            component = component.parent;
+        }
+
+        // Reset the value from ContextProvider (if found) or default value
+        if (
+            component?.parent != null &&
+            "__kind" in component.parent &&
+            component.parent.__kind == "proxy_component" &&
+            component.parent.type === context.Provider
+        ) {
+            setContextValue(() => component!.contextValue as T);
+        } else {
+            setContextValue(() => context.defaultValue);
+        }
+    };
+
+    context._onMount(resetContextValue);
+    onCleanup(() => context._onCleanup(resetContextValue));
+
+    return contextValue;
 }
 
 /**
