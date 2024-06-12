@@ -1,3 +1,5 @@
+[![codecov](https://codecov.io/gh/delph123/supplejs/graph/badge.svg?token=AJNU0N5YI7)](https://codecov.io/gh/delph123/supplejs)
+
 # SuppleJS
 
 SuppleJS is a toy project to re-implement [SolidJS](https://github.com/solidjs/solid) from scratch. My goal is not to make something better or more performant than the SolidJS implementation, but to discover new coding patterns and ideas by building a modern JavaScript library from the ground up and playing around with the [fine-grained reactivity model](https://dev.to/ryansolid/a-hands-on-introduction-to-fine-grained-reactivity-3ndf) of SolidJS.
