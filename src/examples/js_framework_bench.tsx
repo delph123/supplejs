@@ -1,4 +1,5 @@
-import { h, For, createSignal, createMemo, useCSS } from "../core";
+import { h, For, createSignal, createMemo } from "../core";
+import useCSS from "./useCss";
 
 const BATCH_SIZE = 1000;
 
@@ -84,12 +85,7 @@ const Button =
     ({ id, text, fn }) =>
     () => (
         <div class="col-sm-6 smallpad">
-            <button
-                id={id}
-                class="btn btn-primary btn-block"
-                type="button"
-                onclick={fn}
-            >
+            <button id={id} class="btn btn-primary btn-block" type="button" onclick={fn}>
                 {text}
             </button>
         </div>
@@ -105,8 +101,7 @@ export const App = () => {
         runLots = () => setData(buildData(10 * BATCH_SIZE)),
         add = () => setData((d) => [...d, ...buildData(BATCH_SIZE)]),
         update = () => {
-            for (let i = 0, d = data(), len = d.length; i < len; i += 10)
-                d[i].setLabel((l) => l + " !!!");
+            for (let i = 0, d = data(), len = d.length; i < len; i += 10) d[i].setLabel((l) => l + " !!!");
         },
         swapRows = () => {
             const d = data().slice();
@@ -133,34 +128,16 @@ export const App = () => {
                     </div>
                     <div class="col-md-6">
                         <div class="row">
-                            <Button
-                                id="run"
-                                text={`Create ${BATCH_SIZE.toLocaleString()} rows`}
-                                fn={run}
-                            />
+                            <Button id="run" text={`Create ${BATCH_SIZE.toLocaleString()} rows`} fn={run} />
                             <Button
                                 id="runlots"
-                                text={`Create ${(
-                                    10 * BATCH_SIZE
-                                ).toLocaleString()} rows`}
+                                text={`Create ${(10 * BATCH_SIZE).toLocaleString()} rows`}
                                 fn={runLots}
                             />
-                            <Button
-                                id="add"
-                                text={`Append ${BATCH_SIZE.toLocaleString()} rows`}
-                                fn={add}
-                            />
-                            <Button
-                                id="update"
-                                text="Update every 10th row"
-                                fn={update}
-                            />
+                            <Button id="add" text={`Append ${BATCH_SIZE.toLocaleString()} rows`} fn={add} />
+                            <Button id="update" text="Update every 10th row" fn={update} />
                             <Button id="clear" text="Clear" fn={clear} />
-                            <Button
-                                id="swaprows"
-                                text="Swap Rows"
-                                fn={swapRows}
-                            />
+                            <Button id="swaprows" text="Swap Rows" fn={swapRows} />
                         </div>
                     </div>
                 </div>
@@ -170,24 +147,17 @@ export const App = () => {
                     <For each={data}>
                         {(row) => {
                             const rowId = row.id;
-                            const selectedRowClass = createMemo(() =>
-                                selected() === rowId ? "danger" : "",
-                            );
+                            const selectedRowClass = createMemo(() => (selected() === rowId ? "danger" : ""));
 
                             return (
                                 <tr class={selectedRowClass}>
                                     <td class="col-md-1">{rowId}</td>
                                     <td class="col-md-4">
-                                        <a onclick={() => setSelected(rowId)}>
-                                            {row.label}
-                                        </a>
+                                        <a onclick={() => setSelected(rowId)}>{row.label}</a>
                                     </td>
                                     <td class="col-md-1">
                                         <a onclick={() => remove(rowId)}>
-                                            <span
-                                                class="glyphicon glyphicon-remove"
-                                                aria-hidden="true"
-                                            />
+                                            <span class="glyphicon glyphicon-remove" aria-hidden="true" />
                                         </a>
                                     </td>
                                     <td class="col-md-6" />
@@ -197,10 +167,7 @@ export const App = () => {
                     </For>
                 </tbody>
             </table>
-            <span
-                class="preloadicon glyphicon glyphicon-remove"
-                aria-hidden="true"
-            />
+            <span class="preloadicon glyphicon glyphicon-remove" aria-hidden="true" />
         </div>
     );
 };

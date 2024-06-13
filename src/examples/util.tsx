@@ -1,11 +1,4 @@
-import {
-    h,
-    createSignal,
-    untrack,
-    toValue,
-    ValueOrAccessor,
-    createEffect,
-} from "../core";
+import { h, createSignal, untrack, toValue, ValueOrAccessor, createEffect } from "../core";
 
 interface IncrementPlayerProps {
     color?: string;
@@ -34,11 +27,7 @@ export function createIncrement(initialValue = 0) {
         setValue((v) => v + 1);
     }
 
-    function Player({
-        color = "grey",
-        style = {},
-        paused = false,
-    }: IncrementPlayerProps) {
+    function Player({ color = "grey", style = {}, paused = false }: IncrementPlayerProps) {
         createEffect(() => {
             const pause = toValue(paused);
             untrack(() => toggle(!pause));

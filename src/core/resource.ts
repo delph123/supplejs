@@ -27,12 +27,10 @@ type Resource<R, P> = [
  * first argument. The source signal will retrigger the fetcher whenever it
  * changes, and its value will be passed to the fetcher.
  *
- * @param source an optionnal signal for passing parameters to the fetcher
+ * @param source an optional signal for passing parameters to the fetcher
  * @param fetcher the asynchronous fetcher function
  */
-export function createResource<R, P>(
-    fetcher: (p: P) => R | Promise<R>,
-): Resource<R, P>;
+export function createResource<R, P>(fetcher: (p: P) => R | Promise<R>): Resource<R, P>;
 export function createResource<R, P>(
     source: ValueOrAccessor<FetcherParameter<P>>,
     fetcher: (p: P) => R | Promise<R>,
@@ -56,12 +54,7 @@ export function createResource<R, P>(
         data: undefined as R | undefined,
         loading: false,
         error: undefined as any,
-        state: "unresolved" as
-            | "unresolved"
-            | "pending"
-            | "ready"
-            | "refreshing"
-            | "errored",
+        state: "unresolved" as "unresolved" | "pending" | "ready" | "refreshing" | "errored",
     });
 
     createEffect(() => {
@@ -161,8 +154,5 @@ function createResourceParams<R, P>(
         params = (() => undefined) as () => P;
         fetch = source as (p: P) => R | Promise<R>;
     }
-    return [params, fetch] as [
-        () => FetcherParameter<P>,
-        (p: P) => R | Promise<R>,
-    ];
+    return [params, fetch] as [() => FetcherParameter<P>, (p: P) => R | Promise<R>];
 }

@@ -1,9 +1,5 @@
 import { queries } from "@testing-library/dom";
-import type {
-    Queries,
-    BoundFunctions,
-    prettyFormat,
-} from "@testing-library/dom";
+import type { Queries, BoundFunctions, prettyFormat } from "@testing-library/dom";
 import { SuppleChild, SuppleComponent, TrackingContext } from "../../core";
 
 export interface Ref {

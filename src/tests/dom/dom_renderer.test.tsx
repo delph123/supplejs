@@ -109,4 +109,28 @@ describe("DOM renderer", () => {
             "<p>one</p><div>before</div>hello <span>world</span>! <p>a</p><p>a</p><p>a</p><p>a</p><p>b</p><p>c</p><p>c</p><p>c</p><p>c</p><p>2</p><div>between</div>aaaabcccc<div>after</div><p>two</p>",
         );
     });
+
+    it("accepts a JSX element as explicit children prop", () => {
+        const { container } = render(() => <ul children={<li>hello</li>} />);
+        expect(container.innerHTML).toBe("<ul><li>hello</li></ul>");
+    });
+
+    it("accepts an array of JSX as explicit children prop", () => {
+        const { container } = render(() => <ul children={[<li>hello</li>, <li>world!</li>]} />);
+        expect(container.innerHTML).toBe("<ul><li>hello</li><li>world!</li></ul>");
+    });
+
+    it("accepts a Fragment as explicit children prop", () => {
+        const { container } = render(() => (
+            <ul
+                children={
+                    <>
+                        <li>hello</li>
+                        <li>world!</li>
+                    </>
+                }
+            />
+        ));
+        expect(container.innerHTML).toBe("<ul><li>hello</li><li>world!</li></ul>");
+    });
 });

@@ -1,9 +1,4 @@
-import {
-    h,
-    ActionPayload,
-    createReduxSlice,
-    createReduxSelector,
-} from "../core";
+import { h, ActionPayload, createReduxSlice, createReduxSelector } from "../core";
 
 interface Slice {
     some: number;
@@ -34,15 +29,8 @@ export function ReduxSlice() {
     return () => {
         return (
             <div>
-                <p>
-                    There is {createReduxSelector(store, (s) => s.some)}{" "}
-                    oranges.
-                </p>
-                <button
-                    onclick={() => dispatch({ type: "addSome", payload: 3 })}
-                >
-                    Increment
-                </button>
+                <p>There is {createReduxSelector(store, (s) => s.some)} oranges.</p>
+                <button onclick={() => dispatch({ type: "addSome", payload: 3 })}>Increment</button>
                 <div>
                     <input
                         type="text"

@@ -30,37 +30,27 @@ export function NestedEffect(): SuppleNodeEffect {
 
             createEffect(() => {
                 console.log(`Effect ${a()}.${b()}.${c()}`);
-                onCleanup(() =>
-                    console.log(`Cleaning-up effect ${a()}.${b()}.${c()}`),
-                );
+                onCleanup(() => console.log(`Cleaning-up effect ${a()}.${b()}.${c()}`));
             });
 
             createEffect(() => {
                 console.log(`Effect ${a()}.${b()}.2`);
-                onCleanup(() =>
-                    console.log(`Cleaning-up effect ${a()}.${b()}.2`),
-                );
+                onCleanup(() => console.log(`Cleaning-up effect ${a()}.${b()}.2`));
             });
         });
 
         createEffect(() => {
             console.log(`Effect ${a()}.${b() + 1}`);
-            onCleanup(() =>
-                console.log(`Cleaning-up effect ${a()}.${b() + 1}`),
-            );
+            onCleanup(() => console.log(`Cleaning-up effect ${a()}.${b() + 1}`));
 
             createEffect(() => {
                 console.log(`Effect ${a()}.${b() + 1}.${c()}`);
-                onCleanup(() =>
-                    console.log(`Cleaning-up effect ${a()}.${b() + 1}.${c()}`),
-                );
+                onCleanup(() => console.log(`Cleaning-up effect ${a()}.${b() + 1}.${c()}`));
             });
 
             createEffect(() => {
                 console.log(`Effect ${a()}.${b() + 1}.2`);
-                onCleanup(() =>
-                    console.log(`Cleaning-up effect ${a()}.${b() + 1}.2`),
-                );
+                onCleanup(() => console.log(`Cleaning-up effect ${a()}.${b() + 1}.2`));
             });
         });
     });
@@ -146,9 +136,7 @@ export function CounterButton({ onexit, nb }) {
                 attr:data-count={count}
                 data-count-twice={() => 2 * count()}
                 prop:autofocus={() => count() % 2 === 0}
-                class={() =>
-                    count() % 3 === 0 ? null : count() % 3 === 2 ? "" : count()
-                }
+                class={() => (count() % 3 === 0 ? null : count() % 3 === 2 ? "" : count())}
                 type="button"
                 onclick={increment}
             >
@@ -172,9 +160,7 @@ export function Referencing() {
     return () => (
         <>
             <div ref={ref}>Hello!</div>
-            <div ref={(el) => console.log("Assigning ref:", el)}>
-                How are you?
-            </div>
+            <div ref={(el) => console.log("Assigning ref:", el)}>How are you?</div>
         </>
     );
 }

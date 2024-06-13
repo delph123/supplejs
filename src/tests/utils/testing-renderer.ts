@@ -1,11 +1,5 @@
 import { getQueriesForElement, prettyDOM } from "@testing-library/dom";
-import type {
-    Result,
-    Options,
-    Ref,
-    RenderHookResult,
-    RenderHookOptions,
-} from "./types";
+import type { Result, Options, Ref, RenderHookResult, RenderHookOptions } from "./types";
 import {
     SuppleNodeEffect,
     TrackingContext,
@@ -33,9 +27,7 @@ const mountedContainers = new Set<Ref>();
  * - `options.container` - the HTML element which the UI will be rendered into; otherwise a `<div>` will be created
  * - `options.baseElement` - the parent of the container, the default will be `<body>`
  * - `options.queries` - custom queries (see https://testing-library.com/docs/queries/about)
- * - `options.hydrate` - `true` if you want to test hydration
  * - `options.wrapper` - a component that applies a context provider and returns `props.children`
- * - `options.location` - wraps the component in a solid-router with memory integration pointing at the given path
  *
  * ### Result
  * - `result.asFragment()` - returns the HTML fragment as string
@@ -78,14 +70,12 @@ function render(renderEffect: SuppleNodeEffect, options: Options = {}): Result {
     const queryHelpers = getQueriesForElement(container, options.queries);
 
     return {
-        asFragment: () => container?.innerHTML as string,
+        asFragment: () => container?.innerHTML,
         container,
         baseElement,
-        debug: (el = baseElement, maxLength, options) =>
+        debug: (el = baseElement, maxLength?, options?) =>
             Array.isArray(el)
-                ? el.forEach((e) =>
-                      console.log(prettyDOM(e, maxLength, options)),
-                  )
+                ? el.forEach((e) => console.log(prettyDOM(e, maxLength, options)))
                 : console.log(prettyDOM(el, maxLength, options)),
         unmount: dispose,
         ...queryHelpers,
@@ -115,15 +105,9 @@ export function renderHook<A extends any[], R>(
     hook: (...args: A) => R,
     options?: RenderHookOptions<A>,
 ): RenderHookResult<R> {
-    const initialProps: A | [] = Array.isArray(options)
-        ? options
-        : options?.initialProps || [];
+    const initialProps: A | [] = Array.isArray(options) ? options : options?.initialProps ?? [];
     const [dispose, owner, result] = createRoot((dispose) => {
-        if (
-            typeof options === "object" &&
-            "wrapper" in options &&
-            typeof options.wrapper === "function"
-        ) {
+        if (typeof options === "object" && "wrapper" in options && typeof options.wrapper === "function") {
             let result: ReturnType<typeof hook>;
             options.wrapper({
                 children: [
@@ -159,9 +143,7 @@ export function testEffect<T = void>(
     });
     context.dispose = createRoot((dispose) => {
         onError((err) => context.fail?.(err));
-        (owner
-            ? (done: (result: T) => void) => runWithOwner(owner, () => fn(done))
-            : fn)((result) => {
+        (owner ? (done: (result: T) => void) => runWithOwner(owner, () => fn(done)) : fn)((result) => {
             context.done?.(result);
             dispose();
         });
@@ -178,7 +160,7 @@ function cleanupAtContainer(ref: Ref) {
         // consume & ignore error
     }
 
-    if (container != null && container.parentNode != null) {
+    if (container?.parentNode != null) {
         container.parentNode.removeChild(container);
     }
 

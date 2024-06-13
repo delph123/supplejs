@@ -1,10 +1,11 @@
 # SuppleJS
+
 [![GitHub package.json version](https://img.shields.io/github/package-json/v/delph123/supplejs?logo=pnpm)](https://github.com/delph123/supplejs/releases)
 ![GitHub License](https://img.shields.io/github/license/delph123/supplejs)
 [![Build Status](https://img.shields.io/github/actions/workflow/status/delph123/supplejs/lint_and_test.yml?branch=main&logo=github)](https://github.com/delph123/supplejs/actions/workflows/lint_and_test.yml)
 [![codecov](https://codecov.io/gh/delph123/supplejs/graph/badge.svg?token=AJNU0N5YI7)](https://codecov.io/gh/delph123/supplejs)
 
-SuppleJS is a toy project to re-implement [SolidJS](https://github.com/solidjs/solid) from scratch. My goal is not to make something better or more performant than the SolidJS implementation, but to discover new coding patterns and ideas by building a modern JavaScript library from the ground up and playing around with the [fine-grained reactivity model](https://dev.to/ryansolid/a-hands-on-introduction-to-fine-grained-reactivity-3ndf) of SolidJS.
+SuppleJS is a toy project to re-implement [SolidJS](https://github.com/solidjs/solid) from scratch. The goal is not to make something better or more performant than the SolidJS implementation, but to discover new coding patterns and ideas by building a modern JavaScript library from the ground up and playing around with the [fine-grained reactivity model](https://dev.to/ryansolid/a-hands-on-introduction-to-fine-grained-reactivity-3ndf) of SolidJS.
 
 SuppleJS is a JavaScript framework to build web user interfaces. It shares with [React](https://react.dev/) (which inspired Solid), [SolidJS](https://www.solidjs.com/) and [Vue.js](https://vuejs.org/) the same principles of a component-based, declarative and reactive programming model. The unique feature of SolidJS (and therefore SuppleJS), in comparison with React, is that it relies on a powerful fine-grained reactive system which allows it to recompute and re-render only the part of the screen that actually changed in a very efficient way (without resorting to virtual DOM diffing).
 
@@ -13,7 +14,7 @@ so that the reactivity is not lost and SuppleJS can make sure to re-render only 
 
 ## Example
 
-```tsx
+```jsx
 import { h, render, createSignal } from "supplejs";
 
 function Counter() {
@@ -41,7 +42,7 @@ function Counter() {
 
 // The render function takes an effect (a function) so that JSX can be
 // safely wrapped in a reactive root before it is evaluated
-render(() => <Counter />, document.getElementByID("app")!);
+render(() => <Counter />, document.getElementByID("app"));
 ```
 
 This minimalist example implement the iconic "counter button" component with SuppleJS. You can note the following things:
@@ -52,11 +53,11 @@ This minimalist example implement the iconic "counter button" component with Sup
 
 This all is due to not having a compiler, and to the design of SuppleJS. However, besides that, the same API is used as SolidJS. For example for `createSignal`, `render` and other reactive primitives like `createMemo`, `createResource`, `createEffect`, `onCleanup`, `createRoot`, `getOwner`, and so on. SuppleJS also provides same control flow components as Solid: `<Show>`, `<Switch>`/`<Match>`, `<For>`, `<Index>`, `<Portal>`, etc.
 
-As SuppleJS provides the same API and design as Solid, you can have a look at the [Github repository](https://github.com/solidjs/solid) and the [API documentation](https://www.solidjs.com/docs/latest/api) to get a glimpse of what's inside SuppleJS and what are its key features. Bear in mind though that SuppleJS is only about the front-end rendering part and as no Server Side Rendering engine.
+As SuppleJS provides the same API and design as Solid, you can have a look at the [Github repository](https://github.com/solidjs/solid) and the [API documentation](https://www.solidjs.com/docs/latest/api) to get a glimpse of what's inside SuppleJS and what are its key features. Bear in mind though that SuppleJS is only about the front-end rendering part and has no Server Side Rendering engine.
 
 ## How to use?
 
-The usual steps as for many other JavaScript project is to clone the project in your computer and install dependencies from npm. We are using [pnpm](https://pnpm.io/fr/) and [vite](https://vitejs.dev/).
+The usual steps as for many other JavaScript project is to clone the project in your computer and install dependencies from npm. The project uses [pnpm](https://pnpm.io/fr/) package manager and [vite](https://vitejs.dev/) developer tooling.
 
 ```sh
 > git clone https://github.com/delph123/supplejs

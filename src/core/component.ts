@@ -1,4 +1,4 @@
-import { onCleanup, onMount } from "./context";
+import { onCleanup } from "./context";
 import { createDOMComponent, createRenderEffect, mount, multiComponents } from "./dom";
 import { createLogger, flatten, shallowArrayEqual, toArray } from "./helper";
 import { mapArray } from "./iterators";
@@ -63,8 +63,8 @@ function extractRealDOMComponents(component: DOMComponent): RealDOMComponent[] {
  *
  * @private this API is currently private since it exposes low-level details
  *
- * @param childrenGetter a function to get
- * @returns
+ * @param childrenGetter a function to get the children
+ * @returns a flat array of resolved children
  */
 export function children(childrenGetter: () => SuppleNode | undefined) {
     const [components, setComponents] = createSignal<RealDOMComponent[]>([], {
@@ -169,19 +169,4 @@ export function lazy<Component extends SuppleComponent<any>>(
     LazyComponent.preload = preload;
 
     return LazyComponent;
-}
-
-export function useCSS(cssFilePath: string) {
-    let link;
-    onMount(() => {
-        // Creating link element
-        link = document.createElement("link");
-        link.href = cssFilePath;
-        link.type = "text/css";
-        link.rel = "stylesheet";
-        document.head.append(link);
-    });
-    onCleanup(() => {
-        document.head.removeChild(link);
-    });
 }

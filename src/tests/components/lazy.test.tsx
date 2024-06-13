@@ -4,36 +4,26 @@ import { Show, createSignal, h, lazy } from "../../core";
 
 describe("lazy() with import()", () => {
     it("displays 'Loading component...' while loading", () => {
-        const LazyMockComponent = lazy(
-            () => import("../mocks/mock_component.tsx"),
-        );
+        const LazyMockComponent = lazy(() => import("../mocks/mock_component.tsx"));
         render(() => <LazyMockComponent />);
         expect(screen.getByText("Loading component...")).toBeInTheDocument();
     });
 
     it("loads component in place of loading indicator", async () => {
-        const LazyMockComponent = lazy(
-            () => import("../mocks/mock_component.tsx"),
-        );
+        const LazyMockComponent = lazy(() => import("../mocks/mock_component.tsx"));
         render(() => <LazyMockComponent>Hello world!</LazyMockComponent>);
         expect(screen.getByText("Loading component...")).toBeInTheDocument();
         const text = await screen.findByText("Hello world!");
         expect(text).toBeInTheDocument();
-        expect(
-            screen.queryByText("Loading component..."),
-        ).not.toBeInTheDocument();
+        expect(screen.queryByText("Loading component...")).not.toBeInTheDocument();
     });
 
     it("preloads component", async () => {
-        const LazyMockComponent = lazy(
-            () => import("../mocks/mock_component.tsx"),
-        );
+        const LazyMockComponent = lazy(() => import("../mocks/mock_component.tsx"));
         await LazyMockComponent.preload();
         render(() => <LazyMockComponent>Hello world!</LazyMockComponent>);
         expect(screen.getByText("Hello world!")).toBeInTheDocument();
-        expect(
-            screen.queryByText("Loading component..."),
-        ).not.toBeInTheDocument();
+        expect(screen.queryByText("Loading component...")).not.toBeInTheDocument();
     });
 
     it("calls preload only once", async () => {
@@ -47,9 +37,7 @@ describe("lazy() with import()", () => {
         render(() => <LazyMockComponent>Hello world!</LazyMockComponent>);
         expect(spy).toHaveBeenCalledOnce();
         expect(screen.getByText("Hello world!")).toBeInTheDocument();
-        expect(
-            screen.queryByText("Loading component..."),
-        ).not.toBeInTheDocument();
+        expect(screen.queryByText("Loading component...")).not.toBeInTheDocument();
     });
 
     it("returns the same Promise", async () => {
@@ -68,12 +56,8 @@ describe("lazy() with import()", () => {
         const LazyErrorComponent = lazy(() => import(path));
         render(() => <LazyErrorComponent />);
         expect(screen.getByText("Loading component...")).toBeInTheDocument();
-        await expect(LazyErrorComponent.preload()).rejects.toBeInstanceOf(
-            Error,
-        );
-        expect(
-            screen.getByText("Error while loading component :-("),
-        ).toBeInTheDocument();
+        await expect(LazyErrorComponent.preload()).rejects.toBeInstanceOf(Error);
+        expect(screen.getByText("Error while loading component :-(")).toBeInTheDocument();
     });
 
     it("only starts loading when component is visible", async () => {
@@ -107,9 +91,7 @@ describe("lazy() with import()", () => {
         expect(Cmp).not.toHaveBeenCalled();
 
         resolver({ default: Cmp });
-        await waitForElementToBeRemoved(() =>
-            screen.queryByText("Loading component..."),
-        );
+        await waitForElementToBeRemoved(() => screen.queryByText("Loading component..."));
 
         expect(screen.getByText("Hello")).toBeInTheDocument();
         expect(loader).toHaveBeenCalled();

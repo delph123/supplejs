@@ -1,4 +1,5 @@
-import { h, createSignal, useCSS } from "../core";
+import { h, createSignal } from "../core";
+import useCSS from "./useCss";
 
 const Square = (props) => {
     return () => (
@@ -10,12 +11,7 @@ const Square = (props) => {
 
 const Board = (props) => {
     function renderSquare(i) {
-        return () => (
-            <Square
-                value={() => props.squares()[i]}
-                onClick={() => props.onClick(i)}
-            />
-        );
+        return () => <Square value={() => props.squares()[i]} onClick={() => props.onClick(i)} />;
     }
 
     return () => (
@@ -103,10 +99,7 @@ const Game = () => {
     return () => (
         <div class="game">
             <div class="game-board">
-                <Board
-                    squares={() => state().showStep}
-                    onClick={(i) => handleClick(i)}
-                />
+                <Board squares={() => state().showStep} onClick={(i) => handleClick(i)} />
             </div>
             <div class="game-info">
                 <div>{status}</div>
@@ -132,11 +125,7 @@ function calculateWinner(squares) {
     ];
     for (let i = 0; i < lines.length; i++) {
         const [a, b, c] = lines[i];
-        if (
-            squares[a] &&
-            squares[a] === squares[b] &&
-            squares[a] === squares[c]
-        ) {
+        if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) {
             return squares[a];
         }
     }

@@ -35,10 +35,7 @@ export interface ProxyDOMComponent extends AbstractDOMComponent {
     id: number;
 }
 
-export type DOMComponent =
-    | RealDOMComponent
-    | ProxyDOMComponent
-    | MultiDOMComponent;
+export type DOMComponent = RealDOMComponent | ProxyDOMComponent | MultiDOMComponent;
 
 export type DOMContainer =
     | Node
@@ -65,9 +62,7 @@ export type Accessor<T> = () => T;
 
 // Transforms a tuple to a tuple of accessors in a way that allows generics
 // to be inferred (from solidjs implementation)
-export type AccessorArray<T> = [
-    ...Extract<{ [K in keyof T]: Accessor<T[K]> }, readonly unknown[]>,
-];
+export type AccessorArray<T> = [...Extract<{ [K in keyof T]: Accessor<T[K]> }, readonly unknown[]>];
 
 export type ValueOrAccessor<T> = T | Accessor<T>;
 

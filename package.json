@@ -1,7 +1,7 @@
 {
   "name": "supplejs",
   "description": "SuppleJS is a toy project to re-implement SolidJS from scratch",
-  "version": "0.8.0",
+  "version": "0.8.1",
   "author": {
     "name": "delph123"
   },

@@ -28,14 +28,10 @@ describe("Flatten", () => {
     });
 
     it("Flatten array with mixed depth", () => {
-        expect(flatten([1, [2, [3, [4]]], [[5], 6, 7, [[[8]], 9]]])).toEqual([
-            1, 2, 3, 4, 5, 6, 7, 8, 9,
-        ]);
+        expect(flatten([1, [2, [3, [4]]], [[5], 6, 7, [[[8]], 9]]])).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9]);
     });
 
     it("Flatten array with empty arrays", () => {
-        expect(flatten([[1, [2]], [[]], [[3], [], [[4]]]])).toEqual([
-            1, 2, 3, 4,
-        ]);
+        expect(flatten([[1, [2]], [[]], [[3], [], [[4]]]])).toEqual([1, 2, 3, 4]);
     });
 });

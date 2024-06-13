@@ -73,18 +73,13 @@ export function createRenderEffect<Props>(
     return proxy;
 }
 
-function overwriteParent(
-    component: DOMComponent,
-    parent: DOMContainer,
-    oldParent: DOMContainer,
-) {
+function overwriteParent(component: DOMComponent, parent: DOMContainer, oldParent: DOMContainer) {
     if (component.parent === oldParent || component.parent === parent) {
         component.parent = parent;
     } else if (
         (typeof getParentHTMLElement(component.parent) === "function" &&
             getParentHTMLElement(parent) instanceof Node) ||
-        (getParentHTMLElement(component.parent) == null &&
-            getParentHTMLElement(parent) != null)
+        (getParentHTMLElement(component.parent) == null && getParentHTMLElement(parent) != null)
     ) {
         logger.warn("Overwriting", component, parent);
         component.parent = parent;
@@ -137,43 +132,37 @@ export function createDOMComponent(component: SuppleNode): DOMComponent {
         );
     } else if (component.__kind === "html_element") {
         const element = document.createElement(component.type);
-        Object.entries(component.props as Record<string, any>).forEach(
-            ([name, value]) => {
-                if (name === "ref") {
-                    if (typeof value === "function") {
-                        (value as (t: HTMLElement) => void)(element);
-                    } else if (value != null) {
-                        value.current = element;
-                    }
-                } else if (name === "useShadow") {
-                    // do nothing
-                } else if (!name.startsWith("on")) {
-                    if (typeof value === "function") {
-                        createComputed(() => {
-                            setDOMAttribute(element, name, value());
-                        });
-                    } else {
-                        setDOMAttribute(element, name, value);
-                    }
-                } else if (name.startsWith("on:")) {
-                    // Adds an event listener verbatim (for unusual names)
-                    element.addEventListener(name.substring(3), value);
-                } else if (name.startsWith("oncapture:")) {
-                    // Adds an event listener verbatim (for unusual names)
-                    element.addEventListener(name.substring(10), value);
-                } else {
-                    // Add an event listener for common UI event (name is lower cased)
-                    element.addEventListener(
-                        name.substring(2).toLowerCase(),
-                        value,
-                    );
+        Object.entries(component.props as Record<string, any>).forEach(([name, value]) => {
+            if (name === "ref") {
+                if (typeof value === "function") {
+                    (value as (t: HTMLElement) => void)(element);
+                } else if (value != null) {
+                    value.current = element;
                 }
-            },
-        );
+            } else if (name === "useShadow") {
+                // do nothing
+            } else if (!name.startsWith("on")) {
+                if (typeof value === "function") {
+                    createComputed(() => {
+                        setDOMAttribute(element, name, value());
+                    });
+                } else {
+                    setDOMAttribute(element, name, value);
+                }
+            } else if (name.startsWith("on:")) {
+                // Adds an event listener verbatim (for unusual names)
+                element.addEventListener(name.substring(3), value);
+            } else if (name.startsWith("oncapture:")) {
+                // Adds an event listener verbatim (for unusual names)
+                element.addEventListener(name.substring(10), value);
+            } else {
+                // Add an event listener for common UI event (name is lower cased)
+                element.addEventListener(name.substring(2).toLowerCase(), value);
+            }
+        });
         let container: Node = element;
         if ("useShadow" in component.props && component.props.useShadow) {
-            container =
-                element.shadowRoot ?? element.attachShadow({ mode: "open" });
+            container = element.shadowRoot ?? element.attachShadow({ mode: "open" });
         }
         // Treat children same as for multi-components, except this time we directly
         // mount the children to avoid one unnecessary level of indirection
@@ -203,11 +192,9 @@ function setDOMAttribute(element: HTMLElement, name: string, value: any) {
                     element.style.cssText = "";
                 }
                 // Set values through JS setter (supports both JS-style & CSS-style properties)
-                Object.entries(value as Record<string, string>).forEach(
-                    ([prop, val]) => {
-                        element.style[prop] = val;
-                    },
-                );
+                Object.entries(value as Record<string, string>).forEach(([prop, val]) => {
+                    element.style[prop] = val;
+                });
                 return;
             }
             break;
@@ -219,9 +206,7 @@ function setDOMAttribute(element: HTMLElement, name: string, value: any) {
                 // Only set or unset changed elements from the record and leave other
                 // classes unchanged (in case class & classList attributes are combined)
                 ([className, status]) => {
-                    if (
-                        Boolean(status) != element.classList.contains(className)
-                    ) {
+                    if (Boolean(status) != element.classList.contains(className)) {
                         element.classList.toggle(className);
                     }
                 },
@@ -276,11 +261,7 @@ function getParentHTMLElement(container: DOMContainer) {
     }
 }
 
-export function mount(
-    component: DOMComponent,
-    container: DOMContainer,
-    previousNodes?: Node[],
-) {
+export function mount(component: DOMComponent, container: DOMContainer, previousNodes?: Node[]) {
     const newNodes = component.nodes();
 
     component.mount(container, null);
@@ -312,17 +293,9 @@ export function mount(
         return;
     }
 
-    if (
-        previousNodes &&
-        previousNodes.length > 0 &&
-        previousNodes[0].parentNode
-    ) {
+    if (previousNodes && previousNodes.length > 0 && previousNodes[0].parentNode) {
         if (parent !== previousNodes[0].parentNode) {
-            console.error(
-                "Different parent provided",
-                parent,
-                previousNodes[0].parentNode,
-            );
+            console.error("Different parent provided", parent, previousNodes[0].parentNode);
         }
         const nextSibling = previousNodes[previousNodes.length - 1].nextSibling;
         const [newItems, oldItems] = convertToItems(newNodes, previousNodes);
@@ -335,12 +308,7 @@ export function mount(
     }
 }
 
-function replaceNodes(
-    container: Node,
-    newItems: NodeItem[],
-    oldItems: NodeItem[],
-    nextSibling: Node | null,
-) {
+function replaceNodes(container: Node, newItems: NodeItem[], oldItems: NodeItem[], nextSibling: Node | null) {
     let newCursor = 0;
     let oldCursor = 0;
 
@@ -363,10 +331,7 @@ function replaceNodes(
         } else if (oldItem.newSlot !== NO_SLOT && newItem.oldSlot === NO_SLOT) {
             if (isNextExisting(oldItem, newItems, newCursor + 1)) {
                 while (newItems[newCursor].oldSlot === NO_SLOT) {
-                    container.insertBefore(
-                        newItems[newCursor].node,
-                        oldItem.node,
-                    );
+                    container.insertBefore(newItems[newCursor].node, oldItem.node);
                     newCursor++;
                 }
             } else {
@@ -419,12 +384,7 @@ function convertToItems(newNodes: Node[], oldNodes: Node[]) {
     return [newItems, oldItems];
 }
 
-function nodeToItem(
-    map: Map<Node, NodeItem>,
-    indexProp: "oldSlot" | "newSlot",
-    node: Node,
-    index: number,
-) {
+function nodeToItem(map: Map<Node, NodeItem>, indexProp: "oldSlot" | "newSlot", node: Node, index: number) {
     let item: NodeItem;
 
     if (map.has(node)) {

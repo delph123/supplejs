@@ -1,12 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { createWaitableMock, render, screen } from "../utils";
-import {
-    createComputed,
-    createEffect,
-    createRef,
-    h,
-    onMount,
-} from "../../core";
+import { createComputed, createEffect, createRef, h, onMount } from "../../core";
 
 describe("createRef", () => {
     it("creates an uninitialized reference", () => {

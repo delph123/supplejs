@@ -11,4 +11,4 @@ export * from "./chain";
 export * from "./iterators";
 export * from "./store";
 
-export const version = "0.3";
+export { version } from "../../package.json";

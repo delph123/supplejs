@@ -55,11 +55,7 @@ describe("sameValueZero", () => {
 });
 
 describe("shallowArrayEqual", () => {
-    const ARRAYS = [
-        [],
-        [1, 2, 3],
-        [{ x: "a" }, () => 0, ["r", Symbol.for("h")]],
-    ];
+    const ARRAYS = [[], [1, 2, 3], [{ x: "a" }, () => 0, ["r", Symbol.for("h")]]];
 
     it("compares equal identical array objects", () => {
         for (const array of ARRAYS) {
@@ -89,31 +85,14 @@ describe("shallowArrayEqual", () => {
 
     it("compares not equal distinct arrays", () => {
         expect(shallowArrayEqual([1, 2, 4], [1, 2, 3])).toBe(false);
-        expect(
-            shallowArrayEqual<any>(
-                ["1", true, Symbol.for("h")],
-                [1, true, Symbol.for("h")],
-            ),
-        ).toBe(false);
-        expect(
-            shallowArrayEqual<any>([...ARRAYS[2], false], [...ARRAYS[2], 0]),
-        ).toBe(false);
-        expect(
-            shallowArrayEqual<any>(
-                [{ a: 3 }, ...ARRAYS[2]],
-                [{ a: 3 }, ...ARRAYS[2]],
-            ),
-        ).toBe(false);
+        expect(shallowArrayEqual<any>(["1", true, Symbol.for("h")], [1, true, Symbol.for("h")])).toBe(false);
+        expect(shallowArrayEqual<any>([...ARRAYS[2], false], [...ARRAYS[2], 0])).toBe(false);
+        expect(shallowArrayEqual<any>([{ a: 3 }, ...ARRAYS[2]], [{ a: 3 }, ...ARRAYS[2]])).toBe(false);
     });
 
     it("compares not equal arrays of different length", () => {
         expect(shallowArrayEqual([1, 2, 4], [1, 2])).toBe(false);
-        expect(
-            shallowArrayEqual<any>(
-                [true, Symbol.for("h")],
-                [1, true, Symbol.for("h")],
-            ),
-        ).toBe(false);
+        expect(shallowArrayEqual<any>([true, Symbol.for("h")], [1, true, Symbol.for("h")])).toBe(false);
         expect(shallowArrayEqual<any>([], ARRAYS[2])).toBe(false);
     });
 });

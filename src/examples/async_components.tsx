@@ -15,9 +15,7 @@ function Dog(): SuppleNodeEffect {
         return new Promise((resolve, reject) => {
             setTimeout(async () => {
                 try {
-                    const res = await fetch(
-                        "https://dog.ceo/api/breeds/image/random",
-                    );
+                    const res = await fetch("https://dog.ceo/api/breeds/image/random");
                     const resJson = await res.json();
                     resolve(resJson.message);
                 } catch (e) {
@@ -58,13 +56,7 @@ function Dog(): SuppleNodeEffect {
                 {errorBlock}
                 {imgBlock}
                 {refreshingBlock}
-                <button
-                    onclick={() =>
-                        mutate(
-                            "https://images.dog.ceo/breeds/appenzeller/n02107908_80.jpg",
-                        )
-                    }
-                >
+                <button onclick={() => mutate("https://images.dog.ceo/breeds/appenzeller/n02107908_80.jpg")}>
                     Jose
                 </button>
             </div>
@@ -94,11 +86,7 @@ export function AutoCounter(): SuppleNodeEffect {
     return () => (
         <div>
             <h1>{count}</h1>
-            <input
-                id="hello"
-                value={() => delay().toString()}
-                oninput={(e) => setDelay(e.target.value)}
-            />
+            <input id="hello" value={() => delay().toString()} oninput={(e) => setDelay(e.target.value)} />
         </div>
     );
 }
@@ -115,40 +103,18 @@ export function AsyncSwitch() {
     );
     return () => (
         <main>
-            <div
-                style={{ display: "flex", gap: "5px", alignItems: "baseline" }}
-            >
-                <button
-                    onClick={() =>
-                        resolvePromise("Hello world! (" + num++ + ")")
-                    }
-                >
-                    Finish!
-                </button>
-                <button
-                    onClick={() => rejectPromise("Ouch! Something went wrong!")}
-                >
-                    Error!
-                </button>
+            <div style={{ display: "flex", gap: "5px", alignItems: "baseline" }}>
+                <button onClick={() => resolvePromise("Hello world! (" + num++ + ")")}>Finish!</button>
+                <button onClick={() => rejectPromise("Ouch! Something went wrong!")}>Error!</button>
                 <button onClick={() => refetch()}>Refetch</button>
-                <button
-                    onClick={() =>
-                        mutate("Hello mutated world (" + num++ + ")")
-                    }
-                >
-                    Mutate
-                </button>
-                <span style="font-size: 90%; color: darkblue;">
-                    State: {() => data.state}
-                </span>
+                <button onClick={() => mutate("Hello mutated world (" + num++ + ")")}>Mutate</button>
+                <span style="font-size: 90%; color: darkblue;">State: {() => data.state}</span>
             </div>
             <Switch keyed>
                 <Match when={data.loading}>
                     <p>Loading...</p>
                 </Match>
-                <Match when={data.error}>
-                    {(error) => <p style="color: red;">{error}</p>}
-                </Match>
+                <Match when={data.error}>{(error) => <p style="color: red;">{error}</p>}</Match>
                 <Match when={data}>{(response) => <p>{response}</p>}</Match>
             </Switch>
         </main>

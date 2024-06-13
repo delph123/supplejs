@@ -24,11 +24,7 @@ function Header(): SuppleNodeEffect {
 }
 
 function Footer({ version }: { version: string }): SuppleNodeEffect {
-    return () => (
-        <p class="read-the-docs">
-            This page was created with SuppleJS v{version}
-        </p>
-    );
+    return () => <p class="read-the-docs">This page was created with SuppleJS v{version}</p>;
 }
 
 const clockLogger = createLogger("clock");
@@ -56,10 +52,7 @@ export function Clock({
 
         clockLogger.log("Initializing clock with probability", probability);
 
-        const timer = setInterval(
-            () => setC(Math.random() > probability),
-            1000,
-        );
+        const timer = setInterval(() => setC(Math.random() > probability), 1000);
 
         onMount(() => {
             clockLogger.log("Mounting clock with probability", probability);
@@ -95,10 +88,7 @@ function withPrevious<T>(variable: () => T, initialValue: T) {
     );
 }
 
-export function Counter(props: {
-    index: number;
-    total: () => string | number;
-}): SuppleNodeEffect {
+export function Counter(props: { index: number; total: () => string | number }): SuppleNodeEffect {
     const [counter, setCounter] = createSignal(10);
 
     const label = () => {
@@ -148,16 +138,7 @@ export function App(): SuppleNodeEffect {
 
     const btns = (
         <div>
-            <button
-                onclick={() =>
-                    push(
-                        <Counter
-                            index={untrack(() => size() + 1)}
-                            total={size}
-                        />,
-                    )
-                }
-            >
+            <button onclick={() => push(<Counter index={untrack(() => size() + 1)} total={size} />)}>
                 Add Counter
             </button>
             <button onclick={pop}>Remove Counter</button>

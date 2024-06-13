@@ -5,7 +5,6 @@ import {
     Show,
     h,
     render,
-    useCSS,
     createSignal,
     createEffect,
     toValue,
@@ -25,6 +24,7 @@ import { Game } from "./square";
 import { CounterButton } from "./effects";
 import { AsyncApp, AsyncSwitch, AutoCounter } from "./async_components";
 import { MultiApp, GoodBye } from "./components";
+import useCSS from "./useCss";
 
 function section(header: string, rows: ReturnType<typeof row>[]) {
     return { header, rows };

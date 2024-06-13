@@ -1,12 +1,5 @@
 import rainbowGradient from "rainbow-gradient";
-import {
-    h,
-    createSignal,
-    createEffect,
-    onCleanup,
-    For,
-    SuppleNodeEffect,
-} from "../core";
+import { h, createSignal, createEffect, onCleanup, For, SuppleNodeEffect } from "../core";
 
 interface ColorProps {
     colors: () => string[];
@@ -39,15 +32,11 @@ function ReactColors({ colors }: ColorProps): SuppleNodeEffect {
     );
 }
 
-const rainbowColors = (rainbowGradient(360) as number[][]).map(
-    ([r, g, b]) => `rgb(${r},${g},${b})`,
-);
+const rainbowColors = (rainbowGradient(360) as number[][]).map(([r, g, b]) => `rgb(${r},${g},${b})`);
 
 function RainbowApp(): SuppleNodeEffect {
     const [colors, setColors] = createSignal(
-        new Array(NB_COLORS)
-            .fill(0)
-            .map((_, i) => rainbowColors[i % rainbowColors.length]),
+        new Array(NB_COLORS).fill(0).map((_, i) => rainbowColors[i % rainbowColors.length]),
     );
 
     createEffect(() => {

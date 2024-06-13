@@ -1,4 +1,5 @@
-import { h, createSignal, For, useCSS } from "../core";
+import { h, createSignal, For } from "../core";
+import useCSS from "./useCss";
 
 interface TodoItem {
     key: string;
@@ -53,9 +54,7 @@ const FILTER_MAP: { [k in FiltersStrings]: (i: TodoItem) => boolean } = {
 };
 
 export function Todo() {
-    const [selectedFilter, setSelectedFilter] = createSignal<Filters>(
-        Filters.All,
-    );
+    const [selectedFilter, setSelectedFilter] = createSignal<Filters>(Filters.All);
     const [value, setValue] = createSignal("");
     const [list, setList] = createSignal(DEFAULT_TODO_LIST);
 
@@ -67,10 +66,7 @@ export function Todo() {
         <div class="todoapp stack-large">
             <Form value={value} setValue={setValue} setList={setList} />
 
-            <FilterBar
-                selectedFilter={selectedFilter}
-                setSelectedFilter={setSelectedFilter}
-            />
+            <FilterBar selectedFilter={selectedFilter} setSelectedFilter={setSelectedFilter} />
 
             {() => (
                 <h3>
@@ -81,19 +77,14 @@ export function Todo() {
 
             <ul class="todo-list stack-large stack-exception">
                 <For each={filteredList}>
-                    {(item: TodoItem) => (
-                        <TodoListItem item={item} setList={setList} />
-                    )}
+                    {(item: TodoItem) => <TodoListItem item={item} setList={setList} />}
                 </For>
             </ul>
 
             {() => (
                 <p class="task-completed">
                     {list().filter((t) => !t.done()).length} task
-                    {list().filter((t) => !t.done()).length !== 1
-                        ? "s"
-                        : ""}{" "}
-                    remaining.
+                    {list().filter((t) => !t.done()).length !== 1 ? "s" : ""} remaining.
                 </p>
             )}
         </div>
@@ -129,14 +120,7 @@ function TodoListItem({ item, setList }: TodoListItemProps) {
                             }}
                         />
                     ) : (
-                        <label
-                            class="todo-label"
-                            style={
-                                item.done()
-                                    ? "text-decoration: line-through;"
-                                    : ""
-                            }
-                        >
+                        <label class="todo-label" style={item.done() ? "text-decoration: line-through;" : ""}>
                             {item.label}
                         </label>
                     )
@@ -154,9 +138,7 @@ function TodoListItem({ item, setList }: TodoListItemProps) {
                 <button
                     class="btn btn__danger"
                     onclick={() => {
-                        setList((l?: TodoItem[]) =>
-                            l!.filter((it) => it.key !== item.key),
-                        );
+                        setList((l?: TodoItem[]) => l!.filter((it) => it.key !== item.key));
                     }}
                 >
                     Delete
@@ -235,11 +217,7 @@ function FilterBar({ selectedFilter, setSelectedFilter }: FilterBarProps) {
     return () => (
         <div class="filters btn-group stack-exception">
             {Object.values(Filters).map((f) => (
-                <FilterButton
-                    label={f}
-                    pressed={selectedFilter}
-                    onpress={setSelectedFilter}
-                />
+                <FilterButton label={f} pressed={selectedFilter} onpress={setSelectedFilter} />
             ))}
         </div>
     );

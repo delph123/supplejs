@@ -34,7 +34,7 @@ export function createChainedList<Props>({
     const push = (component: SuppleChild) => {
         const next = createChainItem();
 
-        const last = getLast(root(), (c) => !!c.next)!;
+        const last = getLast(root(), (c) => !!c.next);
         last.setItem?.({
             next,
             current: component,

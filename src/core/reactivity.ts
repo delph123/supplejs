@@ -191,7 +191,7 @@ export function createRef<T>(initialValue?: T): MutableRef<T> {
 
 /**
  * Creates a readonly that only notifies downstream changes when the browser is
- * idle. timeoutMs is .
+ * idle. timeoutMs is the maximum time to wait before forcing the update.
  *
  * @param source the source signal
  * @param options.timeoutMs the maximum time to wait before forcing the update
@@ -207,12 +207,9 @@ export function createDeferred<T>(
     // TODO not implemented yet!
 
     // XXX only here to prevent lint warning
-    setTimeout(
-        () => {
-            console.log("Deferred timed-out!");
-        },
-        options?.timeoutMs,
-    );
+    setTimeout(() => {
+        console.log("Deferred timed-out!");
+    }, options?.timeoutMs);
 
     return source;
 }

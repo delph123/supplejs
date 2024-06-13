@@ -8,9 +8,7 @@ describe("<Portal /> component", () => {
     let portalContainer: HTMLDivElement;
 
     beforeEach(() => {
-        portalContainer = document.body.appendChild(
-            document.createElement("div"),
-        );
+        portalContainer = document.body.appendChild(document.createElement("div"));
     });
 
     afterEach(() => {
@@ -63,21 +61,15 @@ describe("<Portal /> component", () => {
         ));
 
         expect(container).toBeEmptyDOMElement();
-        expect(document.head.innerHTML).toBe(
-            "<title>A Meaningful Page Title</title>",
-        );
+        expect(document.head.innerHTML).toBe("<title>A Meaningful Page Title</title>");
 
         set("A New Better Page Title");
-        expect(document.head.innerHTML).toBe(
-            "<title>A New Better Page Title</title>",
-        );
+        expect(document.head.innerHTML).toBe("<title>A New Better Page Title</title>");
 
         setVisible(false);
         expect(document.head).toBeEmptyDOMElement();
         setVisible(true);
-        expect(document.head.innerHTML).toBe(
-            "<title>A New Better Page Title</title>",
-        );
+        expect(document.head.innerHTML).toBe("<title>A New Better Page Title</title>");
 
         unmount();
         expect(document.head).toBeEmptyDOMElement();
@@ -179,9 +171,7 @@ describe("<Portal /> component", () => {
             <main>
                 <section>
                     <Show when={() => portalId() !== ""}>
-                        <Portal
-                            mount={() => document.getElementById(portalId())!}
-                        >
+                        <Portal mount={() => document.getElementById(portalId())!}>
                             <h1>hello</h1>
                         </Portal>
                     </Show>
@@ -191,8 +181,7 @@ describe("<Portal /> component", () => {
             </main>
         ));
 
-        const mainSection = screen.getByRole("main")
-            .firstElementChild as HTMLElement;
+        const mainSection = screen.getByRole("main").firstElementChild as HTMLElement;
         const firstSection = mainSection?.nextElementSibling as HTMLElement;
         const secondSection = firstSection?.nextElementSibling as HTMLElement;
 
@@ -237,14 +226,10 @@ describe("<Portal /> component", () => {
         expect(portalContainer).not.toBeEmptyDOMElement();
 
         expect(div.current.shadowRoot).not.toBeNull();
-        expect(div.current.shadowRoot?.innerHTML).toEqual(
-            "<h1>hello</h1><p>something</p>",
-        );
+        expect(div.current.shadowRoot?.innerHTML).toEqual("<h1>hello</h1><p>something</p>");
 
         setParagraph("world!");
-        expect(div.current.shadowRoot?.innerHTML).toEqual(
-            "<h1>hello</h1><p>world!</p>",
-        );
+        expect(div.current.shadowRoot?.innerHTML).toEqual("<h1>hello</h1><p>world!</p>");
 
         setVisible(false);
         expect(screen.getByRole("main")).toBeEmptyDOMElement();

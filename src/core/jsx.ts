@@ -1,11 +1,4 @@
-import {
-    SuppleChild,
-    SuppleComponent,
-    JSXElement,
-    SuppleNodeEffect,
-    Ref,
-    ValueOrAccessor,
-} from "./types";
+import { SuppleChild, SuppleComponent, JSXElement, SuppleNodeEffect, Ref, ValueOrAccessor } from "./types";
 import { toValue } from "./helper";
 
 export function h<Props>(
@@ -48,11 +41,7 @@ export function h<Props>(
     }
 }
 
-export function Fragment({
-    children,
-}: {
-    children: SuppleChild[];
-}): SuppleNodeEffect {
+export function Fragment({ children }: { children: SuppleChild[] }): SuppleNodeEffect {
     return () => children;
 }
 

@@ -1,13 +1,4 @@
-import {
-    h,
-    Fragment,
-    Dynamic,
-    createSignal,
-    lazy,
-    Show,
-    children,
-    For,
-} from "../core";
+import { h, Fragment, Dynamic, createSignal, lazy, Show, children, For } from "../core";
 import { Clock } from "./components";
 import { ForElse } from "./controls";
 import { createIncrement } from "./util";
@@ -32,11 +23,7 @@ export function DynamicApp() {
         <Dynamic component="div">
             <Dynamic component="h1" id="toto">
                 Header{" "}
-                <Dynamic
-                    component="font"
-                    style={{ fontSize: "0.7em" }}
-                    prop:color="red"
-                >
+                <Dynamic component="font" style={{ fontSize: "0.7em" }} prop:color="red">
                     is red
                 </Dynamic>
                 !
@@ -49,10 +36,7 @@ export function DynamicApp() {
                     when={load}
                     fallback={
                         <div>
-                            <button
-                                type="button"
-                                onclick={() => LazyForElse.preload()}
-                            >
+                            <button type="button" onclick={() => LazyForElse.preload()}>
                                 Preload
                             </button>{" "}
                             <button
@@ -72,11 +56,7 @@ export function DynamicApp() {
                             component="button"
                             type="button"
                             onclick={() =>
-                                setElems((s) =>
-                                    s.length === 0
-                                        ? [0]
-                                        : [...s, s[s.length - 1] + 1],
-                                )
+                                setElems((s) => (s.length === 0 ? [0] : [...s, s[s.length - 1] + 1]))
                             }
                         >
                             More
@@ -90,10 +70,7 @@ export function DynamicApp() {
                         </Dynamic>
                     </Dynamic>
                     <ul>
-                        <LazyForElse
-                            each={elems}
-                            fallback={<li>no more element</li>}
-                        >
+                        <LazyForElse each={elems} fallback={<li>no more element</li>}>
                             {(el) => <li>{el}</li>}
                         </LazyForElse>
                     </ul>
