@@ -15,7 +15,6 @@ export type JSXElement<Props> = JSXHTMLElement<Props> | JSXSuppleElement<Props>;
 
 export interface AbstractDOMComponent {
     parent: DOMContainer;
-    mount: (parent: DOMContainer, oldParent: DOMContainer) => void;
     nodes: () => Node[];
 }
 
@@ -38,11 +37,7 @@ export interface ProxyDOMComponent extends AbstractDOMComponent {
 
 export type DOMComponent = RealDOMComponent | ProxyDOMComponent | MultiDOMComponent;
 
-export type DOMContainer =
-    | Node
-    | DOMComponent
-    | ((component: DOMComponent, previousNodes?: Node[]) => void)
-    | null;
+export type DOMContainer = DOMComponent | ((component: DOMComponent, previousNodes?: Node[]) => void) | null;
 
 export type SuppleNode =
     | DOMComponent

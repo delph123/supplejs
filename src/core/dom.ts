@@ -12,7 +12,6 @@ import {
 import { createLogger, flatten } from "./helper";
 import { createChildContext, createRoot, runEffectInContext } from "./context";
 import { createComputed } from "./reactivity";
-import { createComponent, runEffectInComponentContext } from "./component";
 
 const logger = createLogger("dom");
 
@@ -20,8 +19,7 @@ export function render(renderEffect: SuppleNodeEffect, container?: Node) {
     const parent = container ?? document.body;
     return createRoot((dispose) => {
         const component = createRenderEffect(renderEffect);
-        // component.mount(parent, null);
-        mount(component, parent);
+        domInsert(component, parent);
         return () => {
             for (const node of component.nodes()) {
                 parent.removeChild(node);
@@ -31,48 +29,30 @@ export function render(renderEffect: SuppleNodeEffect, container?: Node) {
     });
 }
 
-export function createRenderEffect(
+export function createRenderEffect<Props>(
     renderEffect: SuppleNodeEffect,
-    inputProxyComponent?: ProxyDOMComponent,
+    Component?: SuppleComponent<Props>,
 ): ProxyDOMComponent {
-    const proxy = inputProxyComponent ?? proxyComponent();
+    const proxy = proxyComponent(Component);
 
     // Define the update context
     const childContext = createChildContext(() => {
         const previousNodes = proxy.target.nodes();
-        // Unmount current target
-        // proxy.target.mount(null, proxy);
         // Re-render DOM component
-        proxy.target = createDOMComponent(runEffectInComponentContext(proxy, renderEffect));
-        overwriteParent(proxy.target, proxy, null);
+        proxy.target = createDOMComponent(renderEffect());
+        proxy.target.parent = proxy;
         logger.log("re-rendered", proxy.id, proxy.target);
-        remount(proxy, previousNodes);
+        domReplace(proxy, previousNodes);
     });
 
     // Run the render effect a first time
     runEffectInContext(childContext, () => {
-        proxy.target = createDOMComponent(runEffectInComponentContext(proxy, renderEffect));
-        overwriteParent(proxy.target, proxy, null);
+        proxy.target = createDOMComponent(renderEffect());
+        proxy.target.parent = proxy;
         logger.log("rendered", proxy.id, proxy.target);
     });
 
     return proxy;
-}
-
-function overwriteParent(component: DOMComponent, parent: DOMContainer, oldParent: DOMContainer) {
-    if (component.parent === oldParent || component.parent === parent) {
-        component.parent = parent;
-    } else if (
-        (typeof getParentHTMLElement(component.parent) === "function" &&
-            getParentHTMLElement(parent) instanceof Node) ||
-        (getParentHTMLElement(component.parent) == null && getParentHTMLElement(parent) != null)
-    ) {
-        logger.warn("Overwriting", component, parent);
-        component.parent = parent;
-    } else {
-        logger.warn("Bad overwrite", component, parent);
-        component.parent = parent;
-    }
 }
 
 export function createDOMComponent(component: SuppleNode): DOMComponent {
@@ -105,9 +85,19 @@ export function createDOMComponent(component: SuppleNode): DOMComponent {
             return domComponent(document.createComment("empty_fragment"));
         }
     } else if (component.__kind === "supple_element") {
-        // Delegate component creation to `component.ts` so that we can set-up
-        // the component context at the same time (for create/useContext APIs)
-        return createComponent(component);
+        const { type: Component, props, children } = component;
+
+        // When we create a component, we will pass children untouched so that the
+        // component itself can define the semantics of the children prop as it
+        // sees fit. This is useful for example for the iterators components which
+        // expects a mapping function with item as a parameter instead of a raw
+        // component.
+        const renderEffect = Component({
+            ...props,
+            children,
+        });
+
+        return createRenderEffect(renderEffect, Component);
     } else if (component.__kind === "html_element") {
         return createHtmlElement(component);
     } else {
@@ -166,8 +156,8 @@ function createHtmlElement(component: JSXHTMLElement<any>) {
             }
         })
         .forEach((domChild) => {
-            domChild.mount(domElement, null);
-            mount(domChild, container);
+            domChild.parent = domElement;
+            domInsert(domChild, container);
         });
 
     return domElement;
@@ -222,10 +212,6 @@ function domComponent(node: Node): RealDOMComponent {
         node,
         parent: null,
         nodes: () => [node],
-        mount(parent, oldParent) {
-            logger.log("mounting-dom into", parent);
-            overwriteParent(this, parent, oldParent);
-        },
     };
 }
 
@@ -235,13 +221,10 @@ export function multiComponents(components: DOMComponent[]): MultiDOMComponent {
         components,
         parent: null,
         nodes: () => components.flatMap((c) => c.nodes()),
-        mount(parent, oldParent) {
-            logger.log("mounting-multi into", parent);
-            overwriteParent(this, parent, oldParent);
-            // components.forEach((child) => child.mount(this, null));
-        },
     } satisfies MultiDOMComponent;
-    components.forEach((c) => overwriteParent(c, component, null));
+    components.forEach((c) => {
+        c.parent = component;
+    });
     return component;
 }
 
@@ -258,55 +241,29 @@ export function proxyComponent<Props>(Component?: SuppleComponent<Props>): Proxy
         nodes() {
             return this.target.nodes();
         },
-        mount(parent, oldParent) {
-            logger.log("mounting", renderNb, parent, this.target);
-            overwriteParent(this, parent, oldParent);
-            logger.log("end");
-            // this.target.mount(this, null);
-        },
     };
 }
 
-function getParentHTMLElement(container: DOMContainer) {
-    if (container == null || !("__kind" in container)) {
-        return container;
-    } else {
-        return getParentHTMLElement(container.parent);
+function getParentHandler(container: DOMContainer) {
+    let current = container;
+    while (current != null && typeof current !== "function") {
+        current = current.parent;
     }
+    return current;
 }
 
-function mount(component: DOMComponent, container: Node) {
+function domInsert(component: DOMComponent, container: Node) {
     component.nodes().forEach((n) => container.appendChild(n));
 }
 
-function remount(component: DOMComponent, previousNodes?: Node[]) {
-    const parent = getParentHTMLElement(component.parent);
-
-    // if (
-    //     (parent == null || typeof parent === "function") &&
-    //     previousNodes &&
-    //     previousNodes.length > 0 &&
-    //     previousNodes[0].parentNode
-    // ) {
-    //     console.error("Previous nodes had parent", previousNodes[0], previousNodes[0].parentNode, parent);
-    //     const previousParent = previousNodes[0].parentNode;
-    //     previousNodes.forEach((n) => previousParent.removeChild(n));
-    // }
-
-    if (typeof parent === "function") {
-        parent(component, previousNodes);
+function domReplace(component: DOMComponent, previousNodes?: Node[]) {
+    const parentHandler = getParentHandler(component.parent);
+    if (parentHandler != null) {
+        parentHandler(component, previousNodes);
         return;
     }
 
-    // if (parent == null) {
-    //     console.error("Error: no parent container!");
-    //     return;
-    // }
-
     if (previousNodes && previousNodes.length > 0 && previousNodes[0].parentNode) {
-        // if (parent !== previousNodes[0].parentNode) {
-        //     console.error("Different parent provided", parent, previousNodes[0].parentNode);
-        // }
         const newNodes = component.nodes();
         const nextSibling = previousNodes[previousNodes.length - 1].nextSibling;
         const [newItems, oldItems] = convertToItems(newNodes, previousNodes);

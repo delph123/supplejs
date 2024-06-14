@@ -1,5 +1,5 @@
 import { getOwner, onCleanup } from "./context";
-import { createDOMComponent, createRenderEffect, multiComponents, proxyComponent } from "./dom";
+import { createDOMComponent, createRenderEffect, multiComponents } from "./dom";
 import { createLogger, flatten, shallowArrayEqual, toArray } from "./helper";
 import { mapArray } from "./iterators";
 import { h } from "./jsx";
@@ -9,8 +9,6 @@ import {
     SuppleComponent,
     SuppleNode,
     RealDOMComponent,
-    JSXSuppleElement,
-    ProxyDOMComponent,
     Context,
     SuppleNodeEffect,
 } from "./types";
@@ -97,47 +95,18 @@ export function children(childrenGetter: () => SuppleNode | undefined) {
             logger.log("children notified with", component, root);
             setComponents(extractRealDOMComponents(root));
         };
-        root.mount(handler, null);
+        root.parent = handler;
         handler(root);
-        // mount(root, handler);
         onCleanup(() => {
-            root.components.forEach((c) => c.mount(null, root));
+            root.components.forEach((c) => {
+                c.parent = null;
+            });
             root.components.length = 0;
-            root.mount(null, handler);
+            root.parent = null;
         });
     });
 
     return components;
-}
-
-let currentComponentContext: ProxyDOMComponent | null = null;
-
-export function runEffectInComponentContext<T>(componentContext: ProxyDOMComponent, effect: () => T) {
-    const previousComponentContext = currentComponentContext;
-    currentComponentContext = componentContext;
-
-    const result = effect();
-
-    currentComponentContext = previousComponentContext;
-    return result;
-}
-
-export function createComponent<Props>({ type: Component, props, children }: JSXSuppleElement<Props>) {
-    const proxy = proxyComponent(Component);
-
-    // When we create a component, we will pass children untouched so that the
-    // component itself can define the semantics of the children prop as it
-    // sees fit. This is useful for example for the iterators components which
-    // expects a mapping function with item as a parameter instead of a raw
-    // component.
-    const effect = runEffectInComponentContext(proxy, () =>
-        Component({
-            ...props,
-            children,
-        }),
-    );
-
-    return createRenderEffect(effect, proxy);
 }
 
 const contextLogger = createLogger("context");
