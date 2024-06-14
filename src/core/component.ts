@@ -114,6 +114,46 @@ const contextLogger = createLogger("context");
 const NO_CONTEXT_VALUE = Symbol("NO_CONTEXT_VALUE");
 let contextNb = 0;
 
+/**
+ * Context provides a form of dependency injection in Solid. It is used to save
+ * from needing to pass data as props through intermediate components.
+ *
+ * This function creates a new context object that can be used with useContext
+ * and provides the Provider control flow. Default Context is used when no
+ * Provider is found above in the hierarchy.
+ *
+ * ```jsx
+ * export const CounterContext = createContext([{ count: 0 }, {}]);
+ *
+ * export function CounterProvider(props) {
+ *   const [state, setState] = createStore({ count: props.count || 0 });
+ *   const counter = [
+ *     state,
+ *     {
+ *       increment() {
+ *         setState("count", (c) => c + 1);
+ *       },
+ *       decrement() {
+ *         setState("count", (c) => c - 1);
+ *       },
+ *     },
+ *   ];
+ *
+ *   return (
+ *     <CounterContext.Provider value={counter}>
+ *       {props.children}
+ *     </CounterContext.Provider>
+ *   );
+ * }
+ * ```
+ *
+ * The value passed to provider is passed to useContext as is. That means
+ * wrapping as a reactive expression will not work. You should pass in Signals
+ * and Stores directly instead of accessing them in the JSX.
+ *
+ * @param defaultValue default context value
+ * @returns a context object containing the ContextProvider
+ */
 export function createContext(): Context<unknown>;
 export function createContext<T>(defaultValue: T): Context<T>;
 export function createContext<T>(defaultValue?: T) {
@@ -129,7 +169,7 @@ export function createContext<T>(defaultValue?: T) {
         const owner = getOwner();
         let contextValue = NO_CONTEXT_VALUE as unknown as T;
 
-        contextLogger.info("> entering..", context.id, "with", value, owner?.contextsMap);
+        contextLogger.log("> entering..", context.id, "with", value, owner?.contextsMap);
         if (owner?.contextsMap?.has(context.id)) {
             contextValue = owner.contextsMap.get(context.id);
         }
@@ -142,7 +182,7 @@ export function createContext<T>(defaultValue?: T) {
         }
 
         const domComponent = createDOMComponent(children ?? []);
-        contextLogger.info("< exiting...", context.id, "del", value, owner?.contextsMap);
+        contextLogger.log("< exiting...", context.id, "del", value, owner?.contextsMap);
         if (owner != null) {
             if (contextValue !== NO_CONTEXT_VALUE) {
                 owner.contextsMap.set(context.id, contextValue);
@@ -157,9 +197,20 @@ export function createContext<T>(defaultValue?: T) {
     return context;
 }
 
+/**
+ * Used to grab context to allow for deep passing of props without having to
+ * pass them through each Component function.
+ *
+ * ```jsx
+ * const [state, { increment, decrement }] = useContext(CounterContext);
+ * ```
+ *
+ * @param context the context object returned from createContext
+ * @returns the context value
+ */
 export function useContext<T>(context: Context<T>) {
     const owner = getOwner();
-    contextLogger.info("= using.....", context.id, "found", owner?.contextsMap);
+    contextLogger.log("= using.....", context.id, "found", owner?.contextsMap);
     return owner?.contextsMap?.has(context.id)
         ? (owner.contextsMap.get(context.id) as T)
         : context.defaultValue;
