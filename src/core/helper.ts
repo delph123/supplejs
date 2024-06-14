@@ -71,6 +71,7 @@ const DEFAULT_LOG_LEVELS = {
     dom: LOG_LEVEL.ERROR,
     children: LOG_LEVEL.INFO,
     clock: LOG_LEVEL.INFO,
+    context: LOG_LEVEL.LOG,
 };
 
 function logMessage(level: LOG_LEVEL, maxLogLevel: LOG_LEVEL) {

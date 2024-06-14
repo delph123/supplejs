@@ -282,14 +282,6 @@ function mount(component: DOMComponent, container: Node) {
 function remount(component: DOMComponent, previousNodes?: Node[]) {
     const parent = getParentHTMLElement(component.parent);
 
-    let current = component;
-    while (current.parent != null && "__kind" in current.parent) {
-        if (typeof current.notifyContextMounted === "function") {
-            current.notifyContextMounted();
-        }
-        current = current.parent;
-    }
-
     // if (
     //     (parent == null || typeof parent === "function") &&
     //     previousNodes &&

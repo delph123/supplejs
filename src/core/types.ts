@@ -17,8 +17,6 @@ export interface AbstractDOMComponent {
     parent: DOMContainer;
     mount: (parent: DOMContainer, oldParent: DOMContainer) => void;
     nodes: () => Node[];
-    notifyContextMounted?: () => void;
-    contextValue?: unknown;
 }
 
 export interface RealDOMComponent extends AbstractDOMComponent {
@@ -65,9 +63,6 @@ export interface Context<T> {
     id: symbol;
     Provider: (props: { value: T; children?: SuppleChild[] }) => SuppleNodeEffect;
     defaultValue: T;
-    // internal methods
-    _onMount: (listener: () => void) => void;
-    _onCleanup: (listener: () => void) => void;
 }
 
 export type Accessor<T> = () => T;
