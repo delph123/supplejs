@@ -8,6 +8,7 @@ export interface TrackingContext<T = any> {
     active: boolean;
     children: TrackingContext<T>[];
     cleanups: CleanupFunction[];
+    contextsMap: Map<symbol, any>;
 }
 
 export enum ForwardParameter {
@@ -71,6 +72,10 @@ export function runEffectInContext<T>(
     return result;
 }
 
+let mapId = 0;
+const id = Symbol("id");
+const from = Symbol("from");
+
 export function createChildContext<T>(effect: (prev: T) => T, value?: T) {
     const execute = () => {
         // TODO: call cleanup before value is changed in signal.
@@ -87,11 +92,19 @@ export function createChildContext<T>(effect: (prev: T) => T, value?: T) {
         active: true,
         children: [],
         cleanups: [],
+        contextsMap: new Map([[id, mapId++]]),
     };
 
     const parentTrackingContext = getOwner();
     if (parentTrackingContext) {
         parentTrackingContext.children.push(context);
+        parentTrackingContext.contextsMap.forEach((val, key) => {
+            if (key == id) {
+                context.contextsMap.set(from, val);
+            } else if (key != from) {
+                context.contextsMap.set(key, val);
+            }
+        });
     } else {
         console.error("No parent context!");
     }
@@ -168,6 +181,7 @@ export function createRoot<T>(effect: (dispose: () => void) => T) {
         active: false,
         children: [],
         cleanups: [],
+        contextsMap: new Map(),
     };
 
     // Run the effect under the created context

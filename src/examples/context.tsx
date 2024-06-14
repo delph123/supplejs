@@ -1,4 +1,16 @@
-import { h, Fragment, createContext, useContext, createSignal, Dynamic } from "../core";
+import {
+    h,
+    Fragment,
+    createContext,
+    useContext,
+    createSignal,
+    Dynamic,
+    Show,
+    Match,
+    Switch,
+    ValueOrAccessor,
+    toValue,
+} from "../core";
 
 const [defaultCount, setDefaultCount] = createSignal(0);
 
@@ -15,28 +27,22 @@ function CounterProvider(props: { count?: number; children?: any }) {
 }
 
 function Example() {
-    const counter = useContext(CounterContext);
-    return () => <button onClick={() => counter().setCount(counter().count() + 1)}>{counter().count}</button>;
+    const { count, setCount } = useContext(CounterContext);
+    return () => <button onClick={() => setCount(count() + 1)}>{count}</button>;
 }
 
 function Fun() {
-    const counter = useContext(CounterContext);
+    const { count, setCount } = useContext(CounterContext);
     return () => (
         <Dynamic
-            component={() => (counter().count() > 9 && counter().count() < 15 ? "div" : CounterProvider)}
-            count={counter().count() + 1}
+            component={() => (count() > 9 && count() < 15 ? "div" : CounterProvider)}
+            count={count() + 1}
         >
-            <button onClick={() => counter().setCount(counter().count() + 1)}>
-                Fun = {() => counter().count()}
-            </button>
+            <button onClick={() => setCount(count() + 1)}>Fun = {() => count()}</button>
             <Example />
             {() => {
-                const counter2 = useContext(CounterContext);
-                return (
-                    <button onClick={() => counter2().setCount(counter2().count() + 1)}>
-                        {() => counter2().count()}
-                    </button>
-                );
+                const { count: count2, setCount: setCount2 } = useContext(CounterContext);
+                return <button onClick={() => setCount2(count2() + 1)}>{() => count2()}</button>;
             }}
         </Dynamic>
     );
@@ -58,12 +64,8 @@ export function MultiContextApp() {
             <div>
                 <CounterContext.Provider value={{ count, setCount }}>
                     {() => {
-                        const counter = useContext(CounterContext);
-                        return (
-                            <button onClick={() => counter().setCount(counter().count() + 1)}>
-                                {() => counter().count()}
-                            </button>
-                        );
+                        const { count, setCount } = useContext(CounterContext);
+                        return <button onClick={() => setCount(count() + 1)}>{() => count()}</button>;
                     }}
                 </CounterContext.Provider>
             </div>
@@ -87,31 +89,83 @@ export function MultiContextApp() {
 const NumberContext = createContext(0);
 
 export function ContextPassingApp() {
+    const [count, setCount] = createSignal(0);
+    const [color, setColor] = createSignal("dodgerblue");
     return () => (
-        <div>
-            <NumberContext.Provider value={11}>
+        <pre>
+            <button onClick={() => setCount(count() + 1)}>{count}</button>
+            <input style={{ marginLeft: "0.8em" }} value={color} onInput={(e) => setColor(e.target.value)} />
+            <NumberContext.Provider value={7}>
                 <div>
+                    Context Value = 7 |
                     <ContextReceiver />
-                    <NumberContext.Provider value={13}>
-                        <ContextReceiver />
-                        {() => {
-                            const ctx = useContext(NumberContext);
-                            return (
-                                <>
-                                    {" "}
-                                    - <span>Also: {ctx}</span>
-                                </>
-                            );
-                        }}
+                    <Show when={() => count() % 2 == 0}>
+                        {() => <span style={{ color: "green" }}> cond: {useContext(NumberContext)} |</span>}
+                    </Show>
+                    <br />
+                    <NumberContext.Provider value={3}>
+                        Context Value = 3 |
+                        <ContextReceiver3 color={color} />
+                        {() => (
+                            <span style={{ color: "darkorange" }}> inl.: {useContext(NumberContext)} |</span>
+                        )}
+                        <Show when={() => count() % 2 == 0}>
+                            {() => (
+                                <span style={{ color: "green" }}> cond: {useContext(NumberContext)} |</span>
+                            )}
+                        </Show>
                     </NumberContext.Provider>
+                    <br />
+                    Context Value = 7 |
+                    <ContextReceiver3 color={color} />
+                    <Switch>
+                        <Match when={() => count() % 3 == 0}>
+                            {() => (
+                                <span style={{ color: "magenta" }}> mtch: {useContext(NumberContext)} |</span>
+                            )}
+                        </Match>
+                        <Match when={() => count() % 3 == 1}>
+                            {() => <span style={{ color: "red" }}> mtc2: {useContext(NumberContext)} |</span>}
+                        </Match>
+                    </Switch>
                 </div>
             </NumberContext.Provider>
+            Outside provider{"  |"}
             <ContextReceiver />
-        </div>
+            {() => {
+                const val = useContext(NumberContext);
+                return <span style={{ color: "green" }}>{() => count() % 2 == 0 && ` cond: ${val} |`}</span>;
+            }}
+            <Show when={() => count() % 2 == 0}>
+                {() => <span style={{ color: "purple" }}> cnd2: {useContext(NumberContext)} |</span>}
+            </Show>
+        </pre>
     );
 }
 
 function ContextReceiver() {
-    const ctx = useContext(NumberContext);
-    return () => <span> [{ctx}] </span>;
+    return () => (
+        <font size="3">
+            <label>
+                <ContextReceiver2 />
+            </label>
+        </font>
+    );
+}
+
+function ContextReceiver2() {
+    return () => <ContextReceiver3 color="blue" />;
+}
+
+function ContextReceiver3({ color }: { color: ValueOrAccessor<string> }) {
+    const val = useContext(NumberContext);
+    return () => {
+        const col = toValue(color);
+        if (col === "dodgerblue") {
+            return <span style={{ color: col }}> recv: {val} |</span>;
+        } else {
+            console.log("rerendering", col);
+            return <span style={{ color: col }}> recv: {useContext(NumberContext)} |</span>;
+        }
+    };
 }

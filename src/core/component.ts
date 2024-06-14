@@ -1,4 +1,4 @@
-import { onCleanup } from "./context";
+import { getOwner, onCleanup } from "./context";
 import { createDOMComponent, createRenderEffect, multiComponents, proxyComponent } from "./dom";
 import { createLogger, flatten, shallowArrayEqual, toArray } from "./helper";
 import { mapArray } from "./iterators";
@@ -12,6 +12,7 @@ import {
     JSXSuppleElement,
     ProxyDOMComponent,
     Context,
+    SuppleNodeEffect,
 } from "./types";
 
 const logger = createLogger("children");
@@ -139,82 +140,60 @@ export function createComponent<Props>({ type: Component, props, children }: JSX
     return createRenderEffect(effect, proxy);
 }
 
+const contextLogger = createLogger("context");
+
+const NO_CONTEXT_VALUE = Symbol("NO_CONTEXT_VALUE");
+let contextNb = 0;
+
 export function createContext(): Context<unknown>;
 export function createContext<T>(defaultValue: T): Context<T>;
 export function createContext<T>(defaultValue?: T) {
-    const listeners = new Set<() => void>();
+    contextNb++;
 
-    function ContextProvider({ value, children }: Parameters<Context<T>["Provider"]>[0]) {
-        const domComponent = createDOMComponent(children ?? []);
-        domComponent.notifyContextMounted = () => {
-            [...listeners].forEach((l) => l());
-        };
-        Object.defineProperties(domComponent, {
-            parent: {
-                get() {
-                    return this.__parent;
-                },
-                set(newParent) {
-                    this.__parent = newParent;
-                    this.contextValue = value;
-                    this.notifyContextMounted();
-                },
-            },
-        });
-
-        return () => {
-            return domComponent;
-        };
-    }
-
-    return {
-        id: Symbol("context"),
+    const context = {
+        id: Symbol("ctx-" + contextNb),
         Provider: ContextProvider,
         defaultValue: defaultValue,
-        // internal methods
-        _onMount(listener: () => void) {
-            listeners.add(listener);
-        },
-        _onCleanup(listener: () => void) {
-            listeners.delete(listener);
-        },
     };
+
+    function ContextProvider({ value, children }: Parameters<Context<T>["Provider"]>[0]): SuppleNodeEffect {
+        const owner = getOwner();
+        let contextValue = NO_CONTEXT_VALUE as unknown as T;
+
+        contextLogger.info("> entering..", context.id, "with", value, owner?.contextsMap);
+        if (owner?.contextsMap?.has(context.id)) {
+            contextValue = owner.contextsMap.get(context.id);
+        }
+        if (owner != null) {
+            owner.contextsMap.set(context.id, value);
+        } else {
+            contextLogger.error(
+                "Cannot setup context provider without tracking context: make sure to wrap your logic in a createRoot()!",
+            );
+        }
+
+        const domComponent = createDOMComponent(children ?? []);
+        contextLogger.info("< exiting...", context.id, "del", value, owner?.contextsMap);
+        if (owner != null) {
+            if (contextValue !== NO_CONTEXT_VALUE) {
+                owner.contextsMap.set(context.id, contextValue);
+            } else {
+                owner.contextsMap.delete(context.id);
+            }
+        }
+
+        return () => domComponent;
+    }
+
+    return context;
 }
 
 export function useContext<T>(context: Context<T>) {
-    const proxy = currentComponentContext;
-    const [contextValue, setContextValue] = createSignal(context.defaultValue);
-
-    const resetContextValue = () => {
-        let component: DOMComponent | null = proxy;
-        console.log("received context notification", proxy);
-
-        // Walk-up parent tree until we find a matching ContextProvider (if any)
-        while (
-            component?.parent != null &&
-            "__kind" in component.parent &&
-            (component.parent.__kind !== "proxy_component" || component.parent.type !== context.Provider)
-        ) {
-            component = component.parent;
-        }
-
-        // Reset the value from ContextProvider (if found) or default value
-        if (
-            component?.parent != null &&
-            "__kind" in component.parent &&
-            component.parent.__kind == "proxy_component" &&
-            component.parent.type === context.Provider
-        ) {
-            setContextValue(() => component!.contextValue as T);
-        } else {
-            setContextValue(() => context.defaultValue);
-        }
-    };
-
-    context._onMount(resetContextValue);
-    onCleanup(() => context._onCleanup(resetContextValue));
-
-    return contextValue;
+    const owner = getOwner();
+    contextLogger.info("= using.....", context.id, "found", owner?.contextsMap);
+    return owner?.contextsMap?.has(context.id)
+        ? (owner.contextsMap.get(context.id) as T)
+        : context.defaultValue;
 }
 
 /**
