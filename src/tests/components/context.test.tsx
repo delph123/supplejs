@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
-import { render, screen } from "../utils";
-import { SuppleComponent, h, Fragment, Dynamic, createSignal } from "../../core";
+import { render, screen, waitForElementToBeRemoved } from "../utils";
+import { SuppleComponent, h, Fragment, Dynamic, createSignal, lazy, For, Portal } from "../../core";
 import { ContextValues, UseContextProps, contextMocks } from "../mocks/mock_component";
 
 describe("use single context", () => {
@@ -17,7 +17,7 @@ describe("use single context", () => {
 
     it("reads default value without Provider", () => {
         render(() => <UseDeepContext id="m" />);
-        expect(screen.getByTestId("m")).toHaveTextContent(ContextValues.DEFAULT.value);
+        expect(screen.getByTestId("m")).toHaveTextContent(ContextValues.Z.value);
     });
 
     it.each([UseDirectContext, UseRenderContext, UseDeepContext])(
@@ -60,7 +60,7 @@ describe("use single context", () => {
             expect(screen.getByTestId("o")).toHaveTextContent("C");
             expect(screen.getByTestId("p")).toHaveTextContent("B");
             expect(screen.getByTestId("q")).toHaveTextContent("A");
-            expect(screen.getByTestId("r")).toHaveTextContent(ContextValues.DEFAULT.value);
+            expect(screen.getByTestId("r")).toHaveTextContent(ContextValues.Z.value);
             expect(screen.getByTestId("r")).toHaveClass("c0");
 
             setClassName("c1");
@@ -69,7 +69,7 @@ describe("use single context", () => {
             expect(screen.getByTestId("o")).toHaveTextContent("C");
             expect(screen.getByTestId("p")).toHaveTextContent("B");
             expect(screen.getByTestId("q")).toHaveTextContent("A");
-            expect(screen.getByTestId("r")).toHaveTextContent(ContextValues.DEFAULT.value);
+            expect(screen.getByTestId("r")).toHaveTextContent(ContextValues.Z.value);
             expect(screen.getByTestId("r")).toHaveClass("c1");
         },
     );
@@ -111,7 +111,7 @@ describe("use single context", () => {
         expect(screen.getByTestId("o")).toHaveTextContent("C");
         expect(screen.getByTestId("p")).toHaveTextContent("B");
         expect(screen.getByTestId("q")).toHaveTextContent("A");
-        expect(screen.getByTestId("r")).toHaveTextContent(ContextValues.DEFAULT.value);
+        expect(screen.getByTestId("r")).toHaveTextContent(ContextValues.Z.value);
 
         setClassName("c1");
         expect(screen.getByTestId("m")).toHaveClass("c1");
@@ -120,7 +120,7 @@ describe("use single context", () => {
         expect(screen.getByTestId("o")).toHaveTextContent("C");
         expect(screen.getByTestId("p")).toHaveTextContent("B");
         expect(screen.getByTestId("q")).toHaveTextContent("A");
-        expect(screen.getByTestId("r")).toHaveTextContent(ContextValues.DEFAULT.value);
+        expect(screen.getByTestId("r")).toHaveTextContent(ContextValues.Z.value);
     });
 
     it("reads value from deepest ContextProvider in conditional rendering", () => {
@@ -245,8 +245,8 @@ describe("use multiple contexts", () => {
             </Third.ContextProvider>
         ));
 
-        expect(screen.getByTestId("m")).toHaveTextContent(ContextValues.DEFAULT.value);
-        expect(screen.getByTestId("n")).toHaveTextContent(ContextValues.DEFAULT.value);
+        expect(screen.getByTestId("m")).toHaveTextContent(ContextValues.Z.value);
+        expect(screen.getByTestId("n")).toHaveTextContent(ContextValues.Z.value);
     });
 
     it("reads value from its respective provider (side by side)", () => {
@@ -343,8 +343,8 @@ describe("use multiple contexts", () => {
         expect(screen.getByTestId("n1")).toHaveTextContent("B");
         expect(screen.getByTestId("o1")).toHaveTextContent("C");
         expect(screen.getByTestId("p1")).toHaveTextContent("B");
-        expect(screen.getByTestId("m2")).toHaveTextContent(ContextValues.DEFAULT.value);
-        expect(screen.getByTestId("n2")).toHaveTextContent(ContextValues.DEFAULT.value);
+        expect(screen.getByTestId("m2")).toHaveTextContent(ContextValues.Z.value);
+        expect(screen.getByTestId("n2")).toHaveTextContent(ContextValues.Z.value);
         expect(screen.getByTestId("o2")).toHaveTextContent("D");
         expect(screen.getByTestId("o2")).toHaveClass("c0");
 
@@ -354,8 +354,8 @@ describe("use multiple contexts", () => {
         expect(screen.getByTestId("n1")).toHaveTextContent("B");
         expect(screen.getByTestId("o1")).toHaveTextContent("C");
         expect(screen.getByTestId("p1")).toHaveTextContent("B");
-        expect(screen.getByTestId("m2")).toHaveTextContent(ContextValues.DEFAULT.value);
-        expect(screen.getByTestId("n2")).toHaveTextContent(ContextValues.DEFAULT.value);
+        expect(screen.getByTestId("m2")).toHaveTextContent(ContextValues.Z.value);
+        expect(screen.getByTestId("n2")).toHaveTextContent(ContextValues.Z.value);
         expect(screen.getByTestId("o2")).toHaveTextContent("D");
         expect(screen.getByTestId("o2")).toHaveClass("c1");
     });
@@ -462,4 +462,108 @@ describe("use multiple contexts", () => {
     });
 });
 
-describe.todo("use context with lazy(), <For /> & <Portal />");
+describe("use context in combination with createRoot", () => {
+    const { ContextProvider, UseDeepContext, ShowContext } = contextMocks();
+
+    it("works with lazy loaded component", async () => {
+        const [visible, setVisible] = createSignal(true);
+
+        let resolver;
+        const Cmp = () => () => (
+            <div>
+                <UseDeepContext id="m" />
+                <ShowContext id="n" when={visible} />
+            </div>
+        );
+        const loader = () => {
+            return new Promise<{ default: typeof Cmp }>((resolve) => {
+                resolver = resolve;
+            });
+        };
+        const LazyCmp = lazy(loader);
+
+        render(() => (
+            <ContextProvider value="A">
+                <LazyCmp />
+            </ContextProvider>
+        ));
+
+        expect(screen.queryByTestId("m")).not.toBeInTheDocument();
+        expect(screen.queryByTestId("n")).not.toBeInTheDocument();
+
+        resolver({ default: Cmp });
+        await waitForElementToBeRemoved(() => screen.queryByText("Loading component..."));
+
+        expect(screen.getByTestId("m")).toHaveTextContent("A");
+        expect(screen.getByTestId("n")).toHaveTextContent("A");
+
+        setVisible(false);
+        expect(screen.getByTestId("m")).toHaveTextContent("A");
+        expect(screen.queryByTestId("n")).not.toBeInTheDocument();
+
+        setVisible(true);
+        expect(screen.getByTestId("m")).toHaveTextContent("A");
+        expect(screen.getByTestId("n")).toHaveTextContent("A");
+    });
+
+    it("works with <For /> component", () => {
+        const [elements, setElements] = createSignal(["m", "n"]);
+
+        render(() => (
+            <ContextProvider value="A">
+                <ul>
+                    <For each={elements}>
+                        {(element) => (
+                            <li>
+                                <UseDeepContext id={element} />
+                            </li>
+                        )}
+                    </For>
+                </ul>
+            </ContextProvider>
+        ));
+
+        expect(screen.getByTestId("m")).toHaveTextContent("A");
+        expect(screen.getByTestId("n")).toHaveTextContent("A");
+        expect(screen.queryByTestId("o")).not.toBeInTheDocument();
+
+        setElements(["m", "n", "o"]);
+        expect(screen.getByTestId("m")).toHaveTextContent("A");
+        expect(screen.getByTestId("n")).toHaveTextContent("A");
+        expect(screen.getByTestId("o")).toHaveTextContent("A");
+
+        setElements(["m", "o"]);
+        expect(screen.getByTestId("m")).toHaveTextContent("A");
+        expect(screen.queryByTestId("n")).not.toBeInTheDocument();
+        expect(screen.getByTestId("o")).toHaveTextContent("A");
+
+        setElements(["o", "m"]);
+        expect(screen.getByTestId("m")).toHaveTextContent("A");
+        expect(screen.queryByTestId("n")).not.toBeInTheDocument();
+        expect(screen.getByTestId("o")).toHaveTextContent("A");
+    });
+
+    it("works with <Portal /> component", () => {
+        render(() => (
+            <ContextProvider value="A">
+                <main>
+                    <Portal>
+                        <div>
+                            <UseDeepContext id="m" />
+                            <ContextProvider value="B">
+                                <Portal>
+                                    <aside>
+                                        <UseDeepContext id="n" />
+                                    </aside>
+                                </Portal>
+                            </ContextProvider>
+                        </div>
+                    </Portal>
+                </main>
+            </ContextProvider>
+        ));
+
+        expect(screen.getByTestId("m")).toHaveTextContent("A");
+        expect(screen.getByTestId("n")).toHaveTextContent("B");
+    });
+});
