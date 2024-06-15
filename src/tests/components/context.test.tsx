@@ -146,17 +146,15 @@ describe("use single context", () => {
         );
 
         render(() => (
-            <>
-                <ContextProvider value="A">
-                    <main>
-                        <ContextProvider value="B">
-                            <div>
-                                <CompB />
-                            </div>
-                        </ContextProvider>
-                    </main>
-                </ContextProvider>
-            </>
+            <ContextProvider value="A">
+                <main>
+                    <ContextProvider value="B">
+                        <div>
+                            <CompB />
+                        </div>
+                    </ContextProvider>
+                </main>
+            </ContextProvider>
         ));
 
         check("B", true, 1);
@@ -230,6 +228,238 @@ describe("use single context", () => {
     });
 });
 
-describe.todo("use multiple contexts");
+describe("use multiple contexts", () => {
+    const First = contextMocks();
+    const Second = contextMocks();
+    const Third = contextMocks();
 
-describe.todo("use context with <Portal />");
+    it("reads default value when inside another provider", () => {
+        render(() => (
+            <Third.ContextProvider value="A">
+                <First.ContextProvider value="B">
+                    <Second.UseDeepContext id="m" />
+                </First.ContextProvider>
+                <Second.ContextProvider value="C">
+                    <First.UseDeepContext id="n" />
+                </Second.ContextProvider>
+            </Third.ContextProvider>
+        ));
+
+        expect(screen.getByTestId("m")).toHaveTextContent(ContextValues.DEFAULT.value);
+        expect(screen.getByTestId("n")).toHaveTextContent(ContextValues.DEFAULT.value);
+    });
+
+    it("reads value from its respective provider (side by side)", () => {
+        const [className, setClassName] = createSignal("c0");
+
+        render(() => (
+            <div>
+                <First.ContextProvider value="A">
+                    <First.UseDeepContext id="m" className={className} />
+                </First.ContextProvider>
+                <br />
+                <Second.ContextProvider value="B">
+                    <Second.UseDeepContext id="n" className={className} />
+                </Second.ContextProvider>
+            </div>
+        ));
+
+        expect(screen.getByTestId("m")).toHaveClass("c0");
+        expect(screen.getByTestId("m")).toHaveTextContent("A");
+        expect(screen.getByTestId("n")).toHaveTextContent("B");
+
+        setClassName("c1");
+        expect(screen.getByTestId("m")).toHaveClass("c1");
+        expect(screen.getByTestId("m")).toHaveTextContent("A");
+        expect(screen.getByTestId("n")).toHaveTextContent("B");
+    });
+
+    it("reads value from its respective provider (nested)", () => {
+        const [className, setClassName] = createSignal("c0");
+
+        render(() => (
+            <First.ContextProvider value="A">
+                <div>
+                    <Second.ContextProvider value="B">
+                        <First.UseDeepContext id="m" className={className} />
+                        <Second.UseDeepContext id="n" className={className} />
+                    </Second.ContextProvider>
+                </div>
+            </First.ContextProvider>
+        ));
+
+        expect(screen.getByTestId("m")).toHaveTextContent("A");
+        expect(screen.getByTestId("n")).toHaveTextContent("B");
+        expect(screen.getByTestId("n")).toHaveClass("c0");
+
+        setClassName("c1");
+        expect(screen.getByTestId("m")).toHaveTextContent("A");
+        expect(screen.getByTestId("n")).toHaveTextContent("B");
+        expect(screen.getByTestId("n")).toHaveClass("c1");
+    });
+
+    it("reads value from deepest context provider (nested)", () => {
+        const [className, setClassName] = createSignal("c0");
+
+        const CompC = () => () => (
+            <>
+                <First.Context.Provider value={ContextValues.C}>
+                    <Second.Context.Provider value={ContextValues.D}>
+                        <font size="2">
+                            <label>
+                                <First.UseDeepContext id="o1" className={className} />
+                                <Second.UseDeepContext id="o2" className={className} />
+                            </label>
+                        </font>
+                    </Second.Context.Provider>
+                </First.Context.Provider>
+                <First.UseDeepContext id="p1" className={className} />
+            </>
+        );
+        const CompB = () => () => (
+            <div>
+                <First.UseDeepContext id="n1" className={className} />
+                <CompC />
+                <Second.UseDeepContext id="n2" className={className} />
+            </div>
+        );
+
+        render(() => (
+            <Third.ContextProvider value="E">
+                <First.ContextProvider value="A">
+                    <First.UseDeepContext id="m1" className={className} />
+                    <main>
+                        <First.ContextProvider value="B">
+                            <CompB />
+                        </First.ContextProvider>
+                    </main>
+                    <Second.UseDeepContext id="m2" className={className} />
+                </First.ContextProvider>
+            </Third.ContextProvider>
+        ));
+
+        expect(screen.getByTestId("m1")).toHaveClass("c0");
+        expect(screen.getByTestId("m1")).toHaveTextContent("A");
+        expect(screen.getByTestId("n1")).toHaveTextContent("B");
+        expect(screen.getByTestId("o1")).toHaveTextContent("C");
+        expect(screen.getByTestId("p1")).toHaveTextContent("B");
+        expect(screen.getByTestId("m2")).toHaveTextContent(ContextValues.DEFAULT.value);
+        expect(screen.getByTestId("n2")).toHaveTextContent(ContextValues.DEFAULT.value);
+        expect(screen.getByTestId("o2")).toHaveTextContent("D");
+        expect(screen.getByTestId("o2")).toHaveClass("c0");
+
+        setClassName("c1");
+        expect(screen.getByTestId("m1")).toHaveClass("c1");
+        expect(screen.getByTestId("m1")).toHaveTextContent("A");
+        expect(screen.getByTestId("n1")).toHaveTextContent("B");
+        expect(screen.getByTestId("o1")).toHaveTextContent("C");
+        expect(screen.getByTestId("p1")).toHaveTextContent("B");
+        expect(screen.getByTestId("m2")).toHaveTextContent(ContextValues.DEFAULT.value);
+        expect(screen.getByTestId("n2")).toHaveTextContent(ContextValues.DEFAULT.value);
+        expect(screen.getByTestId("o2")).toHaveTextContent("D");
+        expect(screen.getByTestId("o2")).toHaveClass("c1");
+    });
+
+    it("reads value from deepest context provider (conditional)", () => {
+        const [passthrough1, setPassthrough1] = createSignal(true);
+        const [passthrough2, setPassthrough2] = createSignal(true);
+        const [display, setDisplay] = createSignal(true);
+        const [number, setNumber] = createSignal(1);
+        const [className, setClassName] = createSignal("c0");
+
+        const CompB = () => () => (
+            <Dynamic component={() => (passthrough1() ? "div" : First.ContextProvider)} value="D">
+                <Dynamic component={() => (passthrough2() ? "div" : Second.ContextProvider)} value="E">
+                    <First.UseDeepContext id="m" className={className} />
+                    <Second.UseDeepContext id="n" className={className} />
+                    <First.ShowContext id="o" when={display} className={className} />
+                    <Second.SwitchContext
+                        id="p"
+                        cond1={() => number() % 3 === 1}
+                        cond2={() => number() % 3 === 2}
+                        className={className}
+                    />
+                </Dynamic>
+            </Dynamic>
+        );
+
+        render(() => (
+            <First.ContextProvider value="A">
+                <Second.ContextProvider value="B">
+                    <Third.ContextProvider value="C">
+                        <main>
+                            <CompB />
+                        </main>
+                    </Third.ContextProvider>
+                </Second.ContextProvider>
+            </First.ContextProvider>
+        ));
+
+        check("A", "B", true, 1);
+        setPassthrough1(false);
+        setPassthrough2(false);
+        check("D", "E", true, 1);
+        setPassthrough1(true);
+        setPassthrough2(true);
+        check("A", "B", true, 1);
+        setDisplay(false);
+        check("A", "B", false, 1);
+        setPassthrough1(false);
+        setPassthrough2(false);
+        check("D", "E", false, 1);
+        setDisplay(true);
+        check("D", "E", true, 1);
+        setPassthrough1(true);
+        setPassthrough2(true);
+        setNumber(2);
+        check("A", "B", true, 2);
+        setNumber(0);
+        check("A", "B", true, 0);
+        setNumber(1);
+        check("A", "B", true, 1);
+        setDisplay(false);
+        setPassthrough1(false);
+        setPassthrough2(false);
+        setNumber(0);
+        check("D", "E", false, 0);
+        setNumber(2);
+        check("D", "E", false, 2);
+        setNumber(1);
+        check("D", "E", false, 1);
+
+        function check(value1: string, value2: string, displayed: boolean, branch: number) {
+            expect(screen.getByTestId("m")).toHaveClass(className());
+            expect(screen.getByTestId("m")).toHaveTextContent(value1);
+            expect(screen.getByTestId("n")).toHaveTextContent(value2);
+            if (displayed) {
+                expect(screen.getByTestId("o")).toHaveClass(className());
+                expect(screen.getByTestId("o")).toHaveTextContent(value1);
+            } else {
+                expect(screen.queryByTestId("q")).not.toBeInTheDocument();
+            }
+            if (branch === 1) {
+                expect(screen.getByTestId("p")).toHaveClass(className());
+                expect(screen.getByTestId("p")).toHaveTextContent(value2);
+                expect(screen.getByTestId("p")).toHaveAttribute("title");
+            } else if (branch === 2) {
+                expect(screen.getByTestId("p")).toHaveClass(className());
+                expect(screen.getByTestId("p")).toHaveTextContent(value2);
+                expect(screen.getByTestId("p")).not.toHaveAttribute("title");
+            } else {
+                expect(screen.queryByTestId("p")).not.toBeInTheDocument();
+            }
+
+            if (className() === "c0") {
+                // Re-render and recheck (all same results are expected)
+                setClassName("c1");
+                check(value1, value2, displayed, branch);
+            } else {
+                // since check is called recursively this puts the state back
+                // to its initial position
+                setClassName("c0");
+            }
+        }
+    });
+});
+
+describe.todo("use context with lazy(), <For /> & <Portal />");
