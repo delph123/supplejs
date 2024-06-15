@@ -7,9 +7,10 @@ describe("createMemo", () => {
         const [count, setCount] = createSignal(0);
 
         const derivedSignal = vi.fn(() => Math.floor(count() / 10));
-        const memoizedSignal = vi.fn(createMemo(() => Math.floor(count() / 10)));
+        const memoizedSignal = vi.fn();
 
         renderHook(() => {
+            memoizedSignal.mockImplementation(createMemo(() => Math.floor(count() / 10)));
             createComputed(derivedSignal);
             createComputed(memoizedSignal);
         });
@@ -35,10 +36,10 @@ describe("createMemo", () => {
 
     it("accepts a memo function argument which returns a function", () => {
         const [doubler, setDoubler] = createSignal(true);
-        const memoizedSignal = createMemo(() => (doubler() ? (n) => 2 * n : (n) => n + 1));
         const spy = vi.fn();
 
         renderHook(() => {
+            const memoizedSignal = createMemo(() => (doubler() ? (n) => 2 * n : (n) => n + 1));
             createComputed(() => spy(memoizedSignal()(2)));
         });
 
