@@ -40,7 +40,7 @@ export const ContextValues = {
     C: { value: "C" },
     D: { value: "D" },
     E: { value: "E" },
-    DEFAULT: { value: "DEFAULT" },
+    Z: { value: "Z" },
 };
 
 export type UseContextProps = {
@@ -56,7 +56,7 @@ function readContextValueContent(context: Context<(typeof ContextValues)[keyof t
 }
 
 export function contextMocks() {
-    const Context = createContext(ContextValues.DEFAULT);
+    const Context = createContext(ContextValues.Z);
 
     const ContextProvider = function ContextProvider(props: {
         value: string;

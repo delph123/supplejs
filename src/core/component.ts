@@ -182,6 +182,7 @@ export function createContext<T>(defaultValue?: T) {
         }
 
         const domComponent = createDOMComponent(children ?? []);
+
         contextLogger.log("< exiting...", context.id, "del", value, owner?.contextsMap);
         if (owner != null) {
             if (contextValue !== NO_CONTEXT_VALUE) {
