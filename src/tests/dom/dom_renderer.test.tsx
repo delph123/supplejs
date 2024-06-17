@@ -133,4 +133,38 @@ describe("DOM renderer", () => {
         ));
         expect(container.innerHTML).toBe("<ul><li>hello</li><li>world!</li></ul>");
     });
+
+    it("swaps components in place", () => {
+        const [number, setNumber] = createSignal(5);
+
+        const RecCmp = ({ level, code }) => {
+            if (level === 0) {
+                return () => <p>{code}</p>;
+            } else {
+                return () => <RecCmp level={level - 1} code={code} />;
+            }
+        };
+        const Swapper = () => () => {
+            const num = number();
+            if (num % 2 === 0) {
+                return (
+                    <div>
+                        <span>{num}</span>
+                    </div>
+                );
+            } else {
+                return <RecCmp level={num} code={num} />;
+            }
+        };
+
+        const { asFragment } = render(() => <Swapper />);
+
+        expect(asFragment()).toBe("<p>5</p>");
+        setNumber(1);
+        expect(asFragment()).toBe("<p>1</p>");
+        setNumber(4);
+        expect(asFragment()).toBe("<div><span>4</span></div>");
+        setNumber(7);
+        expect(asFragment()).toBe("<p>7</p>");
+    });
 });

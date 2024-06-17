@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
-import { cleanup, render, screen } from "./utils/testing-renderer";
-import { h, Fragment, onCleanup, createComputed, createEffect } from "../core";
+import { cleanup, fireEvent, render, screen } from "./utils/testing-renderer";
+import { h, Fragment, onCleanup, createComputed, createEffect, render as core_render } from "../core";
 import { createWaitableMock } from "./utils";
 
 describe("Cleans up the document tree", () => {
@@ -52,6 +52,23 @@ describe("Cleans up the document tree", () => {
         expect(container).toBeEmptyDOMElement();
         cleanup();
         expect(document.body).toBeEmptyDOMElement();
+    });
+
+    it("does not error when using low-level core.render()", () => {
+        const spy = vi.fn();
+        function AutoExit({ onexit }) {
+            onCleanup(spy);
+            createComputed(() => {
+                onCleanup(spy);
+            });
+            return () => <button onClick={() => onexit()}>Leave</button>;
+        }
+        const exit = core_render(() => <AutoExit onexit={() => exit()} />);
+        expect(screen.getByRole("button")).toBeInTheDocument();
+        expect(spy).not.toHaveBeenCalled();
+        fireEvent.click(screen.getByRole("button"));
+        expect(screen.queryByRole("button")).not.toBeInTheDocument();
+        expect(spy).toHaveBeenCalledTimes(2);
     });
 });
 

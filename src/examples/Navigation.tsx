@@ -48,12 +48,9 @@ function row(
 const components = [
     section("To be covered by unit tests", [
         row("Counter", "Playing with reactions", CounterButton, { nb: 5 }),
-        row("Automatic Counter", "A counter incrementing with interval", AutoCounter),
         row("Resource Switch", "A switch to manage resource state", AsyncSwitch),
         row("Dog API", "An asynchronous app using resource to fetch dogs", AsyncApp),
         row("Multi-counter App", "The iconic multi-counter application", MultiApp),
-        row("GoodBye", "Swapping Clock & Goodbye components", GoodBye),
-        row("GameOn", "Deleting clocks until exiting completely", GameOn, { nb: 5 }),
         row("Redux Slice", "Implementation of redux-like store", ReduxSlice),
         row("Children Player", "Play with children() helper", ChildrenPlayer),
     ]),
@@ -67,11 +64,14 @@ const components = [
         // row("NestedChildren", "Deeply nested children (in arrays)", NestedChildren), // Unit tested
         row("Two switch buttons", "Show/hide buttons", WhenAppWithSignal),
         row("Login", "Login/Logout with Portal", LoginApp),
+        row("Automatic Counter", "A counter incrementing with interval", AutoCounter),
+        row("GoodBye", "Swapping Clock & Goodbye components", GoodBye),
         row("Dynamic", "Play with dynamic & lazy components", DynamicApp),
         row("Number Matcher", "Matching alternating number (13, 14, ...)", SwitchApp),
         row("Switch", "Basic switch tester", TestSwitch),
         row("For/Else", "Combining For & Show", ForElseApp),
         row("Looper", "Playing with <For>", LooperApp),
+        row("GameOn", "Deleting clocks until exiting completely", GameOn, { nb: 5 }),
         row("Context Passing", "Passing context to lower-level components", ContextPassingApp),
         row("Multi Counter", "Multiple contexts", MultiContextApp),
     ]),
