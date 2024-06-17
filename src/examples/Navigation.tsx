@@ -56,8 +56,6 @@ const components = [
         row("GameOn", "Deleting clocks until exiting completely", GameOn, { nb: 5 }),
         row("Redux Slice", "Implementation of redux-like store", ReduxSlice),
         row("Children Player", "Play with children() helper", ChildrenPlayer),
-        row("Context Passing", "Passing context to lower-level components", ContextPassingApp),
-        row("Multi Counter", "Multiple contexts", MultiContextApp),
     ]),
     section("Covered by unit tests", [
         // row("Playing with Refs", "Mounting ref in DOM", Referencing), // Unit tested
@@ -74,6 +72,8 @@ const components = [
         row("Switch", "Basic switch tester", TestSwitch),
         row("For/Else", "Combining For & Show", ForElseApp),
         row("Looper", "Playing with <For>", LooperApp),
+        row("Context Passing", "Passing context to lower-level components", ContextPassingApp),
+        row("Multi Counter", "Multiple contexts", MultiContextApp),
     ]),
     section("Applications", [
         // Apps

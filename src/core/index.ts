@@ -5,10 +5,10 @@ export * from "./reactivity";
 export * from "./dom";
 export * from "./jsx";
 export * from "./resource";
+export * from "./iterators";
 export * from "./component";
 export * from "./controls";
 export * from "./chain";
-export * from "./iterators";
 export * from "./store";
 
 export { version } from "../../package.json";

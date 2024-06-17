@@ -3,7 +3,7 @@ import { createDOMComponent, createRenderEffect, multiComponents } from "./dom";
 import { createLogger, flatten, shallowArrayEqual, toArray } from "./helper";
 import { mapArray } from "./iterators";
 import { h } from "./jsx";
-import { createComputed, createSignal } from "./reactivity";
+import { createComputed, createMemo, createSignal } from "./reactivity";
 import {
     DOMComponent,
     SuppleComponent,
@@ -109,9 +109,6 @@ export function children(childrenGetter: () => SuppleNode | undefined) {
     return components;
 }
 
-const contextLogger = createLogger("context");
-
-const NO_CONTEXT_VALUE = Symbol("NO_CONTEXT_VALUE");
 let contextNb = 0;
 
 /**
@@ -166,33 +163,10 @@ export function createContext<T>(defaultValue?: T) {
     };
 
     function ContextProvider({ value, children }: Parameters<Context<T>["Provider"]>[0]): SuppleNodeEffect {
-        const owner = getOwner();
-        let contextValue = NO_CONTEXT_VALUE as unknown as T;
-
-        contextLogger.log("> entering..", context.id, "with", value, owner?.contextsMap);
-        if (owner?.contextsMap?.has(context.id)) {
-            contextValue = owner.contextsMap.get(context.id);
-        }
-        if (owner != null) {
-            owner.contextsMap.set(context.id, value);
-        } else {
-            contextLogger.error(
-                "Cannot setup context provider without tracking context: make sure to wrap your logic in a createRoot()!",
-            );
-        }
-
-        const domComponent = createDOMComponent(children ?? []);
-
-        contextLogger.log("< exiting...", context.id, "del", value, owner?.contextsMap);
-        if (owner != null) {
-            if (contextValue !== NO_CONTEXT_VALUE) {
-                owner.contextsMap.set(context.id, contextValue);
-            } else {
-                owner.contextsMap.delete(context.id);
-            }
-        }
-
-        return () => domComponent;
+        return createMemo(() => {
+            getOwner()!.contextsMap.set(context.id, value);
+            return createDOMComponent(children ?? []);
+        });
     }
 
     return context;
@@ -211,7 +185,6 @@ export function createContext<T>(defaultValue?: T) {
  */
 export function useContext<T>(context: Context<T>) {
     const owner = getOwner();
-    contextLogger.log("= using.....", context.id, "found", owner?.contextsMap);
     return owner?.contextsMap?.has(context.id)
         ? (owner.contextsMap.get(context.id) as T)
         : context.defaultValue;

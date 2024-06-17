@@ -96,6 +96,7 @@ export function ContextPassingApp() {
             <button onClick={() => setCount(count() + 1)}>{count}</button>
             <input style={{ marginLeft: "0.8em" }} value={color} onInput={(e) => setColor(e.target.value)} />
             <NumberContext.Provider value={7}>
+                <BadComponent color={color} />
                 <div>
                     Context Value = 7 |
                     <ContextReceiver />
@@ -141,6 +142,12 @@ export function ContextPassingApp() {
             </Show>
         </pre>
     );
+}
+
+function BadComponent({ color }) {
+    const val = useContext(NumberContext);
+    const col = color();
+    return () => <font color={col}>||{val}||</font>;
 }
 
 function ContextReceiver() {

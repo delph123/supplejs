@@ -1,6 +1,17 @@
 import { describe, expect, it, vi } from "vitest";
 import { render, screen, waitForElementToBeRemoved } from "../utils";
-import { SuppleComponent, h, Fragment, Dynamic, createSignal, lazy, For, Portal } from "../../core";
+import {
+    SuppleComponent,
+    h,
+    Fragment,
+    Dynamic,
+    createSignal,
+    lazy,
+    For,
+    Portal,
+    createContext,
+    useContext,
+} from "../../core";
 import { ContextValues, UseContextProps, contextMocks } from "../mocks/mock_component";
 
 describe("use single context", () => {
@@ -219,12 +230,56 @@ describe("use single context", () => {
             }
         }
     });
+});
+
+describe("use context with edge case", () => {
+    it.each([null, undefined, 0, "", false, NaN])("accepts %s as context values", (val) => {
+        const TestContext = createContext<any>("default");
+        const spy = vi.fn();
+
+        render(() => (
+            <TestContext.Provider value={val}>
+                {() => <h1>{spy(useContext(TestContext))}</h1>}
+            </TestContext.Provider>
+        ));
+
+        expect(spy).toHaveBeenCalledWith(val);
+    });
 
     it("prints error in the log when no tracking context exists", () => {
+        const TestContext = createContext(0);
         const logSpy = vi.spyOn(console, "error").mockImplementation(() => {});
-        Context.Provider({ value: ContextValues.A });
+        TestContext.Provider({ value: 1 });
         expect(logSpy).toHaveBeenCalledOnce();
         logSpy.mockRestore();
+    });
+
+    it("works with components consuming signal in their body", () => {
+        const TestContext = createContext(0);
+        const [color, setColor] = createSignal("red");
+        const spy = vi.fn(() => "");
+
+        function BadComponent({ color }) {
+            const val = useContext(TestContext);
+            const col = color();
+            return () => <font color={col}>{val}</font>;
+        }
+
+        const { asFragment } = render(() => (
+            <>
+                {spy}
+                <TestContext.Provider value={7}>
+                    <BadComponent color={color} />
+                </TestContext.Provider>
+                {spy}
+            </>
+        ));
+
+        spy.mockClear();
+        setColor("blue");
+
+        expect(asFragment()).toBe('<font color="blue">7</font>');
+        expect(spy).not.toHaveBeenCalled();
     });
 });
 
