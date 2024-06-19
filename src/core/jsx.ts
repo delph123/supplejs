@@ -1,5 +1,5 @@
 import {
-    SuppleChild,
+    SuppleChildren,
     SuppleComponent,
     JSXElement,
     SuppleNodeEffect,
@@ -11,8 +11,8 @@ import { toValue } from "./helper";
 
 export function h<Props>(
     type: string | SuppleComponent<Props>,
-    props?: Props & { children?: SuppleChild[] },
-    ...children: SuppleChild[]
+    props?: Props & { children?: SuppleChildren },
+    ...children: SuppleChildren
 ): JSXElement<Props> {
     let altChildren = props?.children ?? children;
     if (!Array.isArray(altChildren)) {
@@ -49,7 +49,7 @@ export function h<Props>(
     }
 }
 
-export function Fragment({ children }: { children: SuppleChild[] }): SuppleNodeEffect {
+export function Fragment({ children }: { children: SuppleChildren }): SuppleNodeEffect {
     return () => children;
 }
 
@@ -81,7 +81,7 @@ function Input({
     ref?: Ref<HTMLInputElement | undefined>;
     value?: ValueOrAccessor<string>;
     oninput?: (e: InputElementInputEvent) => void;
-    children?: SuppleChild[];
+    children?: SuppleChildren;
     [x: string]: any;
 }): SuppleNodeEffect {
     let inputRef: HTMLInputElement | undefined;

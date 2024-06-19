@@ -38,7 +38,7 @@ export function createResource<R, P>(
 export function createResource<R, P>(
     source: ValueOrAccessor<FetcherParameter<P>> | ((p: P) => R | Promise<R>),
     fetcher?: (p: P) => R | Promise<R>,
-) {
+): Resource<R, P> {
     const [params, fetch] = createResourceParams<R, P>(source, fetcher);
 
     let loaded = false;
@@ -123,7 +123,7 @@ export function createResource<R, P>(
     });
 
     return [
-        resource,
+        resource as Resource<R, P>[0],
         {
             mutate(r?: R) {
                 previousData = r;

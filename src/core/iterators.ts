@@ -57,7 +57,7 @@ interface IndexProps<T> {
  *            - index is the position (a constant number) in the array
  * @returns a reactive fragment composed of mapped element of the iterator
  */
-export function Index<T>({ each, children, fallback, equals }: IndexProps<T>) {
+export function Index<T>({ each, children, fallback, equals }: IndexProps<T>): SuppleNodeEffect {
     const resolvedChildren = indexArray(
         each,
         (element, index) => createRenderEffect(() => children?.[0]?.(element, index) ?? null),
@@ -101,7 +101,7 @@ export function mapArray<T, U>(
     iterator: () => Iterable<T>,
     mapFn: (v: T, i: () => number) => U,
     equals?: (prev: T, next: T) => boolean,
-) {
+): () => U[] {
     // Define the finder function (either uses the provided equals function
     // or use default sameValueZero algorithm to compare underlying elements)
     const compare = equals ?? sameValueZero;
@@ -193,7 +193,7 @@ export function indexArray<T, U>(
     iterator: () => Iterable<T>,
     mapFn: (v: () => T, i: number) => U,
     equals?: false | ((prev: T, next: T) => boolean),
-) {
+): () => U[] {
     // The previous input & mapped lists
     let previousEntries = [] as IndexEntry<T, U>[];
     let previousMappedArray = [] as U[];
@@ -250,7 +250,7 @@ function listEquals<T, U>(
     previousEntries: Entry<T, U>[],
     nextList: T[],
     equals: (prev: T, next: T) => boolean,
-) {
+): boolean {
     return (
         nextList.length === previousEntries.length &&
         previousEntries.every((e, i) => e.element !== REMOVED && equals(e.element, nextList[i]))

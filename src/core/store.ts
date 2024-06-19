@@ -1,3 +1,4 @@
+import { Accessor } from "./types";
 import { createMemo, createSignal } from "./reactivity";
 
 export interface ActionPayload<T> {
@@ -13,7 +14,10 @@ export function createReduxStore() {
     // TODO
 }
 
-export function createReduxSlice<T>(initialValue: T, reducers: Reducers<T>) {
+export function createReduxSlice<T>(
+    initialValue: T,
+    reducers: Reducers<T>,
+): readonly [Accessor<T>, (action: ActionPayload<any>) => void] {
     const [store, setStore] = createSignal(initialValue);
     const dispatch = function (action: ActionPayload<any>) {
         if (action.type in reducers) {
@@ -28,6 +32,6 @@ export function createReduxSelector<T, U>(
     fn: (src: T, prev: U) => U,
     value?: U,
     equals?: (a: U, b: U) => boolean,
-) {
+): Accessor<U> {
     return createMemo((prev) => fn(source(), prev), value, { equals });
 }

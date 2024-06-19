@@ -2,13 +2,13 @@ export type JSXHTMLElement<Props> = {
     __kind: "html_element";
     type: string;
     props: Props;
-    children: SuppleChild[];
+    children: SuppleChildren;
 };
 export type JSXSuppleElement<Props> = {
     __kind: "supple_element";
     type: SuppleComponent<Props>;
     props: Props;
-    children: SuppleChild[];
+    children: SuppleChildren;
 };
 
 export type JSXElement<Props> = JSXHTMLElement<Props> | JSXSuppleElement<Props>;
@@ -37,12 +37,13 @@ export interface ProxyDOMComponent extends AbstractDOMComponent {
 
 export type DOMComponent = RealDOMComponent | ProxyDOMComponent | MultiDOMComponent;
 
-export type DOMContainer = DOMComponent | ((component: DOMComponent, previousNodes?: Node[]) => void) | null;
+export type DOMHandler = (component: DOMComponent, previousNodes?: Node[]) => void;
+export type DOMContainer = DOMComponent | DOMHandler | null;
 
 export type SuppleNode =
     | DOMComponent
     | JSXElement<any>
-    | SuppleChild[]
+    | SuppleChildren
     | string
     | number
     | bigint
@@ -51,16 +52,18 @@ export type SuppleNode =
 
 export type SuppleNodeEffect = () => SuppleNode;
 export type SuppleChild = SuppleNode | SuppleNodeEffect;
+export type SuppleChildren = SuppleChild[];
 
 export type SuppleComponent<Props> = (props: Props) => SuppleNodeEffect;
 
 export interface Context<T> {
     id: symbol;
-    Provider: (props: { value: T; children?: SuppleChild[] }) => SuppleNodeEffect;
+    Provider: (props: { value: T; children?: SuppleChildren }) => SuppleNodeEffect;
     defaultValue: T;
 }
 
 export type Accessor<T> = () => T;
+export type Setter<T> = (newState: T | ((prev: T) => T)) => T;
 
 // Transforms a tuple to a tuple of accessors in a way that allows generics
 // to be inferred (from solidjs implementation)

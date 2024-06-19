@@ -9,7 +9,7 @@ import {
     createEffect,
     toValue,
     ValueOrAccessor,
-    SuppleChild,
+    SuppleChildren,
 } from "../core";
 
 import { Todo } from "./todo";
@@ -122,7 +122,7 @@ export default function Navigation() {
 
 interface LinkProps {
     href: ValueOrAccessor<string>;
-    children?: SuppleChild[];
+    children?: SuppleChildren;
 }
 
 function Link({ href, children }: LinkProps) {
