@@ -25,6 +25,7 @@ import { CounterButton } from "./effects";
 import { AsyncApp, AsyncSwitch, AutoCounter } from "./async_components";
 import { MultiApp, GoodBye } from "./components";
 import { ContextPassingApp, MultiContextApp } from "./context";
+import { ErrorManager } from "./errors";
 import useCSS from "./useCss";
 
 function section(header: string, rows: ReturnType<typeof row>[]) {
@@ -53,6 +54,9 @@ const components = [
         row("Multi-counter App", "The iconic multi-counter application", MultiApp),
         row("Redux Slice", "Implementation of redux-like store", ReduxSlice),
         row("Children Player", "Play with children() helper", ChildrenPlayer),
+        row("Error Manager", "Component throwing & catching errors", ErrorManager, {
+            initialErrno: 0,
+        }),
     ]),
     section("Covered by unit tests", [
         // row("Playing with Refs", "Mounting ref in DOM", Referencing), // Unit tested

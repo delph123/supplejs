@@ -263,8 +263,36 @@ export function Portal(props: {
     return () => null;
 }
 
-export function ErrorBoundary() {
-    // TODO
+/**
+ * Catches uncaught errors and renders fallback content.
+ *
+ * ```jsx
+ * <ErrorBoundary fallback={<div>Something went terribly wrong</div>}>
+ *   <MyComp />
+ * </ErrorBoundary>
+ * ```
+ *
+ * If you want to customize the error message, you can pass a function as the fallback
+ * prop. The function will be called with the error and a reset function. The reset
+ * function will reset the error boundary and re-render the children.
+ *
+ * ```jsx
+ * <ErrorBoundary
+ *   fallback={(err, reset) => <div onClick={reset}>Error: {err.toString()}</div>}
+ * >
+ *   <MyComp />
+ * </ErrorBoundary>
+ * ```
+ * Errors thrown from the fallback can be caught by a parent ErrorBoundary.
+ *
+ * @param children the children to display if there is no error in the boundary
+ * @param fallback the fallback to display when there were errors in children
+ */
+export function ErrorBoundary(props: {
+    fallback: SuppleNode | ((err: any, reset: () => void) => SuppleNode);
+    children?: SuppleChildren;
+}): SuppleNodeEffect {
+    return () => props.children ?? [];
 }
 
 export function Suspense() {

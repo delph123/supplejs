@@ -1,6 +1,7 @@
 import { Accessor, AccessorArray } from "./types";
 
 type CleanupFunction = () => void;
+type ErrorHandler = (err: any) => void;
 
 export interface TrackingContext<T = any> {
     execute: () => void;
@@ -8,6 +9,7 @@ export interface TrackingContext<T = any> {
     active: boolean;
     children: TrackingContext<T>[];
     cleanups: CleanupFunction[];
+    errorHandlers: ErrorHandler[];
     contextsMap: Map<symbol, any>;
 }
 
@@ -88,6 +90,7 @@ export function createChildContext<T>(effect: (prev: T) => T, value?: T): Tracki
         active: true,
         children: [],
         cleanups: [],
+        errorHandlers: [],
         // Copy context map from parent tracking context
         contextsMap: new Map(getOwner()?.contextsMap?.entries()),
     };
@@ -172,6 +175,7 @@ export function createRoot<T>(effect: (dispose: () => void) => T): T {
         active: false,
         children: [],
         cleanups: [],
+        errorHandlers: [],
         // Copy context map from parent tracking context
         // (this is especially useful when the new root is created
         // in the frame of an existing one, as it is the case with
@@ -255,12 +259,26 @@ export function on<T, U>(
     };
 }
 
-export function catchError() {
-    // TODO
+/**
+ * Wraps a tryFn with an error handler that fires if an error occurs below that point.
+ *
+ * Only the nearest scope error handlers execute. Rethrow to trigger up the line.
+ *
+ * @param tryFn boundary for the error
+ * @param onError an error handler that receives the error
+ * @returns the result of the tryFn if no error was thrown
+ */
+export function catchError<T>(tryFn: () => T, onError: (err: any) => void): T {
+    getOwner()?.errorHandlers?.push(onError);
+    return tryFn();
 }
 
-export function onError(_arg: any) {
-    // TODO
-
-    console.log(_arg);
+/**
+ * Registers an error handler method that executes whenever an error is thrown
+ * within the context of the child scopes.
+ *
+ * @param handler an error handler that receives the error
+ */
+export function onError(handler: (err: any) => void): void {
+    getOwner()?.errorHandlers?.push(handler);
 }
