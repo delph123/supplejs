@@ -1,4 +1,4 @@
-import { MutableRef } from "./types";
+import { Accessor, MutableRef, Setter } from "./types";
 import { sameValueZero } from "./helper";
 import {
     cleanup,
@@ -35,21 +35,24 @@ interface EqualsOption<T> {
  * @param options.equals the equality function to test if signal has changed
  * @returns [get, set] const array (typically destructured)
  */
-export function createSignal<T>(initialValue?: T, options?: EqualsOption<T>) {
+export function createSignal<T>(
+    initialValue?: T,
+    options?: EqualsOption<T>,
+): readonly [Accessor<T>, Setter<T>] {
     const equals = options?.equals === false ? () => false : options?.equals ?? sameValueZero;
 
-    let state = initialValue;
+    let state = initialValue as T;
     let observers = new Set<TrackingContext>();
 
     const set = (newState: T | ((s: T) => T)) => {
         let newValue: T | undefined;
         if (typeof newState === "function") {
-            newValue = (newState as (s?: T) => T)(state);
+            newValue = (newState as (s: T) => T)(state);
         } else {
             newValue = newState;
         }
 
-        if (!equals(state!, newValue)) {
+        if (!equals(state, newValue)) {
             state = newValue;
         } else {
             return state; // do nothing
@@ -73,7 +76,7 @@ export function createSignal<T>(initialValue?: T, options?: EqualsOption<T>) {
         return state;
     };
 
-    return [get, set] as [() => T, (newState: T | ((prev: T) => T)) => T];
+    return [get, set] as const;
 }
 
 /**
@@ -88,7 +91,7 @@ export function createSignal<T>(initialValue?: T, options?: EqualsOption<T>) {
  * @param fn the computation to run immediately and after any change
  * @param value the initial value to provide to the function
  */
-export function createComputed<T>(effect: (v: T) => T, value?: T) {
+export function createComputed<T>(effect: (v: T) => T, value?: T): void {
     const childContext = createChildContext(effect, value);
     runEffectInContext(childContext, effect);
 }
@@ -116,7 +119,7 @@ export function createComputed<T>(effect: (v: T) => T, value?: T) {
  * @param effect the computation with side effects
  * @param value the initial value to provide to the function
  */
-export function createEffect<T>(effect: (v: T) => T, value?: T) {
+export function createEffect<T>(effect: (v: T) => T, value?: T): void {
     const childContext = createChildContext(effect, value);
     queueMicrotask(() => runEffectInContext(childContext, effect));
 }
@@ -132,7 +135,7 @@ export function createEffect<T>(effect: (v: T) => T, value?: T) {
  * @param options.equals the equality function to test if memo has changed
  * @returns the memoized value (a read-only signal)
  */
-export function createMemo<T>(memo: (v: T) => T, value?: T, options?: EqualsOption<T>) {
+export function createMemo<T>(memo: (v: T) => T, value?: T, options?: EqualsOption<T>): Accessor<T> {
     const [memoizedValue, setMemoizedValue] = createSignal<T>(value, options);
     createComputed((previousValue) => {
         const nextValue = memo(previousValue);
@@ -151,7 +154,7 @@ export function createMemo<T>(memo: (v: T) => T, value?: T, options?: EqualsOpti
  * @param onReaction the function to run in reaction to the next change
  * @returns a function that can be called to track the next change
  */
-export function createReaction(onReaction: () => void) {
+export function createReaction(onReaction: () => void): (fn: () => void) => void {
     let context: TrackingContext<void> | undefined;
     return function track(fn: () => void) {
         if (context) cleanup(context);
@@ -169,7 +172,7 @@ export function createReaction(onReaction: () => void) {
  * @param equals the comparison function
  * @returns the result of the comparison
  */
-export function createSelector<T, U>(source: () => T, equals?: (a: U, b: T) => boolean) {
+export function createSelector<T, U>(source: () => T, equals?: (a: U, b: T) => boolean): (k: U) => boolean {
     const comparator = equals ?? sameValueZero;
     return function selector(k: U) {
         return createMemo(() => comparator(k, source()))();
@@ -199,9 +202,8 @@ export function createRef<T>(initialValue?: T): MutableRef<T> {
  */
 export function createDeferred<T>(
     source: () => T,
-    options?: {
+    options?: EqualsOption<T> & {
         timeoutMs?: number;
-        equals?: false | ((prev: T, next: T) => boolean);
     },
 ): () => T {
     // TODO not implemented yet!

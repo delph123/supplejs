@@ -8,6 +8,7 @@ import {
     DOMComponent,
     Ref,
     SuppleChild,
+    SuppleChildren,
     SuppleComponent,
     SuppleNode,
     SuppleNodeEffect,
@@ -18,7 +19,7 @@ type WhenCondition<T> = T | undefined | null | false;
 
 interface MatchProps<T> {
     when: ValueOrAccessor<WhenCondition<T>>;
-    children?: SuppleChild[] | [(item: T) => SuppleNode];
+    children?: SuppleChildren | [(item: T) => SuppleNode];
 }
 
 interface ShowProps<T> extends MatchProps<T> {
@@ -100,7 +101,7 @@ export function Show<T>(props: ShowProps<T>): SuppleNodeEffect {
 export function Switch(props: {
     keyed?: boolean;
     fallback?: SuppleChild;
-    children?: SuppleChild[];
+    children?: SuppleChildren;
 }): SuppleNodeEffect {
     const resolved = children(() => props.children);
 
@@ -166,7 +167,7 @@ export function Switch(props: {
  * @param when the condition to evaluate
  * @param children the children to display when the condition is truthy
  */
-export function Match<T>(props: MatchProps<T>) {
+export function Match<T>(props: MatchProps<T>): SuppleNodeEffect {
     // The Match component is returning a fake empty DOM Component
     // that is enriched with the Match props, so that this
     // component can be resolved with children() helper and analyzed
@@ -208,7 +209,7 @@ export function Dynamic<Props>({
 }: Props & {
     children?: any[];
     component: ValueOrAccessor<SuppleComponent<Props> | string | null | undefined>;
-}) {
+}): SuppleNodeEffect {
     const componentMemo = createMemo(() => toValue(component));
     return createMemo(() => {
         const comp = componentMemo();
@@ -244,8 +245,8 @@ export function Portal(props: {
     mount?: ValueOrAccessor<HTMLElement>;
     ref?: Ref<HTMLDivElement | undefined>;
     useShadow?: boolean;
-    children?: SuppleChild[];
-}) {
+    children?: SuppleChildren;
+}): SuppleNodeEffect {
     const parent = toValue(props.mount) ?? document.body;
     const dispose = render(() => {
         if (parent instanceof HTMLHeadElement) {

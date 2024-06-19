@@ -8,6 +8,7 @@ import {
     SuppleNodeEffect,
     DOMContainer,
     JSXHTMLElement,
+    DOMHandler,
 } from "./types";
 import { createLogger, flatten } from "./helper";
 import { createChildContext, createRoot, runEffectInContext } from "./context";
@@ -15,7 +16,26 @@ import { createComputed } from "./reactivity";
 
 const logger = createLogger("dom");
 
-export function render(renderEffect: SuppleNodeEffect, container?: Node) {
+/**
+ * This is the browser app entry point. Provide a top-level component function
+ * and an element to mount to.
+ *
+ * ```jsx
+ * const dispose = render(App, document.getElementById("app"))
+ * // or
+ * const dispose = render(() => <App />, document.getElementById("app"))
+ * ```
+ *
+ * It's important that the first argument is a function: do not pass JSX directly
+ * (as in `render(<App/>, ...)`), because this will call `App` before render can
+ * set up a root to track signal dependencies within `App`.
+ *
+ * @param renderEffect a function that returns the application code
+ * @param container a DOM Element to mount the application to
+ * @returns a dispose function that deletes all render content from DOM and
+ *          cleans up all reactive scopes recursively
+ */
+export function render(renderEffect: SuppleNodeEffect, container?: Node): () => void {
     const parent = container ?? document.body;
     return createRoot((dispose) => {
         const component = createRenderEffect(renderEffect);
@@ -29,6 +49,29 @@ export function render(renderEffect: SuppleNodeEffect, container?: Node) {
     });
 }
 
+/**
+ * A render effect is a computation similar to a regular effect (as created by
+ * createEffect), but differs in two ways with createEffect:
+ * 1. while createEffect waits for the current rendering phase to be complete,
+ *    createRenderEffect immediately calls the function, similarly to
+ *    createComputed.
+ * 2. createRenderEffect expects the render effect function to return a
+ *    SuppleNode. This node will be inserted in the DOM in the position of
+ *    the current rendering scope.
+ *
+ * Reactive updates to render effects are identical to effects: the effect will
+ * be re-run in response to any reactive change (e.g., a signal update). Supple
+ * will then make sure to update the DOM according to the new result of the
+ * render effect.
+ *
+ * @private this API is currently private since it exposes low-level details
+ *
+ * @param renderEffect the effect returning the supple node to render (called
+ *                     immediately and at any reactive change)
+ * @param Component an optional Component type that references the Component
+ *                  from which the render effect originates
+ * @returns a proxy DOM component
+ */
 export function createRenderEffect<Props>(
     renderEffect: SuppleNodeEffect,
     Component?: SuppleComponent<Props>,
@@ -105,7 +148,7 @@ export function createDOMComponent(component: SuppleNode): DOMComponent {
     }
 }
 
-function createHtmlElement(component: JSXHTMLElement<any>) {
+function createHtmlElement(component: JSXHTMLElement<any>): RealDOMComponent {
     const element = document.createElement(component.type);
 
     Object.entries(component.props as Record<string, any>).forEach(([name, value]) => {
@@ -163,7 +206,7 @@ function createHtmlElement(component: JSXHTMLElement<any>) {
     return domElement;
 }
 
-function setDOMAttribute(element: HTMLElement, name: string, value: any) {
+function setDOMAttribute(element: HTMLElement, name: string, value: any): void {
     switch (name) {
         case "style":
             if (typeof value === "object") {
@@ -244,7 +287,7 @@ export function proxyComponent<Props>(Component?: SuppleComponent<Props>): Proxy
     };
 }
 
-function getParentHandler(container: DOMContainer) {
+function getParentHandler(container: DOMContainer): DOMHandler | null {
     let current = container;
     while (current != null && typeof current !== "function") {
         current = current.parent;
@@ -252,11 +295,11 @@ function getParentHandler(container: DOMContainer) {
     return current;
 }
 
-function domInsert(component: DOMComponent, container: Node) {
+function domInsert(component: DOMComponent, container: Node): void {
     component.nodes().forEach((n) => container.appendChild(n));
 }
 
-function domReplace(component: DOMComponent, previousNodes?: Node[]) {
+function domReplace(component: DOMComponent, previousNodes?: Node[]): void {
     const parentHandler = getParentHandler(component.parent);
     if (parentHandler != null) {
         parentHandler(component, previousNodes);
@@ -273,7 +316,12 @@ function domReplace(component: DOMComponent, previousNodes?: Node[]) {
     }
 }
 
-function replaceNodes(container: Node, newItems: NodeItem[], oldItems: NodeItem[], nextSibling: Node | null) {
+function replaceNodes(
+    container: Node,
+    newItems: NodeItem[],
+    oldItems: NodeItem[],
+    nextSibling: Node | null,
+): void {
     let newCursor = 0;
     let oldCursor = 0;
 
@@ -321,7 +369,7 @@ function replaceNodes(container: Node, newItems: NodeItem[], oldItems: NodeItem[
     }
 }
 
-function isNextExisting(item: NodeItem, items: NodeItem[], start: number) {
+function isNextExisting(item: NodeItem, items: NodeItem[], start: number): boolean {
     let cursor = start;
     while (cursor < items.length && items[cursor].oldSlot === NO_SLOT) {
         cursor++;
@@ -337,7 +385,7 @@ interface NodeItem {
     newSlot: number;
 }
 
-function convertToItems(newNodes: Node[], oldNodes: Node[]) {
+function convertToItems(newNodes: Node[], oldNodes: Node[]): readonly [NodeItem[], NodeItem[]] {
     const allItemsMap = new Map();
 
     const convertNew = nodeToItem.bind(null, allItemsMap, "newSlot");
@@ -346,10 +394,15 @@ function convertToItems(newNodes: Node[], oldNodes: Node[]) {
     const newItems = newNodes.map(convertNew);
     const oldItems = oldNodes.map(convertOld);
 
-    return [newItems, oldItems];
+    return [newItems, oldItems] as const;
 }
 
-function nodeToItem(map: Map<Node, NodeItem>, indexProp: "oldSlot" | "newSlot", node: Node, index: number) {
+function nodeToItem(
+    map: Map<Node, NodeItem>,
+    indexProp: Exclude<keyof NodeItem, "node">,
+    node: Node,
+    index: number,
+): NodeItem {
     let item: NodeItem;
 
     if (map.has(node)) {

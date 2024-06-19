@@ -16,17 +16,24 @@ function getLast(chain: Chain, condition: (chain: Chain) => boolean): Chain {
     }
 }
 
-function createChainItem() {
+function createChainItem(): () => Chain {
     const itemValue: Chain = {};
     const [item, setItem] = createSignal(itemValue);
     itemValue.setItem = setItem;
     return item;
 }
 
+type ChainedListResult = readonly [
+    () => SuppleNodeEffect, // ChainedList component
+    (component: SuppleChild) => void, // Push method
+    () => void, // Pop method
+    () => number, // Get size method
+];
+
 export function createChainedList<Props>({
     tag,
     attributes,
-}: { tag?: string; attributes?: Props & { children?: never } } = {}) {
+}: { tag?: string; attributes?: Props & { children?: never } } = {}): ChainedListResult {
     const [size, setSize] = createSignal(0);
 
     const root = createChainItem();

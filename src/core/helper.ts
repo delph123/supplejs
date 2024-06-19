@@ -7,7 +7,7 @@ export type Nested<T> = (T | Nested<T>)[];
  * Flatten children (developers may return an array containing nested arrays
  * and expect them to be flatten out in the rendering phase).
  */
-export function flatten<T>(nestedChildren: Nested<T>) {
+export function flatten<T>(nestedChildren: Nested<T>): T[] {
     const children: T[] = [];
     for (const c of nestedChildren) {
         if (Array.isArray(c)) {
@@ -33,12 +33,12 @@ export function flatten<T>(nestedChildren: Nested<T>) {
  * @param other the other value to compare
  * @returns true if the two values are equivalent, false otherwise
  */
-export function sameValueZero<T>(value: T, other: T) {
+export function sameValueZero<T>(value: T, other: T): boolean {
     // Uses the fact that NaN is the only value which is not equal to itself
     return value === other || (Number.isNaN(value) && Number.isNaN(other));
 }
 
-export function shallowArrayEqual<T>(first: T[], second: T[]) {
+export function shallowArrayEqual<T>(first: T[], second: T[]): boolean {
     return (
         first === second ||
         (first.length === second.length && first.every((v, i) => sameValueZero(v, second[i])))
@@ -55,7 +55,7 @@ export function toArray<T>(v: T | T[] | null | undefined): T[] {
     }
 }
 
-export function toValue<T>(target: ValueOrAccessor<T>) {
+export function toValue<T>(target: ValueOrAccessor<T>): T {
     return typeof target === "function" ? (target as () => T)() : target;
 }
 
@@ -73,7 +73,7 @@ const DEFAULT_LOG_LEVELS = {
     clock: LOG_LEVEL.INFO,
 };
 
-function logMessage(level: LOG_LEVEL, maxLogLevel: LOG_LEVEL) {
+function logMessage(level: LOG_LEVEL, maxLogLevel: LOG_LEVEL): (...args) => void {
     return (...args) => {
         if (level <= maxLogLevel) {
             console[LOG_LEVEL[level].toLowerCase()](...args);
@@ -81,7 +81,9 @@ function logMessage(level: LOG_LEVEL, maxLogLevel: LOG_LEVEL) {
     };
 }
 
-export function createLogger(scope: keyof typeof DEFAULT_LOG_LEVELS) {
+type Logger = { [P in Lowercase<keyof typeof LOG_LEVEL>]: (...args) => void };
+
+export function createLogger(scope: keyof typeof DEFAULT_LOG_LEVELS): Logger {
     const logLevel = DEFAULT_LOG_LEVELS[scope];
     return {
         error: logMessage(LOG_LEVEL.ERROR, logLevel),
@@ -92,6 +94,6 @@ export function createLogger(scope: keyof typeof DEFAULT_LOG_LEVELS) {
     };
 }
 
-export function randomInt(n: number) {
+export function randomInt(n: number): number {
     return Math.floor(Math.random() * n);
 }

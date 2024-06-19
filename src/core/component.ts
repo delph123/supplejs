@@ -73,7 +73,7 @@ function extractRealDOMComponents(component: DOMComponent): RealDOMComponent[] {
  * @param childrenGetter a function to get the children
  * @returns a flat array of resolved children
  */
-export function children(childrenGetter: () => SuppleNode | undefined) {
+export function children(childrenGetter: () => SuppleNode | undefined): () => RealDOMComponent[] {
     const [components, setComponents] = createSignal<RealDOMComponent[]>([], {
         equals: shallowArrayEqual,
     });
@@ -153,7 +153,7 @@ let contextNb = 0;
  */
 export function createContext(): Context<unknown>;
 export function createContext<T>(defaultValue: T): Context<T>;
-export function createContext<T>(defaultValue?: T) {
+export function createContext<T>(defaultValue?: T): Context<T | undefined> {
     contextNb++;
 
     const context = {
@@ -162,7 +162,10 @@ export function createContext<T>(defaultValue?: T) {
         defaultValue: defaultValue,
     };
 
-    function ContextProvider({ value, children }: Parameters<Context<T>["Provider"]>[0]): SuppleNodeEffect {
+    function ContextProvider({
+        value,
+        children,
+    }: Parameters<Context<T | undefined>["Provider"]>[0]): SuppleNodeEffect {
         return createMemo(() => {
             getOwner()!.contextsMap.set(context.id, value);
             return createDOMComponent(children ?? []);
@@ -183,7 +186,7 @@ export function createContext<T>(defaultValue?: T) {
  * @param context the context object returned from createContext
  * @returns the context value
  */
-export function useContext<T>(context: Context<T>) {
+export function useContext<T>(context: Context<T>): T {
     const owner = getOwner();
     return owner?.contextsMap?.has(context.id)
         ? (owner.contextsMap.get(context.id) as T)

@@ -27,7 +27,7 @@ const contextStack = [] as (TrackingContext<unknown> | null)[];
  *
  * @returns owner (TrackingContext)
  */
-export function getOwner() {
+export function getOwner(): TrackingContext<unknown> | null {
     if (contextStack.length > 0) {
         return contextStack[contextStack.length - 1];
     } else {
@@ -72,7 +72,7 @@ export function runEffectInContext<T>(
     return result;
 }
 
-export function createChildContext<T>(effect: (prev: T) => T, value?: T) {
+export function createChildContext<T>(effect: (prev: T) => T, value?: T): TrackingContext<T> {
     const execute = () => {
         // TODO: call cleanup before value is changed in signal.
         // When cleanup is called, the new value of the signal was set, and
@@ -117,7 +117,7 @@ export function createChildContext<T>(effect: (prev: T) => T, value?: T) {
  * @param context the tracking context to cleanup
  * @param dispose dispose of the current context (deactivate it)
  */
-export function cleanup<T>(context: TrackingContext<T>, dispose = false) {
+export function cleanup<T>(context: TrackingContext<T>, dispose = false): void {
     // Recursively dispose of the context and it's children,
     // while calling all cleanup functions.
     function disposeRec(ctx: TrackingContext<T>, dispose: boolean) {
@@ -150,7 +150,7 @@ export function cleanup<T>(context: TrackingContext<T>, dispose = false) {
  * @param effect the computation to run w/o tracking
  * @returns the result of the effect
  */
-export function untrack<T>(effect: () => T) {
+export function untrack<T>(effect: () => T): T {
     return runEffectInContext(null, effect, ForwardParameter.NOTHING);
 }
 
@@ -163,7 +163,7 @@ export function untrack<T>(effect: () => T) {
  * @param effect the computation, which will be called with dispose as parameter
  * @returns the result of the effect
  */
-export function createRoot<T>(effect: (dispose: () => void) => T) {
+export function createRoot<T>(effect: (dispose: () => void) => T): T {
     // Create an inactive context (which won't be notified) to
     // track children and dependent contexts
     const context: TrackingContext = {
@@ -191,7 +191,7 @@ export function createRoot<T>(effect: (dispose: () => void) => T) {
  * @param effect the effect to run
  * @returns the result of the effect
  */
-export function runWithOwner<T>(owner: TrackingContext<T>, effect: () => T) {
+export function runWithOwner<T>(owner: TrackingContext<T>, effect: () => T): T {
     return runEffectInContext(owner, effect, ForwardParameter.NOTHING);
 }
 
@@ -203,7 +203,7 @@ export function runWithOwner<T>(owner: TrackingContext<T>, effect: () => T) {
  *
  * @param runOnce the computation which runs once at startup
  */
-export function onMount(runOnce: () => void) {
+export function onMount(runOnce: () => void): void {
     queueMicrotask(() => untrack(runOnce));
 }
 
@@ -213,7 +213,7 @@ export function onMount(runOnce: () => void) {
  *
  * @param cleanup the cleanup function to run
  */
-export function onCleanup(cleanup: CleanupFunction) {
+export function onCleanup(cleanup: CleanupFunction): void {
     const context = getOwner();
     if (context) {
         context.cleanups.push(cleanup);
@@ -239,7 +239,7 @@ export function on<T, U>(
     deps: Accessor<T> | AccessorArray<T>,
     fn: (input: T, prevInput?: T, prevValue?: U) => U,
     options: { defer?: boolean } = {},
-) {
+): (prevValue?: U) => U | undefined {
     let defer = options?.defer ?? false;
     let prevInput: T | undefined;
     let input: T;
