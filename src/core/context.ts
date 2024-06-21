@@ -95,7 +95,18 @@ function handleErrorInContext(context: TrackingContext<unknown> | null, error: a
         throw error;
     }
 
-    context.errorHandler(error);
+    try {
+        context.errorHandler(error);
+    } catch (followupError) {
+        // Search parent error handler in the parent tree (by looking for the
+        // first error handler different from current one)
+        let owner = context;
+        while (owner.parent?.errorHandler === context.errorHandler) {
+            owner = owner.parent;
+        }
+        // Then throw the follow-up error to the parent error handler
+        handleErrorInContext(owner.parent, followupError);
+    }
 }
 
 export function createChildContext<T>(effect: (prev: T) => T, value?: T): TrackingContext<T> {
