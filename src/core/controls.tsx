@@ -1,5 +1,5 @@
 import { children } from "./component";
-import { onCleanup, untrack } from "./context";
+import { getOwner, onCleanup, untrack, catchError } from "./context";
 import { h } from "./jsx";
 import { createDOMComponent, render } from "./dom";
 import { createLogger, toValue } from "./helper";
@@ -292,7 +292,30 @@ export function ErrorBoundary(props: {
     fallback: SuppleNode | ((err: any, reset: () => void) => SuppleNode);
     children?: SuppleChildren;
 }): SuppleNodeEffect {
-    return () => props.children ?? [];
+    let error: any = null;
+    return () => {
+        const owner = getOwner();
+        return (
+            catchError(
+                () => {
+                    if (error === null) {
+                        return createDOMComponent(props.children ?? []);
+                    } else if (typeof props.fallback === "function") {
+                        return props.fallback(error, () => {
+                            error = null;
+                            owner?.execute?.();
+                        });
+                    } else {
+                        return props.fallback;
+                    }
+                },
+                (err) => {
+                    error = err;
+                    queueMicrotask(() => owner?.execute?.());
+                },
+            ) ?? null
+        );
+    };
 }
 
 export function Suspense() {
