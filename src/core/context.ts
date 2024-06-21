@@ -1,15 +1,16 @@
 import { Accessor, AccessorArray } from "./types";
 
-type CleanupFunction = () => void;
-type ErrorHandler = (err: any) => void;
+export type CleanupFunction = () => void;
+export type ErrorHandler = (err: any) => void;
 
 export interface TrackingContext<T = any> {
     execute: () => void;
     previousValue: T;
     active: boolean;
+    parent: TrackingContext<any> | null;
     children: TrackingContext<T>[];
     cleanups: CleanupFunction[];
-    errorHandlers: ErrorHandler[];
+    errorHandler: ErrorHandler | null;
     contextsMap: Map<symbol, any>;
 }
 
@@ -53,25 +54,48 @@ export function runEffectInContext<T>(
     effect: ((dispose: () => void) => T) | ((prev: T) => T) | (() => T),
     forward: ForwardParameter = ForwardParameter.PREVIOUS_VALUE,
 ): T {
-    let result: T;
-
-    contextStack.push(context);
-
-    if (forward === ForwardParameter.DISPOSE && context) {
-        const fn = effect as (dispose: () => void) => T;
-        result = fn(() => cleanup(context, true));
-    } else if (forward === ForwardParameter.PREVIOUS_VALUE && context) {
-        const fn = effect as (prev: T) => T;
-        result = fn(context.previousValue);
-        context.previousValue = result;
-    } else {
-        const fn = effect as () => T;
-        result = fn();
+    // Only execute context if it is active!
+    if (context?.active === false) {
+        return undefined as T;
     }
 
-    contextStack.pop();
+    try {
+        contextStack.push(context);
 
-    return result;
+        if (forward === ForwardParameter.DISPOSE && context) {
+            const fn = effect as (dispose: () => void) => T;
+            return fn(() => cleanup(context, true));
+        } else if (forward === ForwardParameter.PREVIOUS_VALUE && context) {
+            const fn = effect as (prev: T) => T;
+            context.previousValue = fn(context.previousValue);
+            return context.previousValue;
+        } else {
+            const fn = effect as () => T;
+            return fn();
+        }
+    } catch (error) {
+        handleErrorInContext(context, error);
+        return undefined as T; // to return a value with correct type
+    } finally {
+        contextStack.pop();
+    }
+}
+
+function handleErrorInContext(context: TrackingContext<unknown> | null, error: any) {
+    // Unwrap if previous stack frame is the parent stack (and current stack
+    // does not have a different error handler)
+    // Or rethrow if there is no error handler.
+    if (
+        context?.errorHandler == null ||
+        (contextStack.length > 1 &&
+            context?.parent != null &&
+            context?.errorHandler === context?.parent?.errorHandler &&
+            context?.parent === contextStack[contextStack.length - 2])
+    ) {
+        throw error;
+    }
+
+    context.errorHandler(error);
 }
 
 export function createChildContext<T>(effect: (prev: T) => T, value?: T): TrackingContext<T> {
@@ -88,9 +112,11 @@ export function createChildContext<T>(effect: (prev: T) => T, value?: T): Tracki
         execute,
         previousValue: value as T,
         active: true,
+        parent: getOwner(),
         children: [],
         cleanups: [],
-        errorHandlers: [],
+        // Inherit error handler from parent
+        errorHandler: getOwner()?.errorHandler ?? null,
         // Copy context map from parent tracking context
         contextsMap: new Map(getOwner()?.contextsMap?.entries()),
     };
@@ -129,6 +155,7 @@ export function cleanup<T>(context: TrackingContext<T>, dispose = false): void {
             // called with dispose = true for deactivating the children
             disposeRec(child, true);
         });
+        // XXX unsafe execution of cleanup `fn`
         ctx.cleanups.forEach((fn) => fn());
 
         // Clear list of children & dependencies
@@ -172,10 +199,11 @@ export function createRoot<T>(effect: (dispose: () => void) => T): T {
     const context: TrackingContext = {
         execute: () => console.error("Executing Root Context!!"),
         previousValue: undefined,
-        active: false,
+        active: true,
+        parent: null,
         children: [],
         cleanups: [],
-        errorHandlers: [],
+        errorHandler: null,
         // Copy context map from parent tracking context
         // (this is especially useful when the new root is created
         // in the frame of an existing one, as it is the case with
@@ -268,17 +296,30 @@ export function on<T, U>(
  * @param onError an error handler that receives the error
  * @returns the result of the tryFn if no error was thrown
  */
-export function catchError<T>(tryFn: () => T, onError: (err: any) => void): T {
-    getOwner()?.errorHandlers?.push(onError);
-    return tryFn();
-}
-
-/**
- * Registers an error handler method that executes whenever an error is thrown
- * within the context of the child scopes.
- *
- * @param handler an error handler that receives the error
- */
-export function onError(handler: (err: any) => void): void {
-    getOwner()?.errorHandlers?.push(handler);
+export function catchError<T>(tryFn: () => T, onError: ErrorHandler): T | undefined {
+    // return createMemo(
+    //     () => {
+    //         getOwner()!.errorHandler = onError;
+    //         return tryFn();
+    //     },
+    //     undefined,
+    //     {
+    //         equals: false,
+    //     },
+    // )();
+    const owner = getOwner();
+    const currentHandler = owner?.errorHandler;
+    if (owner) {
+        owner.errorHandler = onError;
+    }
+    try {
+        return tryFn();
+    } catch (err) {
+        onError(err);
+        return undefined;
+    } finally {
+        if (owner) {
+            owner.errorHandler = currentHandler ?? null;
+        }
+    }
 }

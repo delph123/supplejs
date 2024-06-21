@@ -21,6 +21,7 @@ export function createReduxSlice<T>(
     const [store, setStore] = createSignal(initialValue);
     const dispatch = function (action: ActionPayload<any>) {
         if (action.type in reducers) {
+            // XXX unsafe execution of reducer `reducers[action.type]`
             setStore(() => reducers[action.type](store(), action));
         }
     };

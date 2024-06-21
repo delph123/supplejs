@@ -79,6 +79,7 @@ export function children(childrenGetter: () => SuppleNode | undefined): () => Re
     });
 
     const childrenArray = mapArray(
+        // XXX unsafe execution of `childrenGetter`
         () => flatten(toArray(childrenGetter())),
         (child) => {
             if (typeof child === "function") {
@@ -227,6 +228,7 @@ export function lazy<Component extends SuppleComponent<any>>(
 
     const preload = () => {
         if (!promise) {
+            // XXX unsafe execution of `componentLoader`
             promise = componentLoader()
                 .then(({ default: target }) => {
                     setComponent({ target });
@@ -244,9 +246,10 @@ export function lazy<Component extends SuppleComponent<any>>(
         preload();
 
         return () => {
+            if (component().error) {
+                throw component().error;
+            }
             // TODO ... improve with Suspense
-            if (component().error) return "Error while loading component :-(";
-            // TODO ... improve with ErrorBoundary
             if (!component().target) return "Loading component...";
 
             return h(component().target!, props);

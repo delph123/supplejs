@@ -55,7 +55,7 @@ const components = [
         row("Redux Slice", "Implementation of redux-like store", ReduxSlice),
         row("Children Player", "Play with children() helper", ChildrenPlayer),
         row("Error Manager", "Component throwing & catching errors", ErrorManager, {
-            initialErrno: 0,
+            initialErrno: 7,
         }),
     ]),
     section("Covered by unit tests", [
