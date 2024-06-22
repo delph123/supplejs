@@ -362,7 +362,6 @@ describe("catchError in a reactive context", () => {
 
         [spy, cleanupSpy].forEach((s) => s.mockClear());
         setCount(3);
-        // XXX or toEqual([]) if computed context is cleaned?
         expect(spy.mock.calls).toEqual([["before"], [3]]);
         expect(cleanupSpy).toHaveBeenCalledTimes(2);
     });
