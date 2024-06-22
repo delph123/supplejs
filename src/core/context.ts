@@ -205,17 +205,15 @@ export function untrack<T>(effect: () => T): T {
  * @returns the result of the effect
  */
 export function createRoot<T>(effect: (dispose: () => void) => T): T {
-    // Create an inactive context (which won't be notified) to
-    // track children and dependent contexts
-
-    // Copy context map from parent tracking context
+    // Inherit parent, error handler and context map from parent
+    // tracking context, same as child context.
     // (this is especially useful when the new root is created
     // in the frame of an existing one, as it is the case with
     // the <For />, <Index /> and <Portal /> components)
     const context: TrackingContext = {
         execute: () => console.error("Executing Root Context!!"),
         previousValue: undefined,
-        active: true, // XXX to be tested / explained
+        active: true,
         parent: getOwner(),
         children: [],
         cleanups: [],
@@ -224,7 +222,10 @@ export function createRoot<T>(effect: (dispose: () => void) => T): T {
     };
 
     // Run the effect under the created context
-    return runEffectInContext<T>(context, effect, ForwardParameter.DISPOSE);
+    const result = runEffectInContext<T>(context, effect, ForwardParameter.DISPOSE);
+    // Deactivate the context since it won't be used to re-execute root effect
+    context.active = false;
+    return result;
 }
 
 /**
