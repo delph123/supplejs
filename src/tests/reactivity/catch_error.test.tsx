@@ -223,6 +223,22 @@ describe("catchError", () => {
         expect(innerSpy).toHaveBeenCalledWith(error);
         expect(outerSpy).not.toHaveBeenCalled();
     });
+
+    it("catches only errors of wrapped tryFn", () => {
+        const spy = vi.fn();
+
+        expect(() =>
+            renderHook(() => {
+                catchError(() => {
+                    return "hello";
+                }, spy);
+                if (Math.floor(1.1 + 1.1) === 2) {
+                    throw new Error(":/");
+                }
+            }),
+        ).toThrow();
+        expect(spy).not.toHaveBeenCalled();
+    });
 });
 
 describe("catchError in a reactive context", () => {
@@ -451,5 +467,24 @@ describe("catchError in a reactive context", () => {
         expect(innerSpy).toHaveBeenCalledWith("error");
         expect(middleSpy).not.toHaveBeenCalled();
         expect(outerSpy).toHaveBeenCalledWith("error");
+    });
+
+    it("reactively catches only errors of wrapped tryFn", () => {
+        const [total, setTotal] = createSignal(0);
+        const spy = vi.fn();
+
+        renderHook(() => {
+            createComputed(() => {
+                catchError(() => {
+                    return "hello";
+                }, spy);
+                if (Math.floor(1.1 + 1.1) === total()) {
+                    throw new Error(":/");
+                }
+            });
+        });
+
+        expect(() => setTotal(2)).toThrow();
+        expect(spy).not.toHaveBeenCalled();
     });
 });
