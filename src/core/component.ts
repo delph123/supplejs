@@ -79,7 +79,6 @@ export function children(childrenGetter: () => SuppleNode | undefined): () => Re
     });
 
     const childrenArray = mapArray(
-        // XXX unsafe execution of `childrenGetter`
         () => flatten(toArray(childrenGetter())),
         (child) => {
             if (typeof child === "function") {
@@ -228,7 +227,6 @@ export function lazy<Component extends SuppleComponent<any>>(
 
     const preload = () => {
         if (!promise) {
-            // XXX unsafe execution of `componentLoader`
             promise = componentLoader()
                 .then(({ default: target }) => {
                     setComponent({ target });

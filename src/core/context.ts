@@ -166,7 +166,6 @@ export function cleanup<T>(context: TrackingContext<T>, dispose = false): void {
             // called with dispose = true for deactivating the children
             disposeRec(child, true);
         });
-        // XXX unsafe execution of cleanup `fn`
         ctx.cleanups.forEach((fn) => fn());
 
         // Clear list of children & dependencies
