@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { render, screen, waitForElementToBeRemoved } from "../utils";
-import { Show, createSignal, h, lazy } from "../../core";
+import { ErrorBoundary, Show, createSignal, h, lazy } from "../../core";
 
 describe("lazy() with import()", () => {
     it("displays 'Loading component...' while loading", () => {
@@ -51,13 +51,28 @@ describe("lazy() with import()", () => {
         expect(c).toBe(a);
     });
 
-    it.skip("catches loading error and display an error message", async () => {
+    it("catches loading error and rejects promise", async () => {
+        const path = "../error/does/not/exist.tsx";
+        const spy = vi.fn();
+        const LazyErrorComponent = lazy(() => import(path));
+        LazyErrorComponent.preload().catch(spy);
+        render(() => <LazyErrorComponent />);
+        await expect(LazyErrorComponent.preload()).rejects.toBeInstanceOf(Error);
+        expect(spy).toHaveBeenCalled();
+    });
+
+    it("catches loading error and trigger <ErrorBoundary />", async () => {
         const path = "../error/does/not/exist.tsx";
         const LazyErrorComponent = lazy(() => import(path));
-        render(() => <LazyErrorComponent />);
-        expect(screen.getByText("Loading component...")).toBeInTheDocument();
+        render(() => (
+            <main>
+                <ErrorBoundary fallback="could not load component">
+                    <LazyErrorComponent />
+                </ErrorBoundary>
+            </main>
+        ));
         await expect(LazyErrorComponent.preload()).rejects.toBeInstanceOf(Error);
-        expect(screen.getByText("Error while loading component :-(")).toBeInTheDocument();
+        expect(screen.getByRole("main")).toHaveTextContent("could not load component");
     });
 
     it("only starts loading when component is visible", async () => {
