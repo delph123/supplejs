@@ -417,9 +417,13 @@ describe("catchError in a reactive context", () => {
                                 catchError(
                                     () => {
                                         createComputed(() => {
-                                            if (count() === 1) {
-                                                throw "error";
-                                            }
+                                            createMemo(() => {
+                                                if (count() === 1) {
+                                                    throw "error";
+                                                } else {
+                                                    return count();
+                                                }
+                                            })();
                                         });
                                     },
                                     (err) => {
