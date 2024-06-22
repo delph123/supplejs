@@ -6,7 +6,7 @@ import {
     createRoot,
     getOwner,
     h,
-    onError,
+    catchError,
     runWithOwner,
     render as core_render,
 } from "../../core";
@@ -135,19 +135,23 @@ export function testEffect<T = void>(
         promise?: Promise<T>;
         done?: (result: T) => void;
         fail?: (error: any) => void;
-        dispose?: () => void;
     } = {};
     context.promise = new Promise<T>((resolve, reject) => {
         context.done = resolve;
         context.fail = reject;
     });
-    context.dispose = createRoot((dispose) => {
-        onError((err) => context.fail?.(err));
-        (owner ? (done: (result: T) => void) => runWithOwner(owner, () => fn(done)) : fn)((result) => {
-            context.done?.(result);
-            dispose();
-        });
-        return dispose;
+    createRoot((dispose) => {
+        catchError(
+            () => {
+                (owner ? (done: (result: T) => void) => runWithOwner(owner, () => fn(done)) : fn)(
+                    (result) => {
+                        context.done?.(result);
+                        dispose();
+                    },
+                );
+            },
+            (err) => context.fail?.(err),
+        );
     });
     return context.promise;
 }
