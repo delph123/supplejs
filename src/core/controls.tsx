@@ -310,8 +310,13 @@ export function ErrorBoundary(props: {
                     }
                 },
                 (err) => {
-                    error = err;
-                    queueMicrotask(() => owner?.execute?.());
+                    if (error == null) {
+                        error = err;
+                        queueMicrotask(() => owner?.execute?.());
+                    } else {
+                        // Rethrow error up the line
+                        throw err;
+                    }
                 },
             ) ?? null
         );
