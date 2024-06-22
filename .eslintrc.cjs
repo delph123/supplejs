@@ -21,10 +21,7 @@ module.exports = {
         },
         {
             files: ["**/?(*.)+(spec|test).[jt]s?(x)"],
-            extends: [
-                "plugin:testing-library/dom",
-                "plugin:jest-dom/recommended",
-            ],
+            extends: ["plugin:testing-library/dom", "plugin:jest-dom/recommended"],
         },
     ],
     parser: "@typescript-eslint/parser",
@@ -40,7 +37,7 @@ module.exports = {
         "@typescript-eslint/no-explicit-any": "off",
         "@typescript-eslint/no-unused-vars": [
             "error",
-            { varsIgnorePattern: "^(h|Fragment)$" },
+            { varsIgnorePattern: "^(h|Fragment)$", argsIgnorePattern: "^_" },
         ],
     },
 };
