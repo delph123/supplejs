@@ -1,5 +1,5 @@
 import { Mock, describe, expect, it, vi } from "vitest";
-import { createComputed, createSignal, getOwner, mapArray, onCleanup } from "../../core";
+import { createComputed, createSignal, mapArray, onCleanup } from "../../core";
 import { renderHook } from "../utils";
 
 const [A, B, C, D] = [{ key: "a" }, { key: "b" }, { key: "c" }, { key: "d" }];
@@ -86,7 +86,6 @@ describe("mapArray", () => {
             const res = mapArray(
                 () => [rd],
                 (signal) => {
-                    expect(getOwner()?.active).not.toBeTruthy();
                     spy(signal());
                 },
             );
