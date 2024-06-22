@@ -15,7 +15,6 @@ function renderMapArray<T, U>(
 
 describe("mapArray", () => {
     it("maps an array", () => {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const mapper = vi.fn((n, _) => n + 1);
         const { result } = renderMapArray(
             () => [1, 2, 3],
