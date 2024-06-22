@@ -207,18 +207,19 @@ export function untrack<T>(effect: () => T): T {
 export function createRoot<T>(effect: (dispose: () => void) => T): T {
     // Create an inactive context (which won't be notified) to
     // track children and dependent contexts
+
+    // Copy context map from parent tracking context
+    // (this is especially useful when the new root is created
+    // in the frame of an existing one, as it is the case with
+    // the <For />, <Index /> and <Portal /> components)
     const context: TrackingContext = {
         execute: () => console.error("Executing Root Context!!"),
         previousValue: undefined,
-        active: true,
-        parent: null,
+        active: true, // XXX to be tested / explained
+        parent: getOwner(),
         children: [],
         cleanups: [],
-        errorHandler: null,
-        // Copy context map from parent tracking context
-        // (this is especially useful when the new root is created
-        // in the frame of an existing one, as it is the case with
-        // the <For />, <Index /> and <Portal /> components)
+        errorHandler: getOwner()?.errorHandler ?? null,
         contextsMap: new Map(getOwner()?.contextsMap?.entries()),
     };
 
@@ -308,16 +309,6 @@ export function on<T, U>(
  * @returns the result of the tryFn if no error was thrown
  */
 export function catchError<T>(tryFn: () => T, onError: ErrorHandler): T | undefined {
-    // return createMemo(
-    //     () => {
-    //         getOwner()!.errorHandler = onError;
-    //         return tryFn();
-    //     },
-    //     undefined,
-    //     {
-    //         equals: false,
-    //     },
-    // )();
     const owner = getOwner();
     const currentHandler = owner?.errorHandler;
     if (owner) {

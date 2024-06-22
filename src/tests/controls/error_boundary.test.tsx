@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { createWaitableMock, fireEvent, render, screen } from "../utils";
+import { createWaitableMock, fireEvent, render, screen, waitForElementToBeRemoved } from "../utils";
 import {
     h,
     Fragment,
@@ -9,6 +9,9 @@ import {
     For,
     ValueOrAccessor,
     onCleanup,
+    lazy,
+    Show,
+    Portal,
 } from "../../core";
 import { createMockComponent } from "../mocks/mock_component";
 
@@ -373,7 +376,160 @@ describe("<ErrorBoundary /> component", () => {
 });
 
 describe("use <ErrorBoundary /> component in combination with createRoot", () => {
-    it.todo("works with lazy loaded component");
-    it.todo("works with <For /> component");
-    it.todo("works with <Portal /> component");
+    it("works with lazy loaded component", async () => {
+        const [visible, setVisible] = createSignal(false);
+
+        let resolver;
+        const Cmp = () => () => (
+            <h1>
+                <Show when={visible}>
+                    {() => {
+                        throw new Error(":(");
+                    }}
+                </Show>
+                Title
+            </h1>
+        );
+        const loader = () => {
+            return new Promise<{ default: typeof Cmp }>((resolve) => {
+                resolver = resolve;
+            });
+        };
+        const LazyCmp = lazy(loader);
+
+        render(() => (
+            <main>
+                <ErrorBoundary fallback="error">
+                    <LazyCmp />
+                    <p>Content</p>
+                </ErrorBoundary>
+            </main>
+        ));
+
+        expect(screen.getByRole("paragraph")).toHaveTextContent("Content");
+        expect(screen.queryByRole("heading")).not.toBeInTheDocument();
+
+        resolver({ default: Cmp });
+        await waitForElementToBeRemoved(() => screen.queryByText("Loading component..."));
+
+        expect(screen.getByRole("paragraph")).toHaveTextContent("Content");
+        expect(screen.getByRole("heading")).toHaveTextContent("Title");
+
+        setVisible(true);
+        await waitForElementToBeRemoved(() => screen.queryByRole("heading"));
+        expect(screen.getByRole("main").innerHTML).toEqual("error");
+    });
+
+    it("works with <For /> component", async () => {
+        const [err, setErr] = createSignal("");
+        const [A, B, C] = [
+            { label: "m", error: "" },
+            { label: "n", error: err },
+            { label: "o", error: "inner" },
+        ];
+        const [elements, setElements] = createSignal<{ label: string; error: ValueOrAccessor<string> }[]>([
+            A,
+            C,
+        ]);
+
+        function Label({ value }) {
+            return () => <>{() => toValue(value)}!</>;
+        }
+
+        function Cmp({ label, error }: { label: string; error: ValueOrAccessor<string> }) {
+            return () => (
+                <span>
+                    <ErrorBoundary
+                        fallback={() => {
+                            if (toValue(error) === "outer") {
+                                throw new Error("outer error");
+                            } else {
+                                return label;
+                            }
+                        }}
+                    >
+                        <Label
+                            value={() => {
+                                if (toValue(error) != "") {
+                                    throw new Error("inner error");
+                                } else {
+                                    return label;
+                                }
+                            }}
+                        />
+                    </ErrorBoundary>
+                </span>
+            );
+        }
+
+        const { asFragment } = render(() => (
+            <ErrorBoundary fallback="error">
+                <ul>
+                    <For each={elements}>
+                        {({ label, error }) => (
+                            <li>
+                                <Cmp label={label} error={error} />
+                            </li>
+                        )}
+                    </For>
+                </ul>
+            </ErrorBoundary>
+        ));
+
+        await screen.findByText("o");
+        expect(screen.getAllByRole("listitem").map((e) => e.textContent)).toEqual(["m!", "o"]);
+
+        setElements([A, B, C]);
+        expect(screen.getAllByRole("listitem").map((e) => e.textContent)).toEqual(["m!", "n!", "o"]);
+
+        setErr("inner");
+        await screen.findByText("n");
+        expect(screen.getAllByRole("listitem").map((e) => e.textContent)).toEqual(["m!", "n", "o"]);
+
+        setErr("outer");
+        await waitForElementToBeRemoved(() => screen.queryByRole("list"));
+        expect(asFragment()).toEqual("error");
+    });
+
+    it("works with <Portal /> component", async () => {
+        function Label({ value }) {
+            return () => <>{() => toValue(value)}!</>;
+        }
+        function Cmp() {
+            return () => (
+                <div>
+                    <Label
+                        value={() => {
+                            throw new Error(":(");
+                        }}
+                    />
+                </div>
+            );
+        }
+
+        const { asFragment } = render(() => (
+            <ErrorBoundary fallback="error">
+                <main>
+                    <Portal>
+                        <div>
+                            <ErrorBoundary
+                                fallback={(err) => {
+                                    throw err;
+                                }}
+                            >
+                                <Portal>
+                                    <aside>
+                                        <Cmp />
+                                    </aside>
+                                </Portal>
+                            </ErrorBoundary>
+                        </div>
+                    </Portal>
+                </main>
+            </ErrorBoundary>
+        ));
+
+        await screen.findByText("error");
+        expect(asFragment()).toEqual("error");
+    });
 });
