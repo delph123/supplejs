@@ -1,4 +1,4 @@
-name: Lint & Test
+name: Run tests & upload coverage
 
 on:
   workflow_dispatch:
@@ -10,12 +10,12 @@ permissions:
   pull-requests: read
 
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
 
     strategy:
       matrix:
-        node-version: [20]
+        node-version: [20, 22]
 
     steps:
       - name: Checkout
@@ -34,9 +34,6 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install
-
-      - name: Lint JS/TS files
-        run: pnpm run lint
 
       - name: Run Unit Tests & compute coverage
         run: pnpm run coverage

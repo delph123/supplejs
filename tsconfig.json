@@ -26,7 +26,9 @@
         "noUnusedParameters": true,
         "noImplicitReturns": true,
         "noFallthroughCasesInSwitch": true,
-        "noImplicitAny": false
+        "noImplicitAny": false,
+
+        "types": ["vite/client"]
     },
     "include": ["src"]
 }

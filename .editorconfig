@@ -11,7 +11,7 @@ max_line_length = 110
 trim_trailing_whitespace = true
 insert_final_newline = true
 
-[{package.json,package-lock.json,lint_and_test.yml}]
+[{package.json,pnpm-lock.yaml,*.yml}]
 indent_style = space
 indent_size = 2
 

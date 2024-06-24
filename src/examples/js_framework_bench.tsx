@@ -92,8 +92,8 @@ const Button =
     );
 
 export const App = () => {
-    useCSS("./bootstrap.css");
-    useCSS("./js_bench.css");
+    useCSS("bootstrap.css");
+    useCSS("js_bench.css");
 
     const [data, setData] = createSignal<any[]>([]),
         [selected, setSelected] = createSignal<number | null>(null),
