@@ -1,8 +1,8 @@
 # SuppleJS
 
 [![GitHub package.json version](https://img.shields.io/github/package-json/v/delph123/supplejs?logo=pnpm)](https://github.com/delph123/supplejs/releases)
-![GitHub License](https://img.shields.io/github/license/delph123/supplejs)
-[![Build Status](https://img.shields.io/github/actions/workflow/status/delph123/supplejs/lint_and_test.yml?branch=main&logo=github)](https://github.com/delph123/supplejs/actions/workflows/lint_and_test.yml)
+[![GitHub License](https://img.shields.io/github/license/delph123/supplejs)](https://github.com/delph123/supplejs/blob/main/LICENSE)
+[![Build Status](https://img.shields.io/github/actions/workflow/status/delph123/supplejs/test_and_coverage.yml?branch=main&logo=github)](https://github.com/delph123/supplejs/actions/workflows/test_and_coverage.yml)
 [![codecov](https://codecov.io/gh/delph123/supplejs/graph/badge.svg?token=AJNU0N5YI7)](https://codecov.io/gh/delph123/supplejs)
 
 SuppleJS is a toy project to re-implement [SolidJS](https://github.com/solidjs/solid) from scratch. The goal is not to make something better or more performant than the SolidJS implementation, but to discover new coding patterns and ideas by building a modern JavaScript library from the ground up and playing around with the [fine-grained reactivity model](https://dev.to/ryansolid/a-hands-on-introduction-to-fine-grained-reactivity-3ndf) of SolidJS.
