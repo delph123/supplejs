@@ -12,7 +12,7 @@ import {
     SuppleChildren,
 } from "../core";
 
-import { getRelativePathname, toRelativePath } from "./path";
+import { toRelativePath } from "./path";
 import { Todo } from "./todo";
 import { GameOn } from "./fragments";
 import { LooperApp } from "./iterators";
@@ -90,9 +90,9 @@ const components = [
 ];
 
 export default function Navigation() {
-    const [path] = createSignal(getRelativePathname());
+    const [path] = createSignal(document.location.pathname);
     const componentDescriptor = () =>
-        components.map((s) => s.rows.find((l) => l.component.name === path())).find((r) => r != null);
+        components.map((s) => s.rows.find((l) => toRelativePath(l.name) === path())).find((r) => r != null);
 
     createEffect(() => {
         const descriptor = componentDescriptor();
@@ -156,7 +156,7 @@ function Summary() {
                             {(el: ReturnType<typeof row>) => (
                                 <tr>
                                     <td>
-                                        <Link href={toRelativePath(el.component.name)}>{el.name}</Link>
+                                        <Link href={toRelativePath(el.name)}>{el.name}</Link>
                                     </td>
                                     <td>{el.description}</td>
                                 </tr>
