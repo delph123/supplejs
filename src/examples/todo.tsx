@@ -58,7 +58,7 @@ export function Todo() {
     const [value, setValue] = createSignal("");
     const [list, setList] = createSignal(DEFAULT_TODO_LIST);
 
-    useCSS("./todo.css");
+    useCSS("todo.css");
 
     const filteredList = () => list().filter(FILTER_MAP[selectedFilter()]);
 

@@ -43,7 +43,7 @@ const Game = () => {
         xIsNext: true,
     });
 
-    useCSS("./tic-tac-toe.css");
+    useCSS("tic-tac-toe.css");
 
     function handleClick(i) {
         const history = state().history.slice(0, state().stepNumber + 1);
