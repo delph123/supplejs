@@ -4,12 +4,14 @@ import {
     SuppleComponent,
     Show,
     h,
+    Fragment,
     render,
     createSignal,
     createEffect,
     toValue,
     ValueOrAccessor,
     SuppleChildren,
+    version,
 } from "../core";
 
 import { toRelativePath } from "./path";
@@ -136,35 +138,56 @@ function Link({ href, children }: LinkProps) {
 
 function Summary() {
     return () => (
-        <table>
-            <thead>
-                <tr>
-                    <th scope="col">Name</th>
-                    <th scope="col">Description</th>
-                </tr>
-            </thead>
+        <>
+            <Header />
+            <table>
+                <thead>
+                    <tr>
+                        <th scope="col">Name</th>
+                        <th scope="col">Description</th>
+                    </tr>
+                </thead>
 
-            <For each={() => components}>
-                {(el: ReturnType<typeof section>) => (
-                    <tbody>
-                        <tr>
-                            <th scope="rowgroup" colspan="2">
-                                {el.header}
-                            </th>
-                        </tr>
-                        <For each={() => el.rows}>
-                            {(el: ReturnType<typeof row>) => (
-                                <tr>
-                                    <td>
-                                        <Link href={toRelativePath(el.name)}>{el.name}</Link>
-                                    </td>
-                                    <td>{el.description}</td>
-                                </tr>
-                            )}
-                        </For>
-                    </tbody>
-                )}
-            </For>
-        </table>
+                <For each={() => components}>
+                    {(el: ReturnType<typeof section>) => (
+                        <tbody>
+                            <tr>
+                                <th scope="rowgroup" colspan="2">
+                                    {el.header}
+                                </th>
+                            </tr>
+                            <For each={() => el.rows}>
+                                {(el: ReturnType<typeof row>) => (
+                                    <tr>
+                                        <td>
+                                            <Link href={toRelativePath(el.name)}>{el.name}</Link>
+                                        </td>
+                                        <td>{el.description}</td>
+                                    </tr>
+                                )}
+                            </For>
+                        </tbody>
+                    )}
+                </For>
+            </table>
+        </>
+    );
+}
+
+function Header() {
+    return () => (
+        <>
+            <h1>SuppleJS</h1>
+            <h3 style={{ marginBottom: "0px" }}>This SPA showcases a few examples.</h3>
+            <p style={{ marginTop: "0.5em", marginBotton: "1em", fontStyle: "italic", fontSize: "90%" }}>
+                Build with{" "}
+                <a
+                    style={{ color: "firebrick", fontWeight: "bold" }}
+                    href="https://github.com/delph123/supplejs"
+                >
+                    SuppleJS {version}
+                </a>
+            </p>
+        </>
     );
 }
