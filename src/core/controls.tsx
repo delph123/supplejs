@@ -15,14 +15,14 @@ import {
     ValueOrAccessor,
 } from "./types";
 
-type WhenCondition<T> = T | undefined | null | false;
+export type WhenCondition<T> = T | undefined | null | false;
 
-interface MatchProps<T> {
+export interface MatchProps<T> {
     when: ValueOrAccessor<WhenCondition<T>>;
     children?: SuppleChildren | [(item: T) => SuppleNode];
 }
 
-interface ShowProps<T> extends MatchProps<T> {
+export interface ShowProps<T> extends MatchProps<T> {
     keyed?: boolean;
     fallback?: SuppleChild;
 }
@@ -202,6 +202,7 @@ export function Match<T>(props: MatchProps<T>): SuppleNodeEffect {
  * ```
  *
  * @param component the component to display (as a signal) or a tag
+ * @param props additional props forwarded to the component
  */
 export function Dynamic<Props>({
     component,

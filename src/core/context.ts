@@ -46,7 +46,7 @@ export function getOwner(): TrackingContext<unknown> | null {
  *
  * @param context the wrapping context to use
  * @param effect the effect to run
- * @param forwardDispose forward dispose function to the effect as 1st parameter
+ * @param forward which parameter to forward to the effect function
  * @returns the result of the effect
  */
 export function runEffectInContext<T>(

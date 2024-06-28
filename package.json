@@ -5,6 +5,7 @@
   "author": {
     "name": "delph123"
   },
+  "main": "src/core/index.ts",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -30,6 +31,7 @@
     "dev": "vite",
     "build": "tsc && vite build && shx cp dist/index.html dist/404.html",
     "test": "vitest",
+    "doc": "typedoc",
     "coverage": "vitest run --coverage",
     "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
@@ -46,13 +48,14 @@
     "eslint-plugin-testing-library": "^6.2.2",
     "jsdom": "^24.1.0",
     "prettier": "^3.3.0",
+    "shx": "^0.3.4",
+    "typedoc": "^0.26.2",
     "typescript": "^5.4.5",
     "vite": "^5.2.12",
     "vitest": "^1.6.0",
     "vitest-dom": "^0.1.1"
   },
   "dependencies": {
-    "rainbow-gradient": "^1.0.0",
-    "shx": "^0.3.4"
+    "rainbow-gradient": "^1.0.0"
   }
 }

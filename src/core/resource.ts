@@ -1,9 +1,9 @@
 import { ValueOrAccessor } from "./types";
 import { createEffect, createMemo, createSignal } from "./reactivity";
 
-type FetcherParameter<P> = P | false | null;
+export type FetcherParameter<P> = P | false | null;
 
-type Resource<R, P> = [
+export type Resource<R, P> = [
     {
         (): R | undefined;
         loading: boolean;

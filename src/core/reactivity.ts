@@ -9,7 +9,7 @@ import {
     TrackingContext,
 } from "./context";
 
-interface EqualsOption<T> {
+export interface EqualsOption<T> {
     equals?: false | ((prev: T, next: T) => boolean);
 }
 
@@ -88,7 +88,7 @@ export function createSignal<T>(
  * the function's last execution, or on the first call, equal to the optional
  * second argument to createComputed.
  *
- * @param fn the computation to run immediately and after any change
+ * @param effect the computation to run immediately and after any change
  * @param value the initial value to provide to the function
  */
 export function createComputed<T>(effect: (v: T) => T, value?: T): void {
