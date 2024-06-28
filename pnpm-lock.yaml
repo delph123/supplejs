@@ -54,6 +54,7 @@ importers:
       vitest-dom:
         specifier: ^0.1.1
         version: 0.1.1(vitest@1.6.0(jsdom@24.1.0))
+    publishDirectory: build
 
 packages:
 

@@ -1,7 +1,7 @@
 {
   "name": "supplejs",
   "description": "SuppleJS is a toy project to re-implement SolidJS from scratch",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "author": {
     "name": "delph123"
   },
@@ -10,10 +10,20 @@
     "type": "git",
     "url": "https://github.com/delph123/supplejs.git"
   },
-  "private": true,
+  "main": "src/core/index.ts",
   "type": "module",
   "prettier": {
     "editorconfig": true
+  },
+  "publishConfig": {
+    "directory": "build"
+  },
+  "clean-package": {
+    "main": "lib/index.js",
+    "types": "lib/index.d.js",
+    "scripts": {},
+    "dependencies": {},
+    "devDependencies": {}
   },
   "scripts": {
     "dev": "vite",
@@ -21,7 +31,9 @@
     "test": "vitest",
     "coverage": "vitest run --coverage",
     "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "prepack": "shx rm -rf build",
+    "prepare": "tsc -p tsconfig.release.json && node scripts/prepare-release.js"
   },
   "devDependencies": {
     "@testing-library/dom": "^10.1.0",

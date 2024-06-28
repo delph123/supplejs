@@ -1,0 +1,14 @@
+{
+    "extends": "./tsconfig.json",
+
+    "compilerOptions": {
+        "allowImportingTsExtensions": false,
+        "sourceMap": false,
+        "noEmit": false,
+        "declaration": true,
+        "rootDir": "src/core",
+        "outDir": "build/lib"
+    },
+
+    "include": ["src/core"]
+}
