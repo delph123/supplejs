@@ -59,7 +59,7 @@ export function toValue<T>(target: ValueOrAccessor<T>): T {
     return typeof target === "function" ? (target as () => T)() : target;
 }
 
-enum LOG_LEVEL {
+export enum LOG_LEVEL {
     ERROR = 0,
     WARN = 1,
     INFO = 2,
@@ -81,7 +81,7 @@ function logMessage(level: LOG_LEVEL, maxLogLevel: LOG_LEVEL): (...args) => void
     };
 }
 
-type Logger = { [P in Lowercase<keyof typeof LOG_LEVEL>]: (...args) => void };
+export type Logger = { [P in Lowercase<keyof typeof LOG_LEVEL>]: (...args) => void };
 
 export function createLogger(scope: keyof typeof DEFAULT_LOG_LEVELS): Logger {
     const logLevel = DEFAULT_LOG_LEVELS[scope];
@@ -92,8 +92,4 @@ export function createLogger(scope: keyof typeof DEFAULT_LOG_LEVELS): Logger {
         log: logMessage(LOG_LEVEL.LOG, logLevel),
         debug: logMessage(LOG_LEVEL.DEBUG, logLevel),
     };
-}
-
-export function randomInt(n: number): number {
-    return Math.floor(Math.random() * n);
 }

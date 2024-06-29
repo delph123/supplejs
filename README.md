@@ -21,13 +21,16 @@ function Counter() {
     // Create a signal with read/write segregation
     const [count, setCount] = createSignal(0);
 
-    // Component is called once and must return an "rendering" function
-    // that will be called each time that the component needs to be re-rendered
+    // Component in SuppleJS are ephemeral. They will be called only once and
+    // must return a "rendering" function that will be called each time the
+    // component needs to be re-rendered.
     return () => (
-        // This button will actually never re-render since the signal
-        // is not called and will be unwrapped by Supple's reactive
-        // system, so that only count value needs to be changed in the
-        // DOM when the button is clicked.
+        // This button will actually never re-render since the signal is not
+        // called here but in a nested context (created by the JSX expression
+        // {count}). The expression refers to a function that will be unwrapped
+        // by Supple's reactive system in a nested context automatically, so
+        // that only count value needs to be changed in the DOM when the button
+        // is clicked.
         <button
             onClick={
                 // The onClick handler uses the signal writer to update
@@ -42,7 +45,7 @@ function Counter() {
 
 // The render function takes an effect (a function) so that JSX can be
 // safely wrapped in a reactive root before it is evaluated
-render(() => <Counter />, document.getElementByID("app"));
+render(() => <Counter />, document.getElementById("app"));
 ```
 
 This minimalist example implement the iconic "counter button" component with SuppleJS. You can note the following things:

@@ -23,7 +23,7 @@ function createChainItem(): () => Chain {
     return item;
 }
 
-type ChainedListResult = readonly [
+export type ChainedListResult = readonly [
     () => SuppleNodeEffect, // ChainedList component
     (component: SuppleChild) => void, // Push method
     () => void, // Pop method
@@ -74,7 +74,7 @@ export function createChainedList<Props>({
     return [BoundedChainedList, push, pop, size] as const;
 }
 
-export function ChainedList<Props>(props: {
+function ChainedList<Props>(props: {
     tag: string;
     attributes?: Props & { children?: never };
     item: () => Chain;

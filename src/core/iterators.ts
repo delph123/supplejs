@@ -4,7 +4,7 @@ import { createMemo, createSignal } from "./reactivity";
 import { createRenderEffect } from "./dom";
 import { sameValueZero, toValue } from "./helper";
 
-interface ForProps<T> {
+export interface ForProps<T> {
     each: () => Iterable<T>;
     children?: [(item: T, index: () => number) => SuppleNode];
     fallback?: SuppleChild;
@@ -14,11 +14,13 @@ interface ForProps<T> {
 /**
  * A referentially keyed loop with efficient updating of only changed items.
  *
- * @param props.each an iterator<T> which elements are displayed
- * @param props.children a mapping function with two parameters:
+ * @param each an iterator<T> which elements are displayed
+ * @param children a mapping function with two parameters:
  *          (item: T, index: () => number) => SuppleNode
  *            - item is the element of the array
  *            - index is a signal representing the position in the array
+ * @param equals an alternative equality function to compare iterator values
+ * @param fallback the fallback to display when there is no element in the iterator
  * @returns a reactive fragment composed of mapped element of the iterator
  */
 export function For<T>({ each, children, equals, fallback }: ForProps<T>): SuppleNodeEffect {
@@ -36,7 +38,7 @@ export function For<T>({ each, children, equals, fallback }: ForProps<T>): Suppl
     };
 }
 
-interface IndexProps<T> {
+export interface IndexProps<T> {
     each: () => Iterable<T>;
     children?: [(item: () => T, index: number) => SuppleNode];
     fallback?: SuppleChild;
@@ -49,12 +51,14 @@ interface IndexProps<T> {
  * This is useful when there is no conceptual key, like if the data consists of
  * primitives and it is the index that is fixed rather than the value.
  *
- * @param props.each an iterator<T> which elements are displayed
- * @param props.children a mapping function with two parameters:
+ * @param each an iterator<T> which elements are displayed
+ * @param children a mapping function with two parameters:
  *          (item: () => T, index: number) => SuppleNode
  *            - item is a signal which is called for each element of the array
  *              and again each time the array's content is changed
  *            - index is the position (a constant number) in the array
+ * @param equals an alternative equality function to compare iterator values
+ * @param fallback the fallback to display when there is no element in the iterator
  * @returns a reactive fragment composed of mapped element of the iterator
  */
 export function Index<T>({ each, children, fallback, equals }: IndexProps<T>): SuppleNodeEffect {
