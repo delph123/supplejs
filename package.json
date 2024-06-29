@@ -1,7 +1,7 @@
 {
   "name": "supplejs",
   "description": "SuppleJS is a toy project to re-implement SolidJS from scratch",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "author": {
     "name": "delph123"
   },
@@ -20,8 +20,9 @@
     "provenance": true
   },
   "clean-package": {
-    "main": "lib/index.js",
-    "types": "lib/index.d.js",
+    "main": "./lib/index.js",
+    "types": "./lib/index.d.js",
+    "exports": "./lib/index.js",
     "scripts": {},
     "dependencies": {},
     "devDependencies": {}
