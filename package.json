@@ -1,7 +1,7 @@
 {
   "name": "supplejs",
   "description": "SuppleJS is a toy project to re-implement SolidJS from scratch",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "author": {
     "name": "delph123"
   },
@@ -16,7 +16,8 @@
     "editorconfig": true
   },
   "publishConfig": {
-    "directory": "build"
+    "directory": "build",
+    "provenance": true
   },
   "clean-package": {
     "main": "lib/index.js",
