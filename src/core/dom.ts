@@ -64,8 +64,6 @@ export function render(renderEffect: SuppleNodeEffect, container?: Node): () => 
  * will then make sure to update the DOM according to the new result of the
  * render effect.
  *
- * @private this API is currently private since it exposes low-level details
- *
  * @param renderEffect the effect returning the supple node to render (called
  *                     immediately and at any reactive change)
  * @param Component an optional Component type that references the Component

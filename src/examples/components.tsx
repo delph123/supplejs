@@ -2,7 +2,6 @@ import {
     createEffect,
     createMemo,
     createSignal,
-    createLogger,
     h,
     onCleanup,
     untrack,
@@ -11,6 +10,7 @@ import {
     SuppleNodeEffect,
     onMount,
 } from "../core";
+import { createLogger } from "../core/helper";
 
 function Header(): SuppleNodeEffect {
     return () => (

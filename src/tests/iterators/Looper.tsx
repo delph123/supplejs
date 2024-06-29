@@ -1,14 +1,8 @@
-import {
-    h,
-    Fragment,
-    createSignal,
-    onMount,
-    For,
-    onCleanup,
-    SuppleNodeEffect,
-    randomInt,
-    untrack,
-} from "../../core";
+import { h, Fragment, createSignal, onMount, For, onCleanup, SuppleNodeEffect, untrack } from "../../core";
+
+export function randomInt(n: number): number {
+    return Math.floor(Math.random() * n);
+}
 
 export function Looper({ list, setList, pickIndex = (n) => randomInt(n), counterSpy = () => 0 }) {
     let rowNumber = 0;

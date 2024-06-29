@@ -93,7 +93,3 @@ export function createLogger(scope: keyof typeof DEFAULT_LOG_LEVELS): Logger {
         debug: logMessage(LOG_LEVEL.DEBUG, logLevel),
     };
 }
-
-export function randomInt(n: number): number {
-    return Math.floor(Math.random() * n);
-}

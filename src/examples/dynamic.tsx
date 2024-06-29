@@ -1,4 +1,5 @@
-import { h, Fragment, Dynamic, createSignal, lazy, Show, children, For } from "../core";
+import { h, Fragment, Dynamic, createSignal, lazy, Show, For } from "../core";
+import { children } from "../core/component";
 import { Clock } from "./components";
 import { ForElse } from "./controls";
 import { createIncrement } from "./util";

@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
-import { h, Fragment, createSignal, For, Show, randomInt } from "../../core";
+import { h, Fragment, createSignal, For, Show } from "../../core";
 import { createSideEffectSpy, fireEvent, render, screen } from "../utils";
-import { Looper } from "./Looper";
+import { Looper, randomInt } from "./Looper";
 
 describe("<For /> component", () => {
     const linePicker = vi.fn((n) => randomInt(n));
