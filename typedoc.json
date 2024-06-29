@@ -2,5 +2,7 @@
     "$schema": "https://typedoc.org/schema.json",
     "entryPoints": ["src/core/index.ts"],
     "out": "doc",
-    "highlightLanguages": ["js", "jsx", "ts", "tsx", "sh"]
+    "highlightLanguages": ["js", "jsx", "ts", "tsx", "sh"],
+    "visibilityFilters": {},
+    "kindSortOrder": ["Function", "Variable", "TypeAlias", "Interface"]
 }
