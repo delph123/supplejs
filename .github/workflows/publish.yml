@@ -56,7 +56,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
+      # Deactivate git checks since the workflow will run in detached
+      # head state (git is checked out from release tag)
       - name: Publish to NPM repository
-        run: pnpm publish --publish-branch publish
+        run: pnpm publish --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
