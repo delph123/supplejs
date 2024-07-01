@@ -33,7 +33,7 @@
     "test": "vitest",
     "doc": "typedoc",
     "coverage": "vitest run --coverage",
-    "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "lint": "tsc && eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
     "prepack": "shx rm -rf build",
     "prepare": "tsc -p tsconfig.release.json && node scripts/prepare-release.js"
