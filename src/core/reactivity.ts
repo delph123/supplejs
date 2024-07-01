@@ -5,6 +5,7 @@ import {
     createChildContext,
     ForwardParameter,
     getOwner,
+    onCleanup,
     runEffectInContext,
     TrackingContext,
 } from "./context";
@@ -206,12 +207,28 @@ export function createDeferred<T>(
         timeoutMs?: number;
     },
 ): () => T {
-    // TODO not implemented yet!
+    const signalOptions = options?.equals != null ? { equals: options.equals } : undefined;
+    const timeoutOptions = options?.timeoutMs != null ? { timeout: options.timeoutMs } : undefined;
 
-    // XXX only here to prevent lint warning
-    setTimeout(() => {
-        console.log("Deferred timed-out!");
-    }, options?.timeoutMs);
+    // The readonly that will notify changes downstream
+    const [memoizedValue, setMemoizedValue] = createSignal<T>(undefined, signalOptions);
 
-    return source;
+    // Create a context that is calling the setMemo when browser is idle
+    const childContext = createChildContext(() => {
+        const nextValue = source();
+        const request = requestIdleCallback(() => {
+            setMemoizedValue(() => nextValue);
+        }, timeoutOptions);
+        // cancels the callback in case it was not called before next change is notified
+        onCleanup(() => {
+            cancelIdleCallback(request);
+        });
+    });
+
+    // Set-up the the context to register source signal & assign initial value to memo
+    runEffectInContext(childContext, () => {
+        setMemoizedValue(source);
+    });
+
+    return memoizedValue;
 }
