@@ -6,10 +6,13 @@ import {
     Switch,
     Match,
     For,
-    SuppleNode,
     onCleanup,
     onMount,
     Portal,
+    toArray,
+    ForProps,
+    Accessor,
+    SuppleNode,
 } from "../core";
 import { Clock } from "./components";
 import { CounterButton } from "./effects";
@@ -93,31 +96,21 @@ export function ForElseApp() {
     );
 }
 
-export function ForElse({
-    each,
-    fallback,
-    equals,
-    children,
-}: {
-    each;
-    fallback?;
-    equals?;
-    children?: [(el, i) => SuppleNode];
-}) {
+export function ForElse<T>({ each, fallback, equals, children }: ForProps<T>) {
     onMount(() => console.log("Mounting ForElse"));
     onCleanup(() => console.log("Cleaning-up ForElse"));
     return () => (
-        <Show when={() => !each() || each().length > 0} fallback={fallback}>
+        <Show when={() => each?.() && !each()[Symbol.iterator]().next().done} fallback={fallback}>
             <For each={each} equals={equals}>
-                {children?.[0]}
+                {toArray(children)[0]}
             </For>
         </Show>
     );
 }
 
 export function WhenAppWithSignal() {
-    const [first, setFirst] = createSignal<any>(true);
-    const [second, setSecond] = createSignal<any>(false);
+    const [first, setFirst] = createSignal(true);
+    const [second, setSecond] = createSignal(false);
     return () => (
         <>
             <Show when={first}>
@@ -152,6 +145,18 @@ export function TestSwitch() {
     );
 }
 
+declare global {
+    // eslint-disable-next-line @typescript-eslint/no-namespace
+    namespace JSX {
+        interface CustomCaptureEvents {
+            click: Event;
+        }
+        interface CustomEvents {
+            click: Event;
+        }
+    }
+}
+
 export function LoginApp() {
     const [loggedIn, setLoggedIn] = createSignal(false);
     const toggle = () => setLoggedIn(!loggedIn());
@@ -170,7 +175,7 @@ export function LoginApp() {
     );
 }
 
-function MatchWrapper({ x, children }: { x; children? }) {
+function MatchWrapper({ x, children }: { x: Accessor<number>; children?: SuppleNode }) {
     return () => (
         <>
             <Match when={() => x() == 7}>

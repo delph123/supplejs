@@ -6,8 +6,8 @@ export type WaitableMock<Args extends any[] = any, R = any> = Mock<Args, R> & {
 };
 
 export function createWaitableMock<Args extends any[] = any, R = any>() {
-    let resolve;
-    let times;
+    let resolve: (v?: unknown) => void;
+    let times: number;
     let calledCount = 0;
     const mock = vi.fn() as WaitableMock<Args, R>;
 
