@@ -1,7 +1,7 @@
-import { h, createSignal } from "../core";
+import { h, createSignal, Accessor } from "../core";
 import useCSS from "./useCss";
 
-const Square = (props) => {
+const Square = (props: { onClick: () => void; value: Accessor<string | null> }) => {
     return () => (
         <button class="square" onClick={props.onClick}>
             {props.value}
@@ -9,8 +9,8 @@ const Square = (props) => {
     );
 };
 
-const Board = (props) => {
-    function renderSquare(i) {
+const Board = (props: { squares: Accessor<(string | null)[]>; onClick: (n: number) => void }) => {
+    function renderSquare(i: number) {
         return () => <Square value={() => props.squares()[i]} onClick={() => props.onClick(i)} />;
     }
 
@@ -37,15 +37,15 @@ const Board = (props) => {
 
 const Game = () => {
     const [state, setState] = createSignal({
-        history: [{ squares: Array(9).fill(null) }],
-        showStep: [] as any[],
+        history: [{ squares: Array<string | null>(9).fill(null) }],
+        showStep: [] as (string | null)[],
         stepNumber: 0,
         xIsNext: true,
     });
 
     useCSS("tic-tac-toe.css");
 
-    function handleClick(i) {
+    function handleClick(i: number) {
         const history = state().history.slice(0, state().stepNumber + 1);
         const current = history[history.length - 1];
         const squares = current.squares.slice();
@@ -61,7 +61,7 @@ const Game = () => {
         });
     }
 
-    const jumpTo = (step) => {
+    const jumpTo = (step: number) => {
         setState((s) => ({
             ...s,
             stepNumber: step,
@@ -112,7 +112,7 @@ const Game = () => {
 export { Game };
 
 // Helper Functions
-function calculateWinner(squares) {
+function calculateWinner(squares: (string | null)[]) {
     const lines = [
         [0, 1, 2],
         [3, 4, 5],

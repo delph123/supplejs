@@ -1,4 +1,5 @@
 export type * from "./types";
+export type * from "./jsx-runtime";
 export type { Nested } from "./helper";
 export type { CleanupFunction, ErrorHandler, TrackingContext } from "./context";
 export type { EqualsOption } from "./reactivity";

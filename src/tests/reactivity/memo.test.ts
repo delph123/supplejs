@@ -39,7 +39,9 @@ describe("createMemo", () => {
         const spy = vi.fn();
 
         renderHook(() => {
-            const memoizedSignal = createMemo(() => (doubler() ? (n) => 2 * n : (n) => n + 1));
+            const memoizedSignal = createMemo(() =>
+                doubler() ? (n: number) => 2 * n : (n: number) => n + 1,
+            );
             createComputed(() => spy(memoizedSignal()(2)));
         });
 

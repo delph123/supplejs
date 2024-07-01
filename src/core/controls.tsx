@@ -2,13 +2,12 @@ import { children } from "./component";
 import { getOwner, onCleanup, untrack, catchError } from "./context";
 import { h } from "./jsx";
 import { createDOMComponent, render } from "./dom";
-import { createLogger, toValue } from "./helper";
+import { createLogger, toArray, toValue } from "./helper";
 import { createMemo } from "./reactivity";
 import {
     DOMComponent,
     Ref,
-    SuppleChild,
-    SuppleChildren,
+    SingleChild,
     SuppleComponent,
     SuppleNode,
     SuppleNodeEffect,
@@ -19,12 +18,12 @@ export type WhenCondition<T> = T | undefined | null | false;
 
 export interface MatchProps<T> {
     when: ValueOrAccessor<WhenCondition<T>>;
-    children?: SuppleChildren | [(item: T) => SuppleNode];
+    children?: SuppleNode | SingleChild<(item: T) => SuppleNode>;
 }
 
 export interface ShowProps<T> extends MatchProps<T> {
     keyed?: boolean;
-    fallback?: SuppleChild;
+    fallback?: SuppleNode;
 }
 
 const childrenLogger = createLogger("children");
@@ -57,18 +56,19 @@ export function Show<T>(props: ShowProps<T>): SuppleNodeEffect {
     const display = createMemo(() => Boolean(whenValue()));
     return () => {
         if (display()) {
-            if (props.children?.length === 1 && typeof props.children?.[0] === "function") {
+            const children = toArray<SuppleNode | ((item: T) => SuppleNode)>(props.children);
+            if (children.length === 1 && typeof children[0] === "function") {
                 if (props.keyed) {
                     // Pass the value and track it so that the child function
                     // is re-executed whenever the underlying model is changed
-                    return props.children[0](whenValue() as T);
+                    return children[0](whenValue() as T);
                 } else {
                     // Pass the value but do not track, so that the Show component
                     // only re-renders when the truthiness of the value changes
-                    return props.children[0](untrack(whenValue) as T);
+                    return children[0](untrack(whenValue) as T);
                 }
             } else {
-                return props.children as SuppleNode[];
+                return children as SuppleNode[];
             }
         } else {
             return toValue(props.fallback) ?? null;
@@ -100,8 +100,8 @@ export function Show<T>(props: ShowProps<T>): SuppleNodeEffect {
  */
 export function Switch(props: {
     keyed?: boolean;
-    fallback?: SuppleChild;
-    children?: SuppleChildren;
+    fallback?: SuppleNode;
+    children?: SuppleNode;
 }): SuppleNodeEffect {
     const resolved = children(() => props.children);
 
@@ -146,10 +146,11 @@ export function Switch(props: {
     return () => {
         const matching = firstChildMatching();
         if (matching) {
-            if (matching[0].children?.length === 1 && typeof matching[0].children?.[0] === "function") {
-                return matching[0].children[0](matching[1]);
+            const children = toArray<SuppleNode | ((item: unknown) => SuppleNode)>(matching[0].children);
+            if (children.length === 1 && typeof children[0] === "function") {
+                return children[0](matching[1]);
             } else {
-                return matching[0].children as SuppleNode[];
+                return children as SuppleNode[];
             }
         } else {
             return toValue(props.fallback) ?? null;
@@ -208,14 +209,14 @@ export function Dynamic<Props>({
     component,
     ...props
 }: Props & {
-    children?: any[];
+    children?: any;
     component: ValueOrAccessor<SuppleComponent<Props> | string | null | undefined>;
 }): SuppleNodeEffect {
     const componentMemo = createMemo(() => toValue(component));
     return createMemo(() => {
         const comp = componentMemo();
         if (comp != null) {
-            return h(comp, props as Props & { children? });
+            return h(comp, props as Props & { children?: SuppleNode });
         } else {
             return null;
         }
@@ -246,7 +247,7 @@ export function Portal(props: {
     mount?: ValueOrAccessor<HTMLElement>;
     ref?: Ref<HTMLDivElement | undefined>;
     useShadow?: boolean;
-    children?: SuppleChildren;
+    children?: SuppleNode;
 }): SuppleNodeEffect {
     const parent = toValue(props.mount) ?? document.body;
     const dispose = render(() => {
@@ -291,7 +292,7 @@ export function Portal(props: {
  */
 export function ErrorBoundary(props: {
     fallback: SuppleNode | ((err: any, reset: () => void) => SuppleNode);
-    children?: SuppleChildren;
+    children?: SuppleNode;
 }): SuppleNodeEffect {
     let error: any = null;
     return () => {

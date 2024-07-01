@@ -3,6 +3,7 @@ import {
     Context,
     Match,
     Show,
+    SuppleNode,
     SuppleNodeEffect,
     Switch,
     ValueOrAccessor,
@@ -15,13 +16,13 @@ import {
 
 /* ----------------------------------------------- DEFAULT COMPONENT ----------------------------------------------- */
 
-export default function MockComponent({ children, ...props }) {
+export default function MockComponent({ children, ...props }: JSX.IntrinsicElements["div"]) {
     return () => <div {...props}>{children}</div>;
 }
 
 /* ------------------------------------------------------ SPY ------------------------------------------------------ */
 
-export function createMockComponent<T>(data: ValueOrAccessor<T>) {
+export function createMockComponent<T extends SuppleNode>(data: ValueOrAccessor<T>) {
     const mountSpy = vi.fn();
     const cleanupSpy = vi.fn();
     const Cmp = () => {
@@ -41,7 +42,7 @@ export const ContextValues = {
     D: { value: "D" },
     E: { value: "E" },
     Z: { value: "Z" },
-};
+} as const;
 
 export type UseContextProps = {
     id: string;
@@ -56,10 +57,10 @@ function readContextValueContent(context: Context<(typeof ContextValues)[keyof t
 }
 
 export function contextMocks() {
-    const Context = createContext(ContextValues.Z);
+    const Context = createContext<(typeof ContextValues)[keyof typeof ContextValues]>(ContextValues.Z);
 
     const ContextProvider = function ContextProvider(props: {
-        value: string;
+        value: keyof typeof ContextValues;
         children?: any;
     }): SuppleNodeEffect {
         return () => <Context.Provider value={ContextValues[props.value]}>{props.children}</Context.Provider>;

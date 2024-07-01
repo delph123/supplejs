@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { Mock, describe, expect, it, vi } from "vitest";
 import { cleanup, fireEvent, render, screen } from "./utils/testing-renderer";
 import { h, Fragment, onCleanup, createComputed, createEffect, render as core_render } from "../core";
 import { createWaitableMock } from "./utils";
@@ -56,7 +56,7 @@ describe("Cleans up the document tree", () => {
 
     it("does not error when using low-level core.render()", () => {
         const spy = vi.fn();
-        function AutoExit({ onexit }) {
+        function AutoExit({ onexit }: { onexit: () => void }) {
             onCleanup(spy);
             createComputed(() => {
                 onCleanup(spy);
@@ -73,7 +73,7 @@ describe("Cleans up the document tree", () => {
 });
 
 describe("Dispose call cleanup effects", () => {
-    function App({ reactiveComputation, spy }) {
+    function App({ reactiveComputation, spy }: { reactiveComputation: (fn: () => void) => void; spy: Mock }) {
         onCleanup(() => spy());
         reactiveComputation(() => {
             spy();

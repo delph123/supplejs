@@ -1,18 +1,18 @@
 import {
-    SuppleChildren,
     SuppleComponent,
     JSXElement,
     SuppleNodeEffect,
     Ref,
     ValueOrAccessor,
     JSXHTMLElement,
+    SuppleNode,
 } from "./types";
 import { toValue } from "./helper";
 
 export function h<Props>(
     type: string | SuppleComponent<Props>,
-    props?: Props & { children?: SuppleChildren },
-    ...children: SuppleChildren
+    props?: Props & { children?: SuppleNode },
+    ...children: SuppleNode[]
 ): JSXElement<Props> {
     let altChildren = props?.children ?? children;
     if (!Array.isArray(altChildren)) {
@@ -49,16 +49,16 @@ export function h<Props>(
     }
 }
 
-export function Fragment({ children }: { children: SuppleChildren }): SuppleNodeEffect {
+export function Fragment({ children }: { children: SuppleNode }): SuppleNodeEffect {
     return () => children;
 }
 
-const OVERRIDES = {
+const OVERRIDES: Record<string, SuppleComponent<any>> = {
     input: Input,
 };
 
 function overrideDomType<Props>(type: string | SuppleComponent<Props>) {
-    if (typeof type === "string" && OVERRIDES[type]) {
+    if (typeof type === "string" && type in OVERRIDES) {
         return OVERRIDES[type] as SuppleComponent<Props>;
     } else {
         return type;
@@ -81,7 +81,7 @@ function Input({
     ref?: Ref<HTMLInputElement | undefined>;
     value?: ValueOrAccessor<string>;
     oninput?: (e: InputElementInputEvent) => void;
-    children?: SuppleChildren;
+    children?: SuppleNode;
     [x: string]: any;
 }): SuppleNodeEffect {
     let inputRef: HTMLInputElement | undefined;

@@ -103,7 +103,16 @@ export function MyNameIs(): SuppleNodeEffect {
     return () => "Hello world!";
 }
 
-export function CounterButton({ onexit, nb }) {
+declare global {
+    // eslint-disable-next-line @typescript-eslint/no-namespace
+    namespace JSX {
+        interface ExplicitProperties {
+            autofocus: boolean;
+        }
+    }
+}
+
+export function CounterButton({ onexit, nb }: { onexit?: () => void; nb: number }) {
     const [count, setCount] = createSignal(nb);
     const increment = () => {
         if (counter() < 7) {
@@ -136,7 +145,7 @@ export function CounterButton({ onexit, nb }) {
                 attr:data-count={count}
                 data-count-twice={() => 2 * count()}
                 prop:autofocus={() => count() % 2 === 0}
-                class={() => (count() % 3 === 0 ? null : count() % 3 === 2 ? "" : count())}
+                class={() => (count() % 3 === 0 ? null : count() % 3 === 2 ? "" : count().toString())}
                 type="button"
                 onclick={increment}
             >
@@ -151,7 +160,7 @@ export function CounterButton({ onexit, nb }) {
 }
 
 export function Referencing() {
-    const ref = createRef<HTMLElement>();
+    const ref = createRef<HTMLDivElement>();
 
     onMount(() => console.log("After mount:", ref.current));
     createEffect(() => console.log("Effect:", ref.current));
@@ -160,7 +169,7 @@ export function Referencing() {
     return () => (
         <>
             <div ref={ref}>Hello!</div>
-            <div ref={(el) => console.log("Assigning ref:", el)}>How are you?</div>
+            <div ref={(el: HTMLDivElement) => console.log("Assigning ref:", el)}>How are you?</div>
         </>
     );
 }

@@ -1,4 +1,4 @@
-import { h, For, createSignal, createMemo } from "../core";
+import { h, For, createSignal, createMemo, Accessor, Setter } from "../core";
 import useCSS from "./useCss";
 
 const BATCH_SIZE = 1000;
@@ -60,12 +60,18 @@ const adjectives = [
         "keyboard",
     ];
 
-function _random(max) {
+function _random(max: number) {
     return Math.round(Math.random() * 1000) % max;
 }
 
-function buildData(count) {
-    const data = new Array(count);
+interface DataRecord {
+    id: number;
+    label: Accessor<string>;
+    setLabel: Setter<string>;
+}
+
+function buildData(count: number): DataRecord[] {
+    const data = new Array<DataRecord>(count);
     for (let i = 0; i < count; i++) {
         const [label, setLabel] = createSignal(
             `${adjectives[_random(adjectives.length)]} ${
@@ -82,7 +88,7 @@ function buildData(count) {
 }
 
 const Button =
-    ({ id, text, fn }) =>
+    ({ id, text, fn }: { id: string; text: string; fn: () => void }) =>
     () => (
         <div class="col-sm-6 smallpad">
             <button id={id} class="btn btn-primary btn-block" type="button" onclick={fn}>
@@ -95,7 +101,7 @@ export const App = () => {
     useCSS("bootstrap.css");
     useCSS("js_bench.css");
 
-    const [data, setData] = createSignal<any[]>([]),
+    const [data, setData] = createSignal<DataRecord[]>([]),
         [selected, setSelected] = createSignal<number | null>(null),
         run = () => setData(buildData(BATCH_SIZE)),
         runLots = () => setData(buildData(10 * BATCH_SIZE)),
@@ -113,7 +119,7 @@ export const App = () => {
             }
         },
         clear = () => setData([]),
-        remove = (id) =>
+        remove = (id: number) =>
             setData((d) => {
                 const idx = d.findIndex((d) => d.id === id);
                 return [...d.slice(0, idx), ...d.slice(idx + 1)];

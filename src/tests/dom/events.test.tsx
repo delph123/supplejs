@@ -166,7 +166,7 @@ eventTypes.forEach(({ type, events, elementType, init }) => {
                         />
                     ));
 
-                    fireEvent[eventName](ref.current, init);
+                    (fireEvent as any)[eventName](ref.current, init);
                     expect(spy).toHaveBeenCalledTimes(1);
                 });
             });

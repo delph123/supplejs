@@ -1,5 +1,5 @@
-import { describe, expect, it, vi } from "vitest";
-import { h, Fragment, createSignal, For, Show } from "../../core";
+import { Mock, describe, expect, it, vi } from "vitest";
+import { h, Fragment, createSignal, For, Show, ForProps, Accessor, Setter, toArray } from "../../core";
 import { createSideEffectSpy, fireEvent, render, screen } from "../utils";
 import { Looper, randomInt } from "./Looper";
 
@@ -26,10 +26,10 @@ describe("<For /> component", () => {
     function lastPickedRow() {
         return linePicker.mock.results[linePicker.mock.results.length - 1].value;
     }
-    function insert(value, array, index) {
+    function insert<T>(value: T, array: T[], index: number) {
         return array.toSpliced(index, 0, value);
     }
-    function check(spy, event, number) {
+    function check(spy: Mock, event: string, number: any) {
         const calls = spy.mock.calls.filter(([e]) => e === event);
         if (Array.isArray(number)) {
             expect(calls).toEqual(number.map((n) => [event, n]));
@@ -251,10 +251,10 @@ describe("<For /> component", () => {
 });
 
 describe("<ForElse /> component", () => {
-    function ForElse({ each, fallback, children }: { each; fallback?; children? }) {
+    function ForElse<T>({ each, fallback, children }: { each: Accessor<T[]> } & ForProps<T>) {
         return () => (
             <Show when={() => each() && each().length > 0} fallback={fallback}>
-                <For each={each}>{children?.[0]}</For>
+                <For each={each}>{toArray(children)[0]}</For>
             </Show>
         );
     }
@@ -321,7 +321,7 @@ describe("<ForElse /> component", () => {
 
 describe("<For /> component accepts tracking mapping function", () => {
     function createArraySignal() {
-        const [list, setList] = createSignal<{ value; setValue }[]>([]);
+        const [list, setList] = createSignal<{ value: Accessor<string>; setValue: Setter<string> }[]>([]);
         const remove = (index: number) => {
             setList((list() as any).toSpliced(index, 1));
         };

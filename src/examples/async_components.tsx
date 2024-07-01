@@ -11,7 +11,7 @@ import {
 } from "../core";
 
 function Dog(): SuppleNodeEffect {
-    const [dog, { mutate, refetch }] = createResource(() => {
+    const [dog, { mutate, refetch }] = createResource<string>(() => {
         return new Promise((resolve, reject) => {
             setTimeout(async () => {
                 try {
@@ -36,7 +36,7 @@ function Dog(): SuppleNodeEffect {
 
         const imgBlock = () => {
             if (dog()) {
-                return <img src={dog()} height="100" />;
+                return <img alt="a dog" src={dog()} height="100" />;
             } else {
                 return null;
             }
@@ -46,17 +46,17 @@ function Dog(): SuppleNodeEffect {
             if (dog.state === "refreshing") {
                 return <button disabled>Refreshing...</button>;
             } else {
-                return <button onclick={refetch}>Another dog?</button>;
+                return <button onClick={refetch}>Another dog?</button>;
             }
         };
 
         if (dog.loading) return "Loading...";
         return (
-            <div class="card">
+            <div className="card">
                 {errorBlock}
                 {imgBlock}
                 {refreshingBlock}
-                <button onclick={() => mutate("https://images.dog.ceo/breeds/appenzeller/n02107908_80.jpg")}>
+                <button onClick={() => mutate("https://images.dog.ceo/breeds/appenzeller/n02107908_80.jpg")}>
                     Jose
                 </button>
             </div>
@@ -70,8 +70,8 @@ export function AsyncApp(): SuppleNodeEffect {
     return () => (
         <div>
             <ChainedList />
-            <button onclick={() => push(<Dog />)}>More dogs!</button>
-            <button onclick={pop}>Less dogs!</button>
+            <button onClick={() => push(<Dog />)}>More dogs!</button>
+            <button onClick={pop}>Less dogs!</button>
         </div>
     );
 }
@@ -86,15 +86,19 @@ export function AutoCounter(): SuppleNodeEffect {
     return () => (
         <div>
             <h1>{count}</h1>
-            <input id="hello" value={() => delay().toString()} oninput={(e) => setDelay(e.target.value)} />
+            <input
+                id="hello"
+                value={() => delay().toString()}
+                onInput={(e) => setDelay(parseInt(e.target.value))}
+            />
         </div>
     );
 }
 
 export function AsyncSwitch() {
-    let resolvePromise, rejectPromise;
+    let resolvePromise: (v: string) => void, rejectPromise: (r: string) => void;
     let num = 0;
-    const [data, { refetch, mutate }] = createResource(
+    const [data, { refetch, mutate }] = createResource<string>(
         () =>
             new Promise((resolve, reject) => {
                 resolvePromise = resolve;

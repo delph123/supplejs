@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { render } from "../utils";
-import { h, Fragment, createSignal } from "../../core";
+import { h, Fragment, createSignal, Nested, SuppleNode } from "../../core";
 
 describe("DOM renderer", () => {
     it("renders string/number/bigint", () => {
@@ -54,7 +54,7 @@ describe("DOM renderer", () => {
 
     it("calls functions which are children of JSX or members of an array", () => {
         const { container } = render(() => (
-            <ul id="supple">{() => [1, 2, 3].map((n) => () => <li id={n}>elem{n}</li>)}</ul>
+            <ul id="supple">{() => [1, 2, 3].map((n) => () => <li id={`${n}`}>elem{n}</li>)}</ul>
         ));
         expect(container.innerHTML).toBe(
             '<ul id="supple"><li id="1">elem1</li><li id="2">elem2</li><li id="3">elem3</li></ul>',
@@ -64,8 +64,8 @@ describe("DOM renderer", () => {
     it("accepts nested arrays and children", () => {
         const [show, setShow] = createSignal(false);
         const nestedList = ["a", ["a", ["a", ["a", "b", "c"], "c"], "c"], "c"];
-        function mapList(l) {
-            return l.map((e) => (Array.isArray(e) ? mapList(e) : <p>{e}</p>));
+        function mapList(l: Nested<string>): SuppleNode[] {
+            return l.map((e: string | Nested<string>) => (Array.isArray(e) ? mapList(e) : <p>{e}</p>));
         }
         function Child({ children }: { children?: any }) {
             return () => (
@@ -137,7 +137,7 @@ describe("DOM renderer", () => {
     it("swaps components in place", () => {
         const [number, setNumber] = createSignal(5);
 
-        const RecCmp = ({ level, code }) => {
+        const RecCmp = ({ level, code }: { level: number; code: number }) => {
             if (level === 0) {
                 return () => <p>{code}</p>;
             } else {

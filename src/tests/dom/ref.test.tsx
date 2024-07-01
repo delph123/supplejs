@@ -18,7 +18,7 @@ describe("createRef", () => {
 
 describe("Rendering ref in the DOM", () => {
     it("mounts ref with the DOM element", () => {
-        const ref = createRef();
+        const ref = createRef<HTMLElement>();
         render(() => <main ref={ref}>Hello!</main>);
         const main = screen.getByRole("main");
         expect(ref.current).toBeDefined();
@@ -40,15 +40,17 @@ describe("Rendering ref in the DOM", () => {
     });
 
     it("throws for invalid refs", () => {
-        const ref = 36;
+        const ref: any = 36;
+        // @ts-expect-error ref does not accept boolean value
         expect(() => render(() => <p ref>Hi!</p>)).toThrow();
         expect(() => render(() => <div ref={ref}>Hi!</div>)).toThrow();
     });
 });
 
 describe("Availability of ref in effects", () => {
-    function App({ reactiveComputation, spy }) {
-        const ref = createRef();
+    type AppProps = { reactiveComputation: (fn: () => void) => void; spy: any };
+    function App({ reactiveComputation, spy }: AppProps) {
+        const ref = createRef<HTMLElement>();
         reactiveComputation(() => spy(ref.current));
         return () => <main ref={ref}>Hello!</main>;
     }
