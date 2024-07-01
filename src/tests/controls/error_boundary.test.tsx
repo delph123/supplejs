@@ -17,7 +17,7 @@ import { createMockComponent } from "../mocks/mock_component";
 
 describe("<ErrorBoundary /> component", () => {
     it("displays children content without error", () => {
-        function ListItem({ text }) {
+        function ListItem({ text }: { text: string }) {
             return () => <li>{() => text}</li>;
         }
 
@@ -36,7 +36,7 @@ describe("<ErrorBoundary /> component", () => {
     });
 
     it("displays fallback with error", async () => {
-        function ListItem() {
+        function ListItem(_props: { text: string }) {
             return () => (
                 <li>
                     {() => {
@@ -283,7 +283,7 @@ describe("<ErrorBoundary /> component", () => {
     });
 
     it("can be nested", async () => {
-        function Label({ value }) {
+        function Label({ value }: { value: ValueOrAccessor<string> }) {
             return () => <>{() => toValue(value)}!</>;
         }
 
@@ -328,7 +328,7 @@ describe("<ErrorBoundary /> component", () => {
     });
 
     it("rethrow up the line", async () => {
-        function Label({ value }) {
+        function Label({ value }: { value: ValueOrAccessor<string> }) {
             return () => <>{() => toValue(value)}!</>;
         }
 
@@ -409,7 +409,7 @@ describe("use <ErrorBoundary /> component in combination with createRoot", () =>
         expect(screen.getByRole("paragraph")).toHaveTextContent("Content");
         expect(screen.queryByRole("heading")).not.toBeInTheDocument();
 
-        resolver({ default: Cmp });
+        resolver!({ default: Cmp });
         await waitForElementToBeRemoved(() => screen.queryByText("Loading component..."));
 
         expect(screen.getByRole("paragraph")).toHaveTextContent("Content");
@@ -432,7 +432,7 @@ describe("use <ErrorBoundary /> component in combination with createRoot", () =>
             C,
         ]);
 
-        function Label({ value }) {
+        function Label({ value }: { value: ValueOrAccessor<string> }) {
             return () => <>{() => toValue(value)}!</>;
         }
 
@@ -492,7 +492,7 @@ describe("use <ErrorBoundary /> component in combination with createRoot", () =>
     });
 
     it("works with <Portal /> component", async () => {
-        function Label({ value }) {
+        function Label({ value }: { value: ValueOrAccessor<string> }) {
             return () => <>{() => toValue(value)}!</>;
         }
         function Cmp() {

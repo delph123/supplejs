@@ -76,7 +76,8 @@ describe("lazy() with import()", () => {
     });
 
     it("only starts loading when component is visible", async () => {
-        let resolver, setVisible;
+        let resolver;
+        const [visible, setVisible] = createSignal(false);
         const Cmp = vi.fn(() => () => <h1>Hello</h1>);
         const loader = vi.fn(() => {
             return new Promise<{ default: typeof Cmp }>((resolve) => {
@@ -86,8 +87,6 @@ describe("lazy() with import()", () => {
         const LazyCmp = lazy(loader);
 
         render(() => {
-            const [visible, _setVisible] = createSignal(false);
-            setVisible = _setVisible;
             return (
                 <Show when={visible} fallback="waiting">
                     <LazyCmp />
@@ -105,7 +104,7 @@ describe("lazy() with import()", () => {
         expect(loader).toHaveBeenCalled();
         expect(Cmp).not.toHaveBeenCalled();
 
-        resolver({ default: Cmp });
+        resolver!({ default: Cmp });
         await waitForElementToBeRemoved(() => screen.queryByText("Loading component..."));
 
         expect(screen.getByText("Hello")).toBeInTheDocument();

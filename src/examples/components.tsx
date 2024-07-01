@@ -106,15 +106,13 @@ export function Counter(props: { index: number; total: () => string | number }):
         setSum(sum() - counter());
     });
 
-    return () => {
-        return (
-            <div class="card">
-                {label}
-                <button onclick={() => setCounter(counter() + 1)}>+</button>
-                <button onclick={() => setCounter(counter() - 1)}>-</button>
-            </div>
-        );
-    };
+    return () => (
+        <div class="card">
+            {label}
+            <button onclick={() => setCounter(counter() + 1)}>+</button>
+            <button onclick={() => setCounter(counter() - 1)}>-</button>
+        </div>
+    );
 }
 
 const [sum, setSum] = createSignal(0);
@@ -168,7 +166,7 @@ export function MultiApp(): SuppleNodeEffect {
     );
 }
 
-export function GoodBye({ onexit }): SuppleNodeEffect {
+export function GoodBye({ onexit }: { onexit: () => void }): SuppleNodeEffect {
     let n = 0;
     const [c, setC] = createSignal(false);
     setInterval(() => setC((c) => !c), 2000);

@@ -389,7 +389,7 @@ describe("catchError in a reactive context", () => {
                     catchError(
                         () => {
                             if (count() === 1) {
-                                createRenderEffect(() => (
+                                return createRenderEffect(() => (
                                     <main>
                                         <Cmp />
                                     </main>

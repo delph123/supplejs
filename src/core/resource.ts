@@ -30,12 +30,12 @@ export type Resource<R, P> = [
  * @param source an optional signal for passing parameters to the fetcher
  * @param fetcher the asynchronous fetcher function
  */
-export function createResource<R, P>(fetcher: (p: P) => R | Promise<R>): Resource<R, P>;
-export function createResource<R, P>(
+export function createResource<R, P = any>(fetcher: (p: P) => R | Promise<R>): Resource<R, P>;
+export function createResource<R, P = any>(
     source: ValueOrAccessor<FetcherParameter<P>>,
     fetcher: (p: P) => R | Promise<R>,
 ): Resource<R, P>;
-export function createResource<R, P>(
+export function createResource<R, P = any>(
     source: ValueOrAccessor<FetcherParameter<P>> | ((p: P) => R | Promise<R>),
     fetcher?: (p: P) => R | Promise<R>,
 ): Resource<R, P> {

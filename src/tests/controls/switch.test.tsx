@@ -1,6 +1,17 @@
 import { describe, expect, it, vi } from "vitest";
 import { render, screen } from "../utils";
-import { h, Fragment, createSignal, Switch, Match, For, toValue } from "../../core";
+import {
+    h,
+    Fragment,
+    createSignal,
+    Switch,
+    Match,
+    For,
+    toValue,
+    Accessor,
+    ValueOrAccessor,
+    SuppleNode,
+} from "../../core";
 import { createMockComponent } from "../mocks/mock_component";
 
 describe("Static <Switch /> with <Match /> cases", () => {
@@ -284,11 +295,19 @@ describe("Keyed & non-keyed <Switch />", () => {
 });
 
 describe("<Switch /> with dynamic <Match /> cases", () => {
-    function Matcher({ value, match }) {
+    function Matcher({ value, match }: { value: Accessor<number>; match: string | number }) {
         return () => <Match when={() => value() == match}>Matched {match}</Match>;
     }
 
-    function ComplexMatcher({ value, match, children }: { value; match; children? }) {
+    function ComplexMatcher({
+        value,
+        match,
+        children,
+    }: {
+        value: Accessor<number>;
+        match: string | number;
+        children?: SuppleNode;
+    }) {
         return () => (
             <>
                 <Match when={() => value() == match}>Matched {match}</Match>
@@ -299,8 +318,13 @@ describe("<Switch /> with dynamic <Match /> cases", () => {
             </>
         );
     }
-
-    function SwitchApp({ forValues, displayTwenty, sixteen, value }) {
+    type SwitchAppProps = {
+        forValues: Accessor<number[]>;
+        displayTwenty: Accessor<boolean>;
+        sixteen: ValueOrAccessor<number | string>;
+        value: Accessor<number>;
+    };
+    function SwitchApp({ forValues, displayTwenty, sixteen, value }: SwitchAppProps) {
         return () => (
             <Switch fallback="No match!">
                 <For each={forValues}>{(v) => <Matcher value={value} match={v} />}</For>

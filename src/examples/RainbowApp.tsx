@@ -1,3 +1,4 @@
+// @ts-expect-error rainbow-gradient does not expose type info
 import rainbowGradient from "rainbow-gradient";
 import { h, createSignal, createEffect, onCleanup, For, SuppleNodeEffect } from "../core";
 

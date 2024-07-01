@@ -113,18 +113,14 @@ export function createDOMComponent(component: SuppleNode): DOMComponent {
                 // Then, if any child is a function, we want to automatically wrap
                 // it in a render effect, so that it is automatically executed in a
                 // tracking context.
-                flatten(component).map((child) => {
-                    if (typeof child === "function") {
-                        return createRenderEffect(child);
-                    } else {
-                        return createDOMComponent(child);
-                    }
-                }),
+                flatten(component).map(createDOMComponent),
             );
         } else {
             // take the spot for mount
             return domComponent(document.createComment("empty_fragment"));
         }
+    } else if (typeof component === "function") {
+        return createRenderEffect(component);
     } else if (component.__kind === "supple_element") {
         const { type: Component, props, children } = component;
 
@@ -189,13 +185,7 @@ function createHtmlElement(component: JSXHTMLElement<any>): RealDOMComponent {
     // Treat children same as for multi-components, except this time we directly
     // mount the children to avoid one unnecessary level of indirection
     flatten(component.children)
-        .map((child) => {
-            if (typeof child === "function") {
-                return createRenderEffect(child);
-            } else {
-                return createDOMComponent(child);
-            }
-        })
+        .map(createDOMComponent)
         .forEach((domChild) => {
             domChild.parent = domElement;
             domInsert(domChild, container);
@@ -214,7 +204,7 @@ function setDOMAttribute(element: HTMLElement, name: string, value: any): void {
                 }
                 // Set values through JS setter (supports both JS-style & CSS-style properties)
                 Object.entries(value as Record<string, string>).forEach(([prop, val]) => {
-                    element.style[prop] = val;
+                    element.style[prop as any] = val;
                 });
                 return;
             }
@@ -236,7 +226,7 @@ function setDOMAttribute(element: HTMLElement, name: string, value: any): void {
     }
 
     if (name.startsWith("prop:")) {
-        element[name.substring(5)] = value;
+        (element as any)[name.substring(5)] = value;
     } else {
         const attrName = name.startsWith("attr:") ? name.substring(5) : name;
         if (value != null) {

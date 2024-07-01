@@ -1,13 +1,13 @@
-import { SuppleChild, SuppleNode, SuppleNodeEffect } from "./types";
+import { SingleChild, SuppleNode, SuppleNodeEffect } from "./types";
 import { createRoot } from "./context";
 import { createMemo, createSignal } from "./reactivity";
 import { createRenderEffect } from "./dom";
-import { sameValueZero, toValue } from "./helper";
+import { sameValueZero, toArray, toValue } from "./helper";
 
 export interface ForProps<T> {
     each: () => Iterable<T>;
-    children?: [(item: T, index: () => number) => SuppleNode];
-    fallback?: SuppleChild;
+    children?: SingleChild<(item: T, index: () => number) => SuppleNode>;
+    fallback?: SuppleNode;
     equals?: (prev: T, next: T) => boolean;
 }
 
@@ -26,7 +26,7 @@ export interface ForProps<T> {
 export function For<T>({ each, children, equals, fallback }: ForProps<T>): SuppleNodeEffect {
     const resolvedChildren = mapArray(
         each,
-        (element, index) => createRenderEffect(() => children?.[0]?.(element, index) ?? null),
+        (element, index) => createRenderEffect(() => toArray(children)[0]?.(element, index) ?? null),
         equals,
     );
     return () => {
@@ -40,8 +40,8 @@ export function For<T>({ each, children, equals, fallback }: ForProps<T>): Suppl
 
 export interface IndexProps<T> {
     each: () => Iterable<T>;
-    children?: [(item: () => T, index: number) => SuppleNode];
-    fallback?: SuppleChild;
+    children?: SingleChild<(item: () => T, index: number) => SuppleNode>;
+    fallback?: SuppleNode;
     equals?: (prev: T, next: T) => boolean;
 }
 
@@ -64,7 +64,7 @@ export interface IndexProps<T> {
 export function Index<T>({ each, children, fallback, equals }: IndexProps<T>): SuppleNodeEffect {
     const resolvedChildren = indexArray(
         each,
-        (element, index) => createRenderEffect(() => children?.[0]?.(element, index) ?? null),
+        (element, index) => createRenderEffect(() => toArray(children)[0]?.(element, index) ?? null),
         equals,
     );
     return () => {

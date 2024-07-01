@@ -2,13 +2,13 @@ export type JSXHTMLElement<Props> = {
     __kind: "html_element";
     type: string;
     props: Props;
-    children: SuppleChildren;
+    children: SuppleNode[];
 };
 export type JSXSuppleElement<Props> = {
     __kind: "supple_element";
     type: SuppleComponent<Props>;
     props: Props;
-    children: SuppleChildren;
+    children: SuppleNode[];
 };
 
 export type JSXElement<Props> = JSXHTMLElement<Props> | JSXSuppleElement<Props>;
@@ -43,22 +43,25 @@ export type DOMContainer = DOMComponent | DOMHandler | null;
 export type SuppleNode =
     | DOMComponent
     | JSXElement<any>
-    | SuppleChildren
+    | SuppleNodeEffect
+    | SuppleNode[]
     | string
     | number
     | bigint
     | boolean
-    | null;
+    | null
+    | undefined;
 
 export type SuppleNodeEffect = () => SuppleNode;
-export type SuppleChild = SuppleNode | SuppleNodeEffect;
-export type SuppleChildren = SuppleChild[];
+
+// Helper type for component expecting a single child
+export type SingleChild<T> = [T] | T;
 
 export type SuppleComponent<Props> = (props: Props) => SuppleNodeEffect;
 
 export interface Context<T> {
     id: symbol;
-    Provider: (props: { value: T; children?: SuppleChildren }) => SuppleNodeEffect;
+    Provider: (props: { value: T; children?: SuppleNode }) => SuppleNodeEffect;
     defaultValue: T;
 }
 

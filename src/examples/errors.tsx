@@ -11,9 +11,10 @@ import {
     createRenderEffect,
     createEffect,
     createMemo,
+    SuppleNode,
 } from "../core";
 
-function condThrow(errCode: ValueOrAccessor<number>, message: string): string {
+function condThrow(errCode: ValueOrAccessor<number>, message: string): SuppleNode {
     const errCodeValue = toValue(errCode);
     if (errCodeValue === 1) {
         return (
@@ -50,7 +51,10 @@ function Cleanup() {
     );
 }
 
-export function ThrowingComponent(props) {
+export function ThrowingComponent(props: {
+    bodyErrNo: ValueOrAccessor<number>;
+    renderErrNo: ValueOrAccessor<number>;
+}) {
     const [count, setCount] = createSignal(0);
     createComputed(() => {
         onCleanup(() => {
@@ -89,7 +93,7 @@ function Erase() {
     return () => <Pass bodyErrNo={3} renderErrNo={0} />;
 }
 
-function Pass(props) {
+function Pass(props: { bodyErrNo: ValueOrAccessor<number>; renderErrNo: ValueOrAccessor<number> }) {
     return () => (
         <div>
             <ThrowingComponent bodyErrNo={props.bodyErrNo} renderErrNo={props.renderErrNo} />

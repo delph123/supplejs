@@ -10,6 +10,7 @@ import {
     Switch,
     ValueOrAccessor,
     toValue,
+    Accessor,
 } from "../core";
 
 const [defaultCount, setDefaultCount] = createSignal(0);
@@ -144,7 +145,7 @@ export function ContextPassingApp() {
     );
 }
 
-function BadComponent({ color }) {
+function BadComponent({ color }: { color: Accessor<string> }) {
     const val = useContext(NumberContext);
     const col = color();
     return () => <font color={col}>||{val}||</font>;

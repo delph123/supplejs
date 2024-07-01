@@ -182,7 +182,7 @@ describe("<Show /> component fallback", () => {
     it("displays fallback when condition is falsy", () => {
         const [data, setData] = createSignal<any>();
 
-        function whenDataIs(value) {
+        function whenDataIs(value: any) {
             setData(value);
             return {
                 expect(branch: "fallback" | "heading") {
@@ -438,7 +438,7 @@ describe("Keyed <Show /> component", () => {
         expect(spy).toHaveBeenCalledTimes(2);
     });
 
-    function whenKeyedValueIs(val) {
+    function whenKeyedValueIs(val: any) {
         const spy = vi.fn((c) => <span>{c}</span>);
         const [count, setCount] = createSignal(0);
 

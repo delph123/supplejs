@@ -72,7 +72,7 @@ export function DynamicApp() {
                     </Dynamic>
                     <ul>
                         <LazyForElse each={elems} fallback={<li>no more element</li>}>
-                            {(el) => <li>{el}</li>}
+                            {(el: number) => <li>{el}</li>}
                         </LazyForElse>
                     </ul>
                 </Dynamic>

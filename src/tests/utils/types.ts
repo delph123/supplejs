@@ -1,6 +1,6 @@
 import { queries } from "@testing-library/dom";
 import type { Queries, BoundFunctions, prettyFormat } from "@testing-library/dom";
-import { SuppleChildren, SuppleComponent, TrackingContext } from "../../core";
+import { SuppleNode, SuppleComponent, TrackingContext } from "../../core";
 
 export interface Ref {
     container?: HTMLElement;
@@ -11,7 +11,7 @@ export interface Options {
     container?: HTMLElement;
     baseElement?: HTMLElement;
     queries?: Queries & typeof queries;
-    wrapper?: SuppleComponent<{ children: SuppleChildren }>;
+    wrapper?: SuppleComponent<{ children: SuppleNode }>;
 }
 
 export type DebugFn = (
@@ -31,7 +31,7 @@ export type Result = BoundFunctions<typeof queries> & {
 export type RenderHookOptions<A extends any[]> =
     | {
           initialProps?: A;
-          wrapper?: SuppleComponent<{ children: SuppleChildren }>;
+          wrapper?: SuppleComponent<{ children: SuppleNode }>;
       }
     | A;
 

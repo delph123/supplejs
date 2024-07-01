@@ -73,15 +73,15 @@ const DEFAULT_LOG_LEVELS = {
     clock: LOG_LEVEL.INFO,
 };
 
-function logMessage(level: LOG_LEVEL, maxLogLevel: LOG_LEVEL): (...args) => void {
+function logMessage(level: LOG_LEVEL, maxLogLevel: LOG_LEVEL): (...args: any[]) => void {
     return (...args) => {
         if (level <= maxLogLevel) {
-            console[LOG_LEVEL[level].toLowerCase()](...args);
+            (console as any)[LOG_LEVEL[level].toLowerCase()](...args);
         }
     };
 }
 
-export type Logger = { [P in Lowercase<keyof typeof LOG_LEVEL>]: (...args) => void };
+export type Logger = { [P in Lowercase<keyof typeof LOG_LEVEL>]: (...args: any[]) => void };
 
 export function createLogger(scope: keyof typeof DEFAULT_LOG_LEVELS): Logger {
     const logLevel = DEFAULT_LOG_LEVELS[scope];

@@ -10,7 +10,7 @@ export function createIncrement(initialValue = 0) {
     const [value, setValue] = createSignal(initialValue);
     const [started, start] = createSignal(false);
 
-    let timer;
+    let timer: number;
 
     function toggle(status?: boolean) {
         if (status == null || started() !== status) {
@@ -53,7 +53,7 @@ export function createIncrement(initialValue = 0) {
                 >
                     {value}
                 </div>
-                <button onClick={toggle}>
+                <button onClick={() => toggle()}>
                     <img
                         style={{
                             width: "1em",

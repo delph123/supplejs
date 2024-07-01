@@ -2,7 +2,7 @@ import { onCleanup, onMount } from "../core";
 import { toRelativePath } from "./path";
 
 export default function useCSS(cssFilePath: string) {
-    let link;
+    let link: HTMLLinkElement;
     onMount(() => {
         // Creating link element
         link = document.createElement("link");

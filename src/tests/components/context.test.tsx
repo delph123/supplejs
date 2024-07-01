@@ -11,6 +11,7 @@ import {
     Portal,
     createContext,
     useContext,
+    Accessor,
 } from "../../core";
 import { ContextValues, UseContextProps, contextMocks } from "../mocks/mock_component";
 
@@ -259,7 +260,7 @@ describe("use context with edge case", () => {
         const [color, setColor] = createSignal("red");
         const spy = vi.fn(() => "");
 
-        function BadComponent({ color }) {
+        function BadComponent({ color }: { color: Accessor<string> }) {
             const val = useContext(TestContext);
             const col = color();
             return () => <font color={col}>{val}</font>;
@@ -546,7 +547,7 @@ describe("use context in combination with createRoot", () => {
         expect(screen.queryByTestId("m")).not.toBeInTheDocument();
         expect(screen.queryByTestId("n")).not.toBeInTheDocument();
 
-        resolver({ default: Cmp });
+        resolver!({ default: Cmp });
         await waitForElementToBeRemoved(() => screen.queryByText("Loading component..."));
 
         expect(screen.getByTestId("m")).toHaveTextContent("A");

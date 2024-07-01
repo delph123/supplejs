@@ -1,9 +1,9 @@
-import { SuppleChild, SuppleNodeEffect } from "./types";
+import { SuppleNode, SuppleNodeEffect } from "./types";
 import { createSignal } from "./reactivity";
 import { h } from "./jsx";
 
 interface Chain {
-    current?: SuppleChild;
+    current?: SuppleNode;
     next?: () => Chain;
     setItem?: (c: Chain) => void;
 }
@@ -25,7 +25,7 @@ function createChainItem(): () => Chain {
 
 export type ChainedListResult = readonly [
     () => SuppleNodeEffect, // ChainedList component
-    (component: SuppleChild) => void, // Push method
+    (component: SuppleNode) => void, // Push method
     () => void, // Pop method
     () => number, // Get size method
 ];
@@ -38,7 +38,7 @@ export function createChainedList<Props>({
 
     const root = createChainItem();
 
-    const push = (component: SuppleChild) => {
+    const push = (component: SuppleNode) => {
         const next = createChainItem();
 
         const last = getLast(root(), (c) => !!c.next);
@@ -84,7 +84,7 @@ function ChainedList<Props>(props: {
             return h(
                 props.tag,
                 props.attributes,
-                props.item().current!,
+                props.item().current,
                 h(ChainedList, {
                     tag: props.tag,
                     attributes: props.attributes,

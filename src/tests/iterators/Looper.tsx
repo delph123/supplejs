@@ -1,15 +1,42 @@
-import { h, Fragment, createSignal, onMount, For, onCleanup, SuppleNodeEffect, untrack } from "../../core";
+import {
+    h,
+    Fragment,
+    createSignal,
+    onMount,
+    For,
+    onCleanup,
+    SuppleNodeEffect,
+    untrack,
+    Accessor,
+    Setter,
+} from "../../core";
 
 export function randomInt(n: number): number {
     return Math.floor(Math.random() * n);
 }
 
-export function Looper({ list, setList, pickIndex = (n) => randomInt(n), counterSpy = () => 0 }) {
+interface ListElement {
+    row: number;
+    label: Accessor<number | string>;
+    setLabel: Setter<number | string>;
+}
+type LooperProps = {
+    list: Accessor<ListElement[]>;
+    setList: Setter<ListElement[]>;
+    pickIndex?: (n: number) => number;
+    counterSpy?: () => void;
+};
+export function Looper({
+    list,
+    setList,
+    pickIndex = (n) => randomInt(n),
+    counterSpy = () => 0,
+}: LooperProps) {
     let rowNumber = 0;
 
     const newRow = () => {
         rowNumber++;
-        const [label, setLabel] = createSignal(rowNumber);
+        const [label, setLabel] = createSignal<number | string>(rowNumber);
         return { row: rowNumber, label, setLabel };
     };
     const init = () => {
@@ -46,7 +73,13 @@ export function Looper({ list, setList, pickIndex = (n) => randomInt(n), counter
     );
 }
 
-export function Counter({ label, counterSpy }): SuppleNodeEffect {
+export function Counter({
+    label,
+    counterSpy,
+}: {
+    label: Accessor<number | string>;
+    counterSpy: (v: string, n: string | number) => void;
+}): SuppleNodeEffect {
     const [counter, setCounter] = createSignal(5);
 
     counterSpy("mounting", untrack(label));

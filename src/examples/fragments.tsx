@@ -1,7 +1,7 @@
-import { createSignal, h, Fragment, createMemo } from "../core";
+import { createSignal, h, Fragment, createMemo, Nested, SuppleNode } from "../core";
 import { Clock } from "./components";
 
-export function GameOn({ nb, onexit }) {
+export function GameOn({ nb, onexit }: { nb: number; onexit: () => void }) {
     const [nbRows, setNbRows] = createSignal(nb);
 
     return () => (
@@ -43,11 +43,11 @@ export function GameOn({ nb, onexit }) {
 export function NestedChildren() {
     const nestedList = ["a", ["a", ["a", ["a", "b", "c"], "c"], "c"], "c"];
 
-    function mapList(l) {
-        return l.map((e) => (Array.isArray(e) ? mapList(e) : <p>{e}</p>));
+    function mapList(l: Nested<string>): SuppleNode[] {
+        return l.map((e: string | Nested<string>) => (Array.isArray(e) ? mapList(e) : <p>{e}</p>));
     }
 
-    function print(l) {
+    function print(l: Nested<string>) {
         const c = mapList(l);
         console.log(c);
         return c;

@@ -10,7 +10,7 @@ import {
     createEffect,
     toValue,
     ValueOrAccessor,
-    SuppleChildren,
+    SuppleNode,
     version,
 } from "../core";
 
@@ -57,9 +57,6 @@ const components = [
         row("Multi-counter App", "The iconic multi-counter application", MultiApp),
         row("Redux Slice", "Implementation of redux-like store", ReduxSlice),
         row("Children Player", "Play with children() helper", ChildrenPlayer),
-        row("Error Manager", "Component throwing & catching errors", ErrorManager, {
-            initialErrno: 7,
-        }),
     ]),
     section("Covered by unit tests", [
         // row("Playing with Refs", "Mounting ref in DOM", Referencing), // Unit tested
@@ -81,6 +78,9 @@ const components = [
         row("GameOn", "Deleting clocks until exiting completely", GameOn, { nb: 5 }),
         row("Context Passing", "Passing context to lower-level components", ContextPassingApp),
         row("Multi Counter", "Multiple contexts", MultiContextApp),
+        row("Error Manager", "Component throwing & catching errors", ErrorManager, {
+            initialErrno: 7,
+        }),
     ]),
     section("Applications", [
         // Apps
@@ -102,7 +102,7 @@ export default function Navigation() {
             const exit = render(() => {
                 return (
                     <Dynamic
-                        component={() => descriptor.component as SuppleComponent<{ onexit }>}
+                        component={() => descriptor.component as SuppleComponent<{ onexit: () => void }>}
                         onexit={() => exit()}
                         {...descriptor.props}
                     />
@@ -129,7 +129,7 @@ export default function Navigation() {
 
 interface LinkProps {
     href: ValueOrAccessor<string>;
-    children?: SuppleChildren;
+    children?: SuppleNode;
 }
 
 function Link({ href, children }: LinkProps) {
@@ -179,7 +179,7 @@ function Header() {
         <>
             <h1>SuppleJS</h1>
             <h3 style={{ marginBottom: "0px" }}>This SPA showcases a few examples.</h3>
-            <p style={{ marginTop: "0.5em", marginBotton: "1em", fontStyle: "italic", fontSize: "90%" }}>
+            <p style={{ marginTop: "0.5em", marginBottom: "1em", fontStyle: "italic", fontSize: "90%" }}>
                 Build with{" "}
                 <a
                     style={{ color: "firebrick", fontWeight: "bold" }}

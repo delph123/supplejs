@@ -1,5 +1,5 @@
 import { getOwner, onCleanup } from "./context";
-import { createDOMComponent, createRenderEffect, multiComponents } from "./dom";
+import { createDOMComponent, multiComponents } from "./dom";
 import { createLogger, flatten, shallowArrayEqual, toArray } from "./helper";
 import { mapArray } from "./iterators";
 import { h } from "./jsx";
@@ -11,6 +11,7 @@ import {
     RealDOMComponent,
     Context,
     SuppleNodeEffect,
+    AbstractDOMComponent,
 } from "./types";
 
 const logger = createLogger("children");
@@ -78,20 +79,11 @@ export function children(childrenGetter: () => SuppleNode | undefined): () => Re
         equals: shallowArrayEqual,
     });
 
-    const childrenArray = mapArray(
-        () => flatten(toArray(childrenGetter())),
-        (child) => {
-            if (typeof child === "function") {
-                return createRenderEffect(child);
-            } else {
-                return createDOMComponent(child);
-            }
-        },
-    );
+    const childrenArray = mapArray(() => flatten(toArray(childrenGetter())), createDOMComponent);
 
     createComputed(() => {
         const root = multiComponents(childrenArray());
-        const handler = (component) => {
+        const handler = (component: AbstractDOMComponent) => {
             logger.log("children notified with", component, root);
             setComponents(extractRealDOMComponents(root));
         };
@@ -240,7 +232,7 @@ export function lazy<Component extends SuppleComponent<any>>(
         return promise;
     };
 
-    const LazyComponent = (props) => {
+    const LazyComponent = (props: any) => {
         preload();
 
         return () => {
