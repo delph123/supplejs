@@ -1,6 +1,7 @@
 # SuppleJS
 
-[![GitHub package.json version](https://img.shields.io/github/package-json/v/delph123/supplejs?logo=pnpm)](https://github.com/delph123/supplejs/releases)
+
+[![NPM version](https://img.shields.io/npm/v/supplejs?logo=npm)](https://www.npmjs.com/package/supplejs)
 [![GitHub License](https://img.shields.io/github/license/delph123/supplejs)](https://github.com/delph123/supplejs/blob/main/LICENSE)
 [![Build Status](https://img.shields.io/github/actions/workflow/status/delph123/supplejs/test_and_coverage.yml?branch=main&logo=github)](https://github.com/delph123/supplejs/actions/workflows/test_and_coverage.yml)
 [![codecov](https://codecov.io/gh/delph123/supplejs/graph/badge.svg?token=AJNU0N5YI7)](https://codecov.io/gh/delph123/supplejs)
