@@ -1,5 +1,5 @@
 import { Accessor, MutableRef, Setter } from "./types";
-import { sameValueZero } from "./helper";
+import { idleCallbacks, sameValueZero } from "./helper";
 import {
     cleanup,
     createChildContext,
@@ -209,15 +209,16 @@ export function createDeferred<T>(
 ): () => T {
     const signalOptions = options?.equals != null ? { equals: options.equals } : undefined;
     const timeoutOptions = options?.timeoutMs != null ? { timeout: options.timeoutMs } : undefined;
+    const [requestIdleCallback, cancelIdleCallback] = idleCallbacks();
 
     // The readonly that will notify changes downstream
-    const [memoizedValue, setMemoizedValue] = createSignal<T>(undefined, signalOptions);
+    const [deferredValue, setDeferredValue] = createSignal<T>(undefined, signalOptions);
 
     // Create a context that is calling the setMemo when browser is idle
     const childContext = createChildContext(() => {
         const nextValue = source();
         const request = requestIdleCallback(() => {
-            setMemoizedValue(() => nextValue);
+            setDeferredValue(() => nextValue);
         }, timeoutOptions);
         // cancels the callback in case it was not called before next change is notified
         onCleanup(() => {
@@ -227,8 +228,8 @@ export function createDeferred<T>(
 
     // Set-up the the context to register source signal & assign initial value to memo
     runEffectInContext(childContext, () => {
-        setMemoizedValue(source);
+        setDeferredValue(source);
     });
 
-    return memoizedValue;
+    return deferredValue;
 }

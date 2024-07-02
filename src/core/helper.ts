@@ -93,3 +93,31 @@ export function createLogger(scope: keyof typeof DEFAULT_LOG_LEVELS): Logger {
         debug: logMessage(LOG_LEVEL.DEBUG, logLevel),
     };
 }
+
+export function idleCallbacks() {
+    if (
+        "requestIdleCallback" in globalThis &&
+        "cancelIdleCallback" in globalThis &&
+        typeof requestIdleCallback === "function" &&
+        typeof cancelIdleCallback === "function"
+    ) {
+        return [requestIdleCallback, cancelIdleCallback] as const;
+    } else {
+        const requestIdleCallbackPolyfill = function requestIdleCallbackPolyfill(
+            callback: IdleRequestCallback,
+            options?: IdleRequestOptions,
+        ): number {
+            // Assuming all urgent callbacks are scheduled with a timeout < 100ms or with queueMicrotask()
+            return setTimeout(callback, Math.min(100, options?.timeout ?? 100), {
+                didTimeout: false,
+                timeRemaining() {
+                    return 50;
+                },
+            } satisfies IdleDeadline);
+        };
+        const cancelIdleCallbackPolyfill = function cancelIdleCallback(handle: number): void {
+            clearTimeout(handle);
+        };
+        return [requestIdleCallbackPolyfill, cancelIdleCallbackPolyfill] as const;
+    }
+}
