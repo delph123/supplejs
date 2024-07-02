@@ -26,8 +26,12 @@ async function writeJSON(content, file) {
 async function cleanPackageJson() {
     const packageJson = await readJSON("package.json");
     const outPackageJson = { ...packageJson, ...packageJson["clean-package"] };
-    delete outPackageJson["clean-package"];
-    delete outPackageJson["publishConfig"];
+    if ("delete" in packageJson["clean-package"]) {
+        packageJson["clean-package"].delete.forEach((key) => {
+            delete outPackageJson[key];
+        });
+        delete outPackageJson["delete"];
+    }
     await writeJSON(outPackageJson, "build/package.json");
     return outPackageJson;
 }

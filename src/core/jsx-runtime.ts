@@ -1,5 +1,6 @@
 import { Properties, PropertiesHyphen } from "csstype";
-import { Accessor, Ref, SuppleNode } from "./types";
+import { Accessor, JSXElement, Ref, SuppleComponent, SuppleNode } from "./types";
+import { h, Fragment } from "./jsx";
 
 /**
  * Based on JSX types for Solid and `@ryansolid/dom-expressions` and modified for SuppleJS.
@@ -12,6 +13,43 @@ import { Accessor, Ref, SuppleNode } from "./types";
 type DOMElement = Element;
 type Booleanish = boolean | "true" | "false";
 type AttributeAccessor<T> = T | null | undefined | Accessor<T | null | undefined>;
+
+/**
+ * The `jsx`, `jsxs` and `jsxDEV` functions are called when using `react-jsx`
+ * transform by TypeScript compiler or bundlers instead of `h`.
+ *
+ * They are similar to `h` except in the way they manage `children`. When `h`
+ * receives `children` as rest params after the `type` & `props`, they will be
+ * transmitted to `jsx`, `jsxs` and `jsxDEV` as an attribute of props.
+ * The difference between `jsx` and `jsxs` is that `jsx` is called for 0 or 1
+ * child and receives no `children` attribute in props when there is no child
+ * or a `children` attribute which is the only child (not an array), whereas
+ * `jsxs` is called when there are 2 or more children and receives a `children`
+ * attributes which contains an array of all children.
+ * On the other hand, `jsxDEV` is always called in development mode whatever
+ * the number of `children` (still children may or may not be an array
+ * depending on its multiplicity).
+ *
+ * `jsx` is defined once as a wrapper to `h` because additional parameters
+ * may be provided to `jsx` or `jsxDEV`. It's making sure to call `h` with
+ * the first two parameters only.
+ *
+ * `jsx` is re-exported as `jsxs` and `jsxDEV` since `h` knows how to handle
+ * all `children` attribute cases.
+ *
+ * @param type the HTML tag name or the Supple component (a function)
+ * @param props the component props including children
+ * @returns a JSXElement struct describing the component to render
+ */
+export function jsx<Props>(
+    type: string | SuppleComponent<Props>,
+    props?: Props & { children?: SuppleNode },
+): JSXElement<Props> {
+    return h(type, props);
+}
+
+// For compatibility with react-jsx & react-jsxdev exports
+export { jsx as jsxs, jsx as jsxDEV, Fragment };
 
 declare global {
     // eslint-disable-next-line @typescript-eslint/no-namespace
