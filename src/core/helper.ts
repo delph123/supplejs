@@ -108,6 +108,7 @@ export function idleCallbacks() {
             options?: IdleRequestOptions,
         ): number {
             // Assuming all urgent callbacks are scheduled with a timeout < 100ms or with queueMicrotask()
+            // this should be lower priority. We adjust the timeout according to the provided option though
             return setTimeout(callback, Math.min(100, options?.timeout ?? 100), {
                 didTimeout: false,
                 timeRemaining() {

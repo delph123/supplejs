@@ -226,7 +226,7 @@ export function createDeferred<T>(
         });
     });
 
-    // Set-up the the context to register source signal & assign initial value to memo
+    // Set-up the context to register source signal & assign initial value to memo
     runEffectInContext(childContext, () => {
         setDeferredValue(source);
     });
