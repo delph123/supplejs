@@ -19,6 +19,7 @@ export {
     createReaction,
     createSelector,
     createRef,
+    createDeferred,
 } from "./reactivity";
 export { render, createRenderEffect } from "./dom";
 export { h, Fragment } from "./jsx";
