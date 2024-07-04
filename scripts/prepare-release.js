@@ -1,7 +1,5 @@
 #!/usr/bin/env node
 
-/* eslint-env node */
-
 import { promises as fs } from "node:fs";
 import { join } from "node:path";
 
@@ -47,10 +45,26 @@ async function fixVersionExport(files, version) {
     }
 }
 
+async function fixImportExtensions() {
+    const jsFiles = await fs.readdir("build/lib");
+    jsFiles
+        .filter((f) => f.endsWith(".js"))
+        .forEach(async (filepath) => {
+            const data = await fs.readFile(join("build/lib", filepath), { encoding: "utf-8" });
+            let newData = data.replace(/(import|export .* from\s+['"])(.*)(?=['"])/g, "$1$2.js");
+            if (newData === data) {
+                return;
+            }
+            console.log(filepath, data.match(/(import|export .* from\s+['"])(.*)(?=['"])/g));
+            await fs.writeFile(join("build/lib", filepath), newData, { encoding: "utf-8" });
+        });
+}
+
 async function run() {
     await copyFiles(["LICENSE", "README.md"], "build");
     const packageJson = await cleanPackageJson();
     await fixVersionExport(["index.js", "index.d.ts"], packageJson.version);
+    await fixImportExtensions();
 }
 
 run().catch((error) => {
