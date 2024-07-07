@@ -22,6 +22,9 @@ module.exports = {
         {
             files: ["**/?(*.)+(spec|test).[jt]s?(x)"],
             extends: ["plugin:testing-library/dom", "plugin:jest-dom/recommended"],
+            rules: {
+                "testing-library/no-node-access": "off",
+            },
         },
     ],
     parser: "@typescript-eslint/parser",
