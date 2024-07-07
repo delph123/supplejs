@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
+import { renderHook } from "supplejs-testing-library";
 import { createComputed, createDeferred, createSignal } from "../../core";
-import { renderHook } from "../utils";
 
 describe("createDeferred", () => {
     beforeAll(() => {

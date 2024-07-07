@@ -1,6 +1,7 @@
 import { Mock, describe, expect, it, vi } from "vitest";
+import { fireEvent, render, screen } from "supplejs-testing-library";
 import { h, Fragment, createSignal, For, Show, ForProps, Accessor, Setter, toArray } from "../../core";
-import { createSideEffectSpy, fireEvent, render, screen } from "../utils";
+import { createSideEffectSpy } from "../utils";
 import { Looper, randomInt } from "./Looper";
 
 describe("<For /> component", () => {

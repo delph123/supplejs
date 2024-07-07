@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { createWaitableMock, render, renderHook } from "../utils";
+import { render, renderHook } from "supplejs-testing-library";
 import {
     h,
     catchError,
@@ -10,6 +10,7 @@ import {
     onCleanup,
     createEffect,
 } from "../../core";
+import { createWaitableMock } from "../utils";
 
 describe("catchError", () => {
     it("executes try function without failing and returns result", () => {

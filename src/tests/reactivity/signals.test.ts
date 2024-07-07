@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
+import { renderHook } from "supplejs-testing-library";
 import { createComputed, createSignal, onCleanup } from "../../core";
-import { createSideEffectSpy, renderHook } from "../utils";
+import { createSideEffectSpy } from "../utils";
 
 describe("createSignal", () => {
     it("takes a default value and returns a getter/setter pair", () => {

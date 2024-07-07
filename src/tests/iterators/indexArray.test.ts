@@ -1,6 +1,6 @@
 import { Mock, describe, expect, it, vi } from "vitest";
+import { renderHook } from "supplejs-testing-library";
 import { createComputed, createMemo, createSignal, indexArray, onCleanup } from "../../core";
-import { renderHook } from "../utils";
 
 const [A, B, C, D] = [{ key: "a" }, { key: "b" }, { key: "c" }, { key: "d" }];
 const [E, F, G, H] = [{ key: "e" }, { key: "f" }, { key: "g" }, { key: "h" }];

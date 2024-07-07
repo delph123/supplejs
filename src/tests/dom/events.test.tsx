@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { render, fireEvent } from "../utils";
+import { render, fireEvent } from "supplejs-testing-library";
 import { h, Dynamic, createRef } from "../../core";
 
 const eventTypes = [

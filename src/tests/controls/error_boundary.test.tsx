@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { createWaitableMock, fireEvent, render, screen, waitForElementToBeRemoved } from "../utils";
+import { fireEvent, render, screen, waitForElementToBeRemoved } from "supplejs-testing-library";
 import {
     h,
     Fragment,
@@ -14,6 +14,7 @@ import {
     Portal,
 } from "../../core";
 import { createMockComponent } from "../mocks/mock_component";
+import { createWaitableMock } from "../utils";
 
 describe("<ErrorBoundary /> component", () => {
     it("displays children content without error", () => {

@@ -1,8 +1,8 @@
 /* Inspiration from https://github.com/solidjs/solid/blob/main/packages/solid/web/test/portal.spec.tsx */
 
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { render, screen } from "supplejs-testing-library";
 import { createRef, createSignal, h, Portal, Show } from "../../core";
-import { render, screen } from "../utils";
 
 describe("<Portal /> component", () => {
     let portalContainer: HTMLDivElement;

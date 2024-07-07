@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { render, screen, waitForElementToBeRemoved } from "../utils";
+import { render, screen, waitForElementToBeRemoved } from "supplejs-testing-library";
 import {
     SuppleComponent,
     h,

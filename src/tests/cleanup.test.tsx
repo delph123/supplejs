@@ -1,5 +1,5 @@
 import { Mock, describe, expect, it, vi } from "vitest";
-import { cleanup, fireEvent, render, screen } from "./utils/testing-renderer";
+import { cleanup, fireEvent, render, screen } from "supplejs-testing-library";
 import { h, Fragment, onCleanup, createComputed, createEffect, render as core_render } from "../core";
 import { createWaitableMock } from "./utils";
 
