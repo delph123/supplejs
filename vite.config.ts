@@ -12,12 +12,12 @@ export default defineConfig({
     base: "/supplejs/",
     // Setup jest, jest-dom & v8 for unit tests and coverage
     test: {
-        setupFiles: ["./src/tests/utils/vitest-setup.ts"],
+        setupFiles: ["src/tests/utils/vitest-setup.ts"],
         environment: "jsdom",
         coverage: {
             provider: "v8",
-            include: ["./src/core/**"],
-            exclude: ["./src/core/chain.ts", "./src/core/store.ts"],
+            include: ["src/core/**"],
+            exclude: ["src/core/chain.ts", "src/core/store.ts"],
         },
     },
     // By default, Vitest considers all packages from node_modules as external.
