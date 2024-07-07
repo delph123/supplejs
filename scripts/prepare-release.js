@@ -55,7 +55,6 @@ async function fixImportExtensions() {
             if (newData === data) {
                 return;
             }
-            console.log(filepath, data.match(/(import|export .* from\s+['"])(.*)(?=['"])/g));
             await fs.writeFile(join("build/lib", filepath), newData, { encoding: "utf-8" });
         });
 }

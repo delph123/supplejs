@@ -1,5 +1,5 @@
 import { afterEach } from "vitest";
-import "vitest-dom/extend-expect";
+import "@testing-library/jest-dom/vitest";
 import { cleanup } from "./testing-renderer";
 
 afterEach(() => cleanup());
