@@ -1,8 +1,8 @@
 /* Inspiration from https://github.com/solidjs/solid/blob/main/packages/solid/web/test/dynamic.spec.tsx */
 
 import { describe, expect, it, vi } from "vitest";
+import { render, screen } from "supplejs-testing-library";
 import { h, Dynamic, createSignal, SuppleComponent, createRef } from "../../core";
-import { render, screen } from "../utils";
 
 describe("<Dynamic /> reactivity", () => {
     interface ExampleProps {

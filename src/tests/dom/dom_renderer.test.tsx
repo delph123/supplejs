@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { render } from "../utils";
+import { render } from "supplejs-testing-library";
 import { h, Fragment, createSignal, Nested, SuppleNode } from "../../core";
 
 describe("DOM renderer", () => {

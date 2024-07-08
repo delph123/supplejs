@@ -72,10 +72,10 @@
     "prepare": "tsc -p tsconfig.release.json && node scripts/prepare-release.js"
   },
   "devDependencies": {
-    "@testing-library/dom": "^10.2.0",
+    "@testing-library/dom": "^10.3.1",
     "@testing-library/jest-dom": "^6.4.6",
-    "@typescript-eslint/eslint-plugin": "^7.14.1",
-    "@typescript-eslint/parser": "^7.14.1",
+    "@typescript-eslint/eslint-plugin": "^7.15.0",
+    "@typescript-eslint/parser": "^7.15.0",
     "@vitest/coverage-v8": "^1.6.0",
     "eslint": "^8.57.0",
     "eslint-plugin-jest-dom": "^5.4.0",
@@ -83,9 +83,10 @@
     "jsdom": "^24.1.0",
     "prettier": "^3.3.2",
     "shx": "^0.3.4",
+    "supplejs-testing-library": "^1.0.3",
     "typedoc": "^0.26.3",
-    "typescript": "^5.5.2",
-    "vite": "^5.3.2",
+    "typescript": "^5.5.3",
+    "vite": "^5.3.3",
     "vitest": "^1.6.0"
   },
   "dependencies": {

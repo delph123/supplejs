@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
+import { renderHook } from "supplejs-testing-library";
 import { createComputed, createMemo, createSignal } from "../../core";
-import { renderHook } from "../utils";
 
 describe("createMemo", () => {
     it("doesn't send upstream changes when value is equal", () => {

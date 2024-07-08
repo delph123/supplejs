@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { render, screen } from "../utils";
+import { render, screen } from "supplejs-testing-library";
 import { h, Show, createSignal, Fragment } from "../../core";
 import { createMockComponent } from "../mocks/mock_component";
 
