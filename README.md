@@ -1,6 +1,5 @@
 # SuppleJS
 
-
 [![NPM version](https://img.shields.io/npm/v/supplejs?logo=npm)](https://www.npmjs.com/package/supplejs)
 [![GitHub License](https://img.shields.io/github/license/delph123/supplejs)](https://github.com/delph123/supplejs/blob/main/LICENSE)
 [![Build Status](https://img.shields.io/github/actions/workflow/status/delph123/supplejs/test_and_coverage.yml?branch=main&logo=github)](https://github.com/delph123/supplejs/actions/workflows/test_and_coverage.yml)
@@ -16,7 +15,10 @@ so that the reactivity is not lost and SuppleJS can make sure to re-render only 
 ## Example
 
 ```jsx
-import { h, render, createSignal } from "supplejs";
+/*
+ * @jsxImportSource supplejs
+ */
+import { render, createSignal } from "supplejs";
 
 function Counter() {
     // Create a signal with read/write segregation
@@ -53,7 +55,7 @@ This minimalist example implement the iconic "counter button" component with Sup
 
 -   Unlike in SolidJS, one must return a function instead of JSX directly from a component
 -   The signal shall not be called to avoid re-rendering the full button and only mutate the count value in the DOM when it is changed
--   `h` (and `Fragment`) functions must be in scope to be able to use JSX (respectively `<>...</>`)
+-   When working with JSX markup, `jsxImportSource` must be set in TypeScript config to `supplejs` to import primitives necessary for supplejs and typing of JSX
 
 This all is due to not having a compiler, and to the design of SuppleJS. However, besides that, the same API is used as SolidJS. For example for `createSignal`, `render` and other reactive primitives like `createMemo`, `createResource`, `createEffect`, `onCleanup`, `createRoot`, `getOwner`, and so on. SuppleJS also provides same control flow components as Solid: `<Show>`, `<Switch>`/`<Match>`, `<For>`, `<Index>`, `<Portal>`, etc.
 
@@ -61,18 +63,18 @@ As SuppleJS provides the same API and design as Solid, you can have a look at th
 
 ## How to use?
 
-The usual steps as for many other JavaScript project is to clone the project in your computer and install dependencies from npm. The project uses [pnpm](https://pnpm.io/fr/) package manager and [vite](https://vitejs.dev/) developer tooling.
+You can get started with a simple app by running the commands below in your terminal. The project uses [pnpm](https://pnpm.io/fr/) package manager and [vite](https://vitejs.dev/) developer tooling.
 
 ```sh
-> git clone https://github.com/delph123/supplejs
-> cd supplejs
-> pnpm install
+> pnpm dlx degit delph123/supplejs-templates/ts-vitest example-app
+> cd example-app
+> pnpm install  # or npm install or yarn install
 ```
 
 Once all dependencies are downloaded and installed, you can run a local server with fast refresh with:
 
 ```sh
-> pnpm dev
+> pnpm run dev  # or yarn or npm
 ```
 
 Other scripts includes:
@@ -83,3 +85,15 @@ Other scripts includes:
 > pnpm build && pnpm preview    # build supple & run a preview server
 > pnpm lint                     # launch eslint
 ```
+
+**Note:** Even though SuppleJS is working mostly fine and have a good ecosystem, it is still just a educational project. As such, it should not be used for production-grade development!
+
+## Contributing
+
+As SuppleJS is just a toy project, I probably won't be accepting pull requests or contributions.
+
+However, do feel free to fork the project to use it for you own education or to do whatever you feel like to do with it.
+
+If you find issues or have feedbacks to do, don't hesitate to create an issue.
+
+I'm using supplejs & supplejs-testing-library package names in [npm](https://www.npmjs.com/). If feel you need this library name and have good reasons not to use another, file an issue to reach out to me!
