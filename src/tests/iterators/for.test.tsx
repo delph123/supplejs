@@ -1,6 +1,17 @@
 import { Mock, describe, expect, it, vi } from "vitest";
 import { fireEvent, render, screen } from "supplejs-testing-library";
-import { h, Fragment, createSignal, For, Show, ForProps, Accessor, Setter, toArray } from "../../core";
+import {
+    h,
+    Fragment,
+    createSignal,
+    For,
+    Show,
+    ForProps,
+    Accessor,
+    Setter,
+    toArray,
+    onCleanup,
+} from "../../core";
 import { createSideEffectSpy } from "../utils";
 import { Looper, randomInt } from "./Looper";
 
@@ -249,6 +260,23 @@ describe("<For /> component", () => {
         setList([h, b, a, f, g]);
         expect(labels()).toEqual(["8", "2**", "1*", "6", "7"]);
     });
+
+    it("cleans-up all elements when disposing", () => {
+        const spy = vi.fn();
+
+        const { unmount } = render(() => (
+            <For each={() => [1, 2]}>
+                {(el) => {
+                    onCleanup(spy);
+                    return <div>{el}</div>;
+                }}
+            </For>
+        ));
+
+        expect(spy).not.toHaveBeenCalled();
+        unmount();
+        expect(spy).toHaveBeenCalledTimes(2);
+    });
 });
 
 describe("<ForElse /> component", () => {
@@ -317,6 +345,32 @@ describe("<ForElse /> component", () => {
         fireEvent.click(moreButton);
         fireEvent.click(moreButton);
         expect(listItems()).toEqual(["1", "2"]);
+    });
+
+    it("cleans-up all elements when falling-back", () => {
+        const [visible, setVisible] = createSignal(true);
+        const [elements, setElements] = createSignal([1, 2, 3]);
+        const spy = vi.fn();
+
+        render(() => (
+            <Show when={visible} fallback={<p>no content</p>}>
+                <For each={elements}>
+                    {(el) => {
+                        onCleanup(spy);
+                        return <li>{el}</li>;
+                    }}
+                </For>
+            </Show>
+        ));
+
+        setElements([4, 5]);
+        expect(spy).toHaveBeenCalledTimes(3);
+        setVisible(false);
+        expect(spy).toHaveBeenCalledTimes(5);
+        setVisible(true);
+        expect(spy).toHaveBeenCalledTimes(5);
+        setVisible(false);
+        expect(spy).toHaveBeenCalledTimes(7);
     });
 });
 

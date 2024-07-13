@@ -1,5 +1,5 @@
 import { SingleChild, SuppleNode, SuppleNodeEffect } from "./types";
-import { createRoot } from "./context";
+import { createRoot, onCleanup } from "./context";
 import { createMemo, createSignal } from "./reactivity";
 import { createRenderEffect } from "./dom";
 import { sameValueZero, toArray, toValue } from "./helper";
@@ -119,6 +119,16 @@ export function mapArray<T, U>(
     let previousEntries = [] as Entry<T, U>[];
     let previousMappedArray = [] as U[];
 
+    // When memo is re-executing, it's manually disposing elements that are
+    // removed while maintaining others. However, if the whole createMemo
+    // is disposed, no cleanup happens. Therefore, we subscribe to the parent
+    // context so that we can remove all remaining elements.
+    onCleanup(() => {
+        previousEntries.forEach(({ dispose }) => {
+            dispose();
+        });
+    });
+
     return createMemo(() => {
         const nextList = [...iterator()];
 
@@ -201,6 +211,16 @@ export function indexArray<T, U>(
     // The previous input & mapped lists
     let previousEntries = [] as IndexEntry<T, U>[];
     let previousMappedArray = [] as U[];
+
+    // When memo is re-executing, it's manually disposing elements that are
+    // removed while maintaining others. However, if the whole createMemo
+    // is disposed, no cleanup happens. Therefore, we subscribe to the parent
+    // context so that we can remove all remaining elements.
+    onCleanup(() => {
+        previousEntries.forEach(({ dispose }) => {
+            dispose();
+        });
+    });
 
     return createMemo(() => {
         const nextList = [...iterator()];

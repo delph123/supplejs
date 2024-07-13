@@ -110,6 +110,55 @@ describe("indexArray", () => {
         wt([() => 4, () => 5]);
         expect(spy.mock.calls).toEqual([[4], [5]]);
     });
+
+    it("cleans-up all elements after mapArray is disposed", () => {
+        const cleanupSpy = vi.fn();
+        const [elements, setElements] = createSignal([1, 2, 3]);
+
+        const { cleanup } = renderIndexArray(elements, (v) => {
+            onCleanup(cleanupSpy);
+            return v();
+        });
+
+        setElements([1, 2]);
+        expect(cleanupSpy).toHaveBeenCalledOnce();
+
+        cleanup();
+        expect(cleanupSpy).toHaveBeenCalledTimes(3);
+    });
+
+    it("cleans-up all elements before mapArray is re-rendered", () => {
+        const cleanupSpy = vi.fn();
+        const mapSpy = vi.fn();
+        const [visible, setVisible] = createSignal(true);
+        const [elements, setElements] = createSignal([1, 2, 3]);
+
+        renderHook(() => {
+            createComputed(() => {
+                if (visible()) {
+                    const reactiveArray = indexArray(elements, (a) => {
+                        onCleanup(() => cleanupSpy(a()));
+                        return 2 * a();
+                    });
+                    createComputed(() => {
+                        mapSpy(reactiveArray());
+                    });
+                }
+            });
+        });
+
+        expect(mapSpy).toHaveBeenLastCalledWith([2, 4, 6]);
+        expect(cleanupSpy).not.toHaveBeenCalled();
+
+        setElements([1, 2]);
+        expect(mapSpy).toHaveBeenLastCalledWith([2, 4]);
+        expect(cleanupSpy).toHaveBeenCalledOnce();
+
+        vi.clearAllMocks();
+        setVisible(false);
+        expect(mapSpy).not.toHaveBeenCalled();
+        expect(cleanupSpy).toHaveBeenCalledTimes(2);
+    });
 });
 
 describe("Reactivity", () => {
