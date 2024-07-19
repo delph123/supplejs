@@ -1,24 +1,24 @@
 import { Mock, vi } from "vitest";
 
-export type WaitableMock<Args extends any[] = any, R = any> = Mock<Args, R> & {
+export type WaitableMock = Mock & {
     waitToHaveBeenCalledTimes: (times: number) => Promise<unknown>;
     waitToHaveBeenCalled: () => Promise<unknown>;
 };
 
-export function createWaitableMock<Args extends any[] = any, R = any>() {
+export function createWaitableMock() {
     let resolve: (v?: unknown) => void;
     let times: number;
     let calledCount = 0;
-    const mock = vi.fn() as WaitableMock<Args, R>;
+    const mock = vi.fn() as WaitableMock;
 
-    mock.mockImplementation((() => {
+    mock.mockImplementation(() => {
         calledCount += 1;
         if (resolve && calledCount >= times) {
             resolve();
         }
-    }) as (...args: Args) => R);
+    });
 
-    mock.waitToHaveBeenCalledTimes = (times_) => {
+    mock.waitToHaveBeenCalledTimes = (times_: number) => {
         times = times_;
         if (calledCount >= times) {
             return Promise.resolve();
