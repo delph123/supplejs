@@ -134,7 +134,11 @@ export function createDOMComponent(component: SuppleNode): DOMComponent {
             children,
         });
 
-        return createRenderEffect(renderEffect, Component);
+        if (typeof renderEffect === "function") {
+            return createRenderEffect(renderEffect, Component);
+        } else {
+            return createDOMComponent(renderEffect);
+        }
     } else if (component.__kind === "html_element") {
         return createHtmlElement(component);
     } else {

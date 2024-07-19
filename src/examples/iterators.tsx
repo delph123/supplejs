@@ -69,5 +69,5 @@ export function Indexer() {
 
 export function LooperApp() {
     const [list, setList] = createSignal<any[]>([]);
-    return () => <Looper list={list} setList={setList} />;
+    return <Looper list={list} setList={setList} />;
 }

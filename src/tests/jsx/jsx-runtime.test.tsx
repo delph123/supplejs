@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 import { Fragment, h, SuppleNode } from "../../core";
 import { jsx, jsxDEV, jsxs } from "../../core/jsx-runtime";
 
@@ -7,6 +7,8 @@ const Aside = (props: { id?: string; className?: string; children?: SuppleNode }
         {props.children}
     </aside>
 );
+
+const dummyHandler = () => void 0;
 
 describe("hypertext", () => {
     it("accepts no props, no children", () => {
@@ -18,9 +20,9 @@ describe("hypertext", () => {
         expect(
             h("br", {
                 id: "nice",
-                onClick: vi.fn,
+                onClick: dummyHandler,
             }),
-        ).toEqual(<br id="nice" onClick={vi.fn} />);
+        ).toEqual(<br id="nice" onClick={dummyHandler} />);
         expect(h(Aside, { id: "nono", className: "nini" })).toEqual(<Aside id="nono" className="nini" />);
     });
 
@@ -114,9 +116,9 @@ describe("jsx-runtime", () => {
         expect(
             jsx("br", {
                 id: "nice",
-                onClick: vi.fn,
+                onClick: dummyHandler,
             }),
-        ).toEqual(<br id="nice" onClick={vi.fn} />);
+        ).toEqual(<br id="nice" onClick={dummyHandler} />);
         // props + children
         expect(
             jsx("h1", {
@@ -147,9 +149,9 @@ describe("jsx-runtime", () => {
         expect(
             jsxDEV("br", {
                 id: "nice",
-                onClick: vi.fn,
+                onClick: dummyHandler,
             }),
-        ).toEqual(<br id="nice" onClick={vi.fn} />);
+        ).toEqual(<br id="nice" onClick={dummyHandler} />);
         // props + children
         expect(
             jsxDEV("h1", {

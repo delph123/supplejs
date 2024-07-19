@@ -26,26 +26,24 @@ export function ReduxSlice() {
         },
     });
 
-    return () => {
-        return (
+    return (
+        <div>
+            <p>There is {createReduxSelector(store, (s) => s.some)} oranges.</p>
+            <button onclick={() => dispatch({ type: "addSome", payload: 3 })}>Increment</button>
             <div>
-                <p>There is {createReduxSelector(store, (s) => s.some)} oranges.</p>
-                <button onclick={() => dispatch({ type: "addSome", payload: 3 })}>Increment</button>
-                <div>
-                    <input
-                        type="text"
-                        id="other"
-                        name="other"
-                        value={createReduxSelector(store, (s) => s.other)}
-                        oninput={(e) =>
-                            dispatch({
-                                type: "changeOther",
-                                payload: e.currentTarget.value,
-                            })
-                        }
-                    ></input>
-                </div>
+                <input
+                    type="text"
+                    id="other"
+                    name="other"
+                    value={createReduxSelector(store, (s) => s.other)}
+                    oninput={(e) =>
+                        dispatch({
+                            type: "changeOther",
+                            payload: e.currentTarget.value,
+                        })
+                    }
+                ></input>
             </div>
-        );
-    };
+        </div>
+    );
 }

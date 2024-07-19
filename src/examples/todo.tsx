@@ -62,8 +62,8 @@ export function Todo() {
 
     const filteredList = () => list().filter(FILTER_MAP[selectedFilter()]);
 
-    return () => (
-        <div class="todoapp stack-large">
+    return (
+        <div className="todoapp stack-large">
             <Form value={value} setValue={setValue} setList={setList} />
 
             <FilterBar selectedFilter={selectedFilter} setSelectedFilter={setSelectedFilter} />
@@ -75,14 +75,14 @@ export function Todo() {
                 </h3>
             )}
 
-            <ul class="todo-list stack-large stack-exception">
+            <ul className="todo-list stack-large stack-exception">
                 <For each={filteredList}>
                     {(item: TodoItem) => <TodoListItem item={item} setList={setList} />}
                 </For>
             </ul>
 
             {() => (
-                <p class="task-completed">
+                <p className="task-completed">
                     {list().filter((t) => !t.done()).length} task
                     {list().filter((t) => !t.done()).length !== 1 ? "s" : ""} remaining.
                 </p>
@@ -96,14 +96,14 @@ interface TodoListItemProps {
     setList: (v: (s?: TodoItem[]) => TodoItem[]) => void;
 }
 
-function TodoListItem({ item, setList }: TodoListItemProps) {
-    return () => (
-        <li class="todo stack-small">
-            <div class="c-cb">
+function TodoListItem({ item, setList }: Readonly<TodoListItemProps>) {
+    return (
+        <li className="todo stack-small">
+            <div className="c-cb">
                 {() => (
                     <input
                         type="checkbox"
-                        onchange={(e) => item.setDone(e.currentTarget.checked)}
+                        onChange={(e) => item.setDone(e.currentTarget.checked)}
                         {...(item.done() && {
                             checked: true,
                         })}
@@ -112,32 +112,35 @@ function TodoListItem({ item, setList }: TodoListItemProps) {
                 {() =>
                     item.edit() ? (
                         <input
-                            class="todo-label"
+                            className="todo-label"
                             id={"input-" + item.key}
                             value={item.label}
-                            oninput={(e) => {
+                            onInput={(e) => {
                                 item.label = e.currentTarget.value;
                             }}
                         />
                     ) : (
-                        <label class="todo-label" style={item.done() ? "text-decoration: line-through;" : ""}>
+                        <label
+                            className="todo-label"
+                            style={item.done() ? "text-decoration: line-through;" : ""}
+                        >
                             {item.label}
                         </label>
                     )
                 }
             </div>
-            <div class="btn-group">
+            <div className="btn-group">
                 <button
-                    class="btn"
-                    onclick={() => {
+                    className="btn"
+                    onClick={() => {
                         item.setEdit(!item.edit());
                     }}
                 >
                     {() => (item.edit() ? "Update" : "Edit")}
                 </button>
                 <button
-                    class="btn btn__danger"
-                    onclick={() => {
+                    className="btn btn__danger"
+                    onClick={() => {
                         setList((l?: TodoItem[]) => l!.filter((it) => it.key !== item.key));
                     }}
                 >
@@ -154,25 +157,25 @@ interface FormProps {
     setList: (v: (s?: TodoItem[]) => TodoItem[]) => void;
 }
 
-function Form({ value, setValue, setList }: FormProps) {
-    return () => (
+function Form({ value, setValue, setList }: Readonly<FormProps>) {
+    return (
         <form>
-            <h2 class="label-wrapper">
-                <label class="label__lg">What needs to be done?</label>
+            <h2 className="label-wrapper">
+                <label className="label__lg">What needs to be done?</label>
             </h2>
-            <div class="form-input">
+            <div className="form-input">
                 <input
                     type="text"
                     id="new-todo-input"
                     name="text"
-                    class="input input__lg"
+                    className="input input__lg"
                     value={value}
-                    oninput={(e) => setValue(e.currentTarget.value)}
+                    onInput={(e) => setValue(e.currentTarget.value)}
                 />
                 <button
                     type="submit"
-                    class="btn btn__primary btn__lg"
-                    onclick={(e) => {
+                    className="btn btn__primary btn__lg"
+                    onClick={(e) => {
                         e.preventDefault();
                         setList((l) => [...l!, createItem(value())]);
                         setValue("");
@@ -188,22 +191,22 @@ function Form({ value, setValue, setList }: FormProps) {
 interface FilterButtonProps {
     label: Filters;
     pressed: () => Filters;
-    onpress: (v: Filters) => void;
+    onPress: (v: Filters) => void;
 }
 
-function FilterButton({ label, pressed, onpress }: FilterButtonProps) {
-    return () => (
+function FilterButton({ label, pressed, onPress }: Readonly<FilterButtonProps>) {
+    return (
         <button
             type="button"
-            class="btn toggle-btn"
-            onclick={() => {
-                onpress(label);
+            className="btn toggle-btn"
+            onClick={() => {
+                onPress(label);
             }}
-            aria-pressed={pressed() === label}
+            aria-pressed={() => pressed() === label}
         >
-            <span class="visually-hidden">Show </span>
+            <span className="visually-hidden">Show </span>
             <span>{label}</span>
-            <span class="visually-hidden"> tasks</span>
+            <span className="visually-hidden"> tasks</span>
         </button>
     );
 }
@@ -213,11 +216,11 @@ interface FilterBarProps {
     setSelectedFilter: (v: Filters) => void;
 }
 
-function FilterBar({ selectedFilter, setSelectedFilter }: FilterBarProps) {
-    return () => (
-        <div class="filters btn-group stack-exception">
+function FilterBar({ selectedFilter, setSelectedFilter }: Readonly<FilterBarProps>) {
+    return (
+        <div className="filters btn-group stack-exception">
             {Object.values(Filters).map((f) => (
-                <FilterButton label={f} pressed={selectedFilter} onpress={setSelectedFilter} />
+                <FilterButton label={f} pressed={selectedFilter} onPress={setSelectedFilter} />
             ))}
         </div>
     );

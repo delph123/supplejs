@@ -1,6 +1,6 @@
 // @ts-expect-error rainbow-gradient does not expose type info
 import rainbowGradient from "rainbow-gradient";
-import { h, createSignal, createEffect, onCleanup, For, SuppleNodeEffect } from "../core";
+import { h, createSignal, createEffect, onCleanup, For, SuppleComponentReturn } from "../core";
 
 interface ColorProps {
     colors: () => string[];
@@ -8,10 +8,10 @@ interface ColorProps {
 
 const NB_COLORS = 360 * 8;
 
-function ReactColors({ colors }: ColorProps): SuppleNodeEffect {
+function ReactColors({ colors }: ColorProps): SuppleComponentReturn {
     // const minWidth = `${100.0 / NB_COLORS}vw`;
     const minWidth = "1px";
-    return () => (
+    return (
         <div
             style={{
                 display: "flex",
@@ -35,7 +35,7 @@ function ReactColors({ colors }: ColorProps): SuppleNodeEffect {
 
 const rainbowColors = (rainbowGradient(360) as number[][]).map(([r, g, b]) => `rgb(${r},${g},${b})`);
 
-function RainbowApp(): SuppleNodeEffect {
+function RainbowApp(): SuppleComponentReturn {
     const [colors, setColors] = createSignal(
         new Array(NB_COLORS).fill(0).map((_, i) => rainbowColors[i % rainbowColors.length]),
     );
@@ -58,7 +58,7 @@ function RainbowApp(): SuppleNodeEffect {
         });
     });
 
-    return () => <ReactColors colors={colors} />;
+    return <ReactColors colors={colors} />;
 }
 
 export default RainbowApp;

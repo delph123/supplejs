@@ -6,7 +6,7 @@ import {
     createReaction,
     createSignal,
     onCleanup,
-    SuppleNodeEffect,
+    SuppleComponentReturn,
     getOwner,
     createMemo,
     runWithOwner,
@@ -15,7 +15,7 @@ import {
     onMount,
 } from "../core";
 
-export function NestedEffect(): SuppleNodeEffect {
+export function NestedEffect(): SuppleComponentReturn {
     const [a, setA] = createSignal(1);
     const [b, setB] = createSignal(10);
     const [c, setC] = createSignal(100);
@@ -79,10 +79,10 @@ export function NestedEffect(): SuppleNodeEffect {
         setA(a() + 1);
     }, 5000);
 
-    return () => 123456789012345678901234567890n;
+    return 123456789012345678901234567890n;
 }
 
-export function MyNameIs(): SuppleNodeEffect {
+export function MyNameIs(): SuppleComponentReturn {
     const [firstName, setFirstName] = createSignal("John");
     const [lastName, setLastName] = createSignal("Doe");
     const [showLastName, setShowLastName] = createSignal(true);
@@ -100,7 +100,7 @@ export function MyNameIs(): SuppleNodeEffect {
     setLastName("B");
     setFirstName("Marc");
 
-    return () => "Hello world!";
+    return "Hello world!";
 }
 
 declare global {
@@ -166,7 +166,7 @@ export function Referencing() {
     createEffect(() => console.log("Effect:", ref.current));
     createComputed(() => console.log("Computed:", ref.current));
 
-    return () => (
+    return (
         <>
             <div ref={ref}>Hello!</div>
             <div ref={(el: HTMLDivElement) => console.log("Assigning ref:", el)}>How are you?</div>

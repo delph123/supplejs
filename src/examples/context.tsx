@@ -22,14 +22,12 @@ const CounterContext = createContext<{ count: () => number; setCount: (x: number
 
 function CounterProvider(props: { count?: number; children?: any }) {
     const [count, setCount] = createSignal(props.count ?? 0);
-    return () => (
-        <CounterContext.Provider value={{ count, setCount }}>{props.children}</CounterContext.Provider>
-    );
+    return <CounterContext.Provider value={{ count, setCount }}>{props.children}</CounterContext.Provider>;
 }
 
 function Example() {
     const { count, setCount } = useContext(CounterContext);
-    return () => <button onClick={() => setCount(count() + 1)}>{count}</button>;
+    return <button onClick={() => setCount(count() + 1)}>{count}</button>;
 }
 
 function Fun() {
@@ -52,7 +50,7 @@ function Fun() {
 export function MultiContextApp() {
     const [count, setCount] = createSignal(3);
     const [count2, setCount2] = createSignal(4);
-    return () => (
+    return (
         <>
             <div>
                 <CounterProvider count={12}>
@@ -92,7 +90,7 @@ const NumberContext = createContext(0);
 export function ContextPassingApp() {
     const [count, setCount] = createSignal(0);
     const [color, setColor] = createSignal("dodgerblue");
-    return () => (
+    return (
         <pre>
             <button onClick={() => setCount(count() + 1)}>{count}</button>
             <input style={{ marginLeft: "0.8em" }} value={color} onInput={(e) => setColor(e.target.value)} />
@@ -147,12 +145,11 @@ export function ContextPassingApp() {
 
 function BadComponent({ color }: { color: Accessor<string> }) {
     const val = useContext(NumberContext);
-    const col = color();
-    return () => <font color={col}>||{val}||</font>;
+    return <font color={color()}>||{val}||</font>;
 }
 
 function ContextReceiver() {
-    return () => (
+    return (
         <font size="3">
             <label>
                 <ContextReceiver2 />
@@ -162,7 +159,7 @@ function ContextReceiver() {
 }
 
 function ContextReceiver2() {
-    return () => <ContextReceiver3 color="blue" />;
+    return <ContextReceiver3 color="blue" />;
 }
 
 function ContextReceiver3({ color }: { color: ValueOrAccessor<string> }) {

@@ -5,7 +5,7 @@ import {
     onMount,
     For,
     onCleanup,
-    SuppleNodeEffect,
+    SuppleComponentReturn,
     untrack,
     Accessor,
     Setter,
@@ -54,7 +54,7 @@ export function Looper({
 
     onMount(init);
 
-    return () => (
+    return (
         <>
             <div>
                 <button onClick={init}>Init</button> <button onClick={change}>Change label</button>{" "}
@@ -79,13 +79,13 @@ export function Counter({
 }: {
     label: Accessor<number | string>;
     counterSpy: (v: string, n: string | number) => void;
-}): SuppleNodeEffect {
+}): SuppleComponentReturn {
     const [counter, setCounter] = createSignal(5);
 
     counterSpy("mounting", untrack(label));
     onCleanup(() => counterSpy("cleaning-up", untrack(label)));
 
-    return () => (
+    return (
         <>
             Counter{" "}
             <span role="caption" data-testid={() => `label-${trim(label())}`}>
