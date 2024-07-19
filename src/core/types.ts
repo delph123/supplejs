@@ -57,7 +57,8 @@ export type SuppleNodeEffect = () => SuppleNode;
 // Helper type for component expecting a single child
 export type SingleChild<T> = [T] | T;
 
-export type SuppleComponent<Props> = (props: Props) => SuppleNodeEffect;
+export type SuppleComponent<Props> = (props: Props) => SuppleNode;
+export type SuppleComponentReturn = ReturnType<SuppleComponent<unknown>>;
 
 export interface Context<T> {
     id: symbol;

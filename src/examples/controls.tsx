@@ -74,7 +74,7 @@ export function TestWhen() {
 export function ForElseApp() {
     const [elems, setElems] = createSignal([10, 11]);
 
-    return () => (
+    return (
         <>
             <div>
                 <button
@@ -99,7 +99,7 @@ export function ForElseApp() {
 export function ForElse<T>({ each, fallback, equals, children }: ForProps<T>) {
     onMount(() => console.log("Mounting ForElse"));
     onCleanup(() => console.log("Cleaning-up ForElse"));
-    return () => (
+    return (
         <Show when={() => each?.() && !each()[Symbol.iterator]().next().done} fallback={fallback}>
             <For each={each} equals={equals}>
                 {toArray(children)[0]}
@@ -111,7 +111,7 @@ export function ForElse<T>({ each, fallback, equals, children }: ForProps<T>) {
 export function WhenAppWithSignal() {
     const [first, setFirst] = createSignal(true);
     const [second, setSecond] = createSignal(false);
-    return () => (
+    return (
         <>
             <Show when={first}>
                 <CounterButton nb={5} onexit={() => 0} />
@@ -133,7 +133,7 @@ export function TestSwitch() {
     const [content, setContent] = createSignal<any>(1);
     setTimeout(() => setContent(2), 1000);
     setTimeout(() => setContent(3), 2000);
-    return () => (
+    return (
         <Switch fallback={<div>By now!</div>}>
             <Match when={() => content() === 1}>
                 <div>Hello...</div>
@@ -161,7 +161,7 @@ export function LoginApp() {
     const [loggedIn, setLoggedIn] = createSignal(false);
     const toggle = () => setLoggedIn(!loggedIn());
 
-    return () => (
+    return (
         <Show when={loggedIn} fallback={<button oncapture:click={toggle}>Log in</button>}>
             <button on:click={toggle}>Log out</button>
             <Portal mount={document.getElementById("portal")!} useShadow>
@@ -176,7 +176,7 @@ export function LoginApp() {
 }
 
 function MatchWrapper({ x, children }: { x: Accessor<number>; children?: SuppleNode }) {
-    return () => (
+    return (
         <>
             <Match when={() => x() == 7}>
                 <p>{x} is 7</p>
@@ -201,7 +201,7 @@ export function SwitchApp() {
     setTimeout(() => setForNums([11, 14]), 3000);
     setTimeout(() => setSingle(false), 4000);
 
-    return () => (
+    return (
         <div style="border: 1px solid grey;">
             <Switch fallback={<font>{x} is between 5 and 15</font>}>
                 dsgfjl

@@ -2,7 +2,7 @@ import { h, createSignal, Accessor } from "../core";
 import useCSS from "./useCss";
 
 const Square = (props: { onClick: () => void; value: Accessor<string | null> }) => {
-    return () => (
+    return (
         <button class="square" onClick={props.onClick}>
             {props.value}
         </button>
@@ -11,10 +11,10 @@ const Square = (props: { onClick: () => void; value: Accessor<string | null> }) 
 
 const Board = (props: { squares: Accessor<(string | null)[]>; onClick: (n: number) => void }) => {
     function renderSquare(i: number) {
-        return () => <Square value={() => props.squares()[i]} onClick={() => props.onClick(i)} />;
+        return <Square value={() => props.squares()[i]} onClick={() => props.onClick(i)} />;
     }
 
-    return () => (
+    return (
         <div>
             <div class="board-row">
                 {renderSquare(0)}
@@ -96,7 +96,7 @@ const Game = () => {
             );
         });
 
-    return () => (
+    return (
         <div class="game">
             <div class="game-board">
                 <Board squares={() => state().showStep} onClick={(i) => handleClick(i)} />

@@ -4,16 +4,15 @@ import {
     createSignal,
     h,
     onCleanup,
-    untrack,
     version,
     createChainedList,
-    SuppleNodeEffect,
+    SuppleComponentReturn,
     onMount,
 } from "../core";
 import { createLogger } from "../core/helper";
 
-function Header(): SuppleNodeEffect {
-    return () => (
+function Header(): SuppleComponentReturn {
+    return (
         <div>
             <h2>Hello!</h2>
             <h5>
@@ -23,8 +22,8 @@ function Header(): SuppleNodeEffect {
     );
 }
 
-function Footer({ version }: { version: string }): SuppleNodeEffect {
-    return () => <p class="read-the-docs">This page was created with SuppleJS v{version}</p>;
+function Footer({ version }: { version: string }): SuppleComponentReturn {
+    return <p class="read-the-docs">This page was created with SuppleJS v{version}</p>;
 }
 
 const clockLogger = createLogger("clock");
@@ -37,7 +36,7 @@ export function Clock({
     level: number;
     probability?: number;
     clock?: () => number;
-}): SuppleNodeEffect {
+}): SuppleComponentReturn {
     let notif: () => boolean;
 
     if (clock) {
@@ -88,12 +87,11 @@ function withPrevious<T>(variable: () => T, initialValue: T) {
     );
 }
 
-export function Counter(props: { index: number; total: () => string | number }): SuppleNodeEffect {
+export function Counter(props: {
+    readonly index: number;
+    readonly total: () => string | number;
+}): SuppleComponentReturn {
     const [counter, setCounter] = createSignal(10);
-
-    const label = () => {
-        return `Counter ${props.index} / ${props.total()} >> ${counter()}.`;
-    };
 
     const counterMemo = withPrevious(counter, 0);
 
@@ -106,9 +104,9 @@ export function Counter(props: { index: number; total: () => string | number }):
         setSum(sum() - counter());
     });
 
-    return () => (
+    return (
         <div class="card">
-            {label}
+            Counter {props.index} / {props.total} &gt;&gt; {counter}.
             <button onclick={() => setCounter(counter() + 1)}>+</button>
             <button onclick={() => setCounter(counter() - 1)}>-</button>
         </div>
@@ -118,10 +116,10 @@ export function Counter(props: { index: number; total: () => string | number }):
 const [sum, setSum] = createSignal(0);
 
 export function Total() {
-    return () => <p>TOTAL = {sum}</p>;
+    return <p>TOTAL = {sum}</p>;
 }
 
-export function App(): SuppleNodeEffect {
+export function App(): SuppleComponentReturn {
     const [ChainedList, push, pop, size] = createChainedList({
         tag: "div",
         attributes: {
@@ -136,14 +134,12 @@ export function App(): SuppleNodeEffect {
 
     const btns = (
         <div>
-            <button onclick={() => push(<Counter index={untrack(() => size() + 1)} total={size} />)}>
-                Add Counter
-            </button>
+            <button onclick={() => push(<Counter index={size() + 1} total={size} />)}>Add Counter</button>
             <button onclick={pop}>Remove Counter</button>
         </div>
     );
 
-    return () => (
+    return (
         <div>
             <Header />
             {btns}
@@ -154,10 +150,10 @@ export function App(): SuppleNodeEffect {
     );
 }
 
-export function MultiApp(): SuppleNodeEffect {
+export function MultiApp(): SuppleComponentReturn {
     const [ChainedList, push, pop] = createChainedList();
 
-    return () => (
+    return (
         <div>
             <ChainedList />
             <button onclick={() => push(<App />)}>+</button>
@@ -166,7 +162,7 @@ export function MultiApp(): SuppleNodeEffect {
     );
 }
 
-export function GoodBye({ onexit }: { onexit: () => void }): SuppleNodeEffect {
+export function GoodBye({ onexit }: { onexit: () => void }): SuppleComponentReturn {
     let n = 0;
     const [c, setC] = createSignal(false);
     setInterval(() => setC((c) => !c), 2000);

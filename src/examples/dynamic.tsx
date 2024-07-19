@@ -20,7 +20,7 @@ export function DynamicApp() {
         });
     });
 
-    return () => (
+    return (
         <Dynamic component="div">
             <Dynamic component="h1" id="toto">
                 Header{" "}
@@ -99,7 +99,7 @@ function PlayWithChildren(props: { children?: any[]; index: () => number }) {
     const resolved = children(() => props.index() !== 2 && proxy());
     // const resolved = () => props?.children ?? [];
 
-    return () => (
+    return (
         <>
             {/* Extracting {() => rankString(props.index)} child:
             <ol start={() => props.index() + 1}>
@@ -129,7 +129,7 @@ export function ChildrenPlayer() {
     const [idx, , IdxPlayer] = createIncrement(0);
     const [clock, , ClockPlayer] = createIncrement(100);
 
-    return () => (
+    return (
         <div>
             <h3>Playing with children</h3>
             <div

@@ -87,17 +87,17 @@ function buildData(count: number): DataRecord[] {
     return data;
 }
 
-const Button =
-    ({ id, text, fn }: { id: string; text: string; fn: () => void }) =>
-    () => (
+function Button({ id, text, fn }: { id: string; text: string; fn: () => void }) {
+    return (
         <div class="col-sm-6 smallpad">
             <button id={id} class="btn btn-primary btn-block" type="button" onclick={fn}>
                 {text}
             </button>
         </div>
     );
+}
 
-export const App = () => {
+export function App() {
     useCSS("bootstrap.css");
     useCSS("js_bench.css");
 
@@ -125,7 +125,7 @@ export const App = () => {
                 return [...d.slice(0, idx), ...d.slice(idx + 1)];
             });
 
-    return () => (
+    return (
         <div class="container">
             <div class="jumbotron">
                 <div class="row">
@@ -176,4 +176,4 @@ export const App = () => {
             <span class="preloadicon glyphicon glyphicon-remove" aria-hidden="true" />
         </div>
     );
-};
+}

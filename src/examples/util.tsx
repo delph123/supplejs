@@ -27,13 +27,13 @@ export function createIncrement(initialValue = 0) {
         setValue((v) => v + 1);
     }
 
-    function Player({ color = "grey", style = {}, paused = false }: IncrementPlayerProps) {
+    function Player({ color = "grey", style = {}, paused = false }: Readonly<IncrementPlayerProps>) {
         createEffect(() => {
             const pause = toValue(paused);
             untrack(() => toggle(!pause));
         });
 
-        return () => (
+        return (
             <div
                 style={{
                     border: "1px solid " + color,
@@ -60,6 +60,7 @@ export function createIncrement(initialValue = 0) {
                             height: "1em",
                             marginBottom: "-2px",
                         }}
+                        alt={() => (started() ? "pause" : "play")}
                         src={() => (started() ? "pause.svg" : "play.svg")}
                     ></img>
                 </button>
@@ -71,6 +72,7 @@ export function createIncrement(initialValue = 0) {
                             height: "1em",
                             marginBottom: "-2px",
                         }}
+                        alt="plus"
                         src="plus.svg"
                     ></img>
                 </button>

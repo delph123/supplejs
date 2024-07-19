@@ -5,12 +5,12 @@ import {
     createSignal,
     onCleanup,
     createChainedList,
-    SuppleNodeEffect,
+    SuppleComponentReturn,
     Switch,
     Match,
 } from "../core";
 
-function Dog(): SuppleNodeEffect {
+function Dog(): SuppleComponentReturn {
     const [dog, { mutate, refetch }] = createResource<string>(() => {
         return new Promise((resolve, reject) => {
             setTimeout(async () => {
@@ -64,10 +64,10 @@ function Dog(): SuppleNodeEffect {
     };
 }
 
-export function AsyncApp(): SuppleNodeEffect {
+export function AsyncApp(): SuppleComponentReturn {
     const [ChainedList, push, pop] = createChainedList();
 
-    return () => (
+    return (
         <div>
             <ChainedList />
             <button onClick={() => push(<Dog />)}>More dogs!</button>
@@ -76,14 +76,14 @@ export function AsyncApp(): SuppleNodeEffect {
     );
 }
 
-export function AutoCounter(): SuppleNodeEffect {
+export function AutoCounter(): SuppleComponentReturn {
     const [count, setCount] = createSignal(0);
     const [delay, setDelay] = createSignal(1000);
     createEffect(() => {
         const interval = setInterval(() => setCount(count() + 1), delay());
         onCleanup(() => clearInterval(interval));
     });
-    return () => (
+    return (
         <div>
             <h1>{count}</h1>
             <input
@@ -95,7 +95,7 @@ export function AutoCounter(): SuppleNodeEffect {
     );
 }
 
-export function AsyncSwitch() {
+export function AsyncSwitch(): SuppleComponentReturn {
     let resolvePromise: (v: string) => void, rejectPromise: (r: string) => void;
     let num = 0;
     const [data, { refetch, mutate }] = createResource<string>(
@@ -105,7 +105,7 @@ export function AsyncSwitch() {
                 rejectPromise = reject;
             }),
     );
-    return () => (
+    return (
         <main>
             <div style={{ display: "flex", gap: "5px", alignItems: "baseline" }}>
                 <button onClick={() => resolvePromise("Hello world! (" + num++ + ")")}>Finish!</button>
@@ -115,10 +115,10 @@ export function AsyncSwitch() {
                 <span style="font-size: 90%; color: darkblue;">State: {() => data.state}</span>
             </div>
             <Switch keyed>
-                <Match when={data.loading}>
+                <Match when={() => data.loading}>
                     <p>Loading...</p>
                 </Match>
-                <Match when={data.error}>{(error) => <p style="color: red;">{error}</p>}</Match>
+                <Match when={() => data.error}>{(error) => <p style="color: red;">{error}</p>}</Match>
                 <Match when={data}>{(response) => <p>{response}</p>}</Match>
             </Switch>
         </main>
