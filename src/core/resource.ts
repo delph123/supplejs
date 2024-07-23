@@ -1,18 +1,28 @@
-import { ValueOrAccessor } from "./types";
-import { createEffect, createMemo, createSignal } from "./reactivity";
+import { Accessor, ValueOrAccessor } from "./types";
+import { untrack } from "./context";
+import { createComputed, createMemo, createSignal } from "./reactivity";
 
 export type FetcherParameter<P> = P | false | null;
+export type Fetcher<P, R> = (
+    p: P,
+    info: { value: R | undefined; refetching: boolean | unknown },
+) => R | Promise<R>;
 
-export type Resource<R, P> = [
+export type ResourceOptions<T> = {
+    initialValue?: T;
+};
+
+export type ResourceReturn<R> = [
     {
         (): R | undefined;
         loading: boolean;
         error: any;
         state: "unresolved" | "pending" | "ready" | "refreshing" | "errored";
+        latest: R | undefined;
     },
     {
-        mutate: (r?: R) => void;
-        refetch: (p?: P) => void;
+        mutate: (r?: R) => R | undefined;
+        refetch: (info?: unknown) => void;
     },
 ];
 
@@ -30,85 +40,91 @@ export type Resource<R, P> = [
  * @param source an optional signal for passing parameters to the fetcher
  * @param fetcher the asynchronous fetcher function
  */
-export function createResource<R, P = any>(fetcher: (p: P) => R | Promise<R>): Resource<R, P>;
+export function createResource<R, P = any>(
+    fetcher: Fetcher<P, R>,
+    options?: ResourceOptions<R>,
+): ResourceReturn<R>;
 export function createResource<R, P = any>(
     source: ValueOrAccessor<FetcherParameter<P>>,
-    fetcher: (p: P) => R | Promise<R>,
-): Resource<R, P>;
+    fetcher: Fetcher<P, R>,
+    options?: ResourceOptions<R>,
+): ResourceReturn<R>;
 export function createResource<R, P = any>(
-    source: ValueOrAccessor<FetcherParameter<P>> | ((p: P) => R | Promise<R>),
-    fetcher?: (p: P) => R | Promise<R>,
-): Resource<R, P> {
-    const [params, fetch] = createResourceParams<R, P>(source, fetcher);
+    source: ValueOrAccessor<FetcherParameter<P>> | Fetcher<P, R>,
+    fetcher?: Fetcher<P, R> | ResourceOptions<R>,
+    options?: ResourceOptions<R>,
+): ResourceReturn<R> {
+    const [params, fetch, opts] = createResourceParams<R, P>(source, fetcher, options);
 
-    let loaded = false;
-    let previousData: R | undefined = undefined;
-    let paramValue: P | null | false = null;
+    let loaded = opts.initialValue !== undefined;
 
     const [refresh, setRefresh] = createSignal({
         refresh: false,
-        value: undefined as P | null | false,
+        info: undefined as unknown,
     });
 
     const [result, setResult] = createSignal({
-        data: undefined as R | undefined,
+        latest: opts.initialValue,
         loading: false,
         error: undefined as any,
-        state: "unresolved" as "unresolved" | "pending" | "ready" | "refreshing" | "errored",
+        state: "unresolved" as ResourceReturn<R>[0]["state"],
     });
 
-    createEffect(() => {
+    createComputed(() => {
         const refreshing = refresh();
-        paramValue = refreshing.refresh ? refreshing.value : params();
-        refreshing.refresh = false;
+        const paramValue = params();
         if (paramValue !== null && paramValue !== false) {
-            const r = fetch(paramValue);
+            const r = fetch(paramValue, {
+                value: untrack(result).latest,
+                refetching: refreshing.info === undefined ? refreshing.refresh : refreshing.info,
+            });
             if (r instanceof Promise) {
-                setResult({
-                    loading: !loaded,
-                    data: previousData,
-                    error: undefined,
+                setResult((prev) => ({
+                    ...prev,
+                    loading: true,
                     state: loaded ? "refreshing" : "pending",
-                });
-                r.then((value) => {
-                    loaded = true;
-                    previousData = value;
-                    setResult({
-                        data: value,
-                        loading: false,
-                        error: undefined,
-                        state: "ready",
-                    });
-                }).catch((error) => {
-                    previousData = undefined;
-                    setResult({
-                        data: undefined,
-                        loading: false,
-                        error: error,
-                        state: "errored",
-                    });
-                });
+                }));
+                r.then(
+                    (value) => {
+                        loaded = true;
+                        setResult({
+                            latest: value,
+                            loading: false,
+                            error: undefined,
+                            state: "ready",
+                        });
+                    },
+                    (error) => {
+                        loaded = true;
+                        setResult((prev) => ({
+                            ...prev,
+                            loading: false,
+                            error: error,
+                            state: "errored",
+                        }));
+                    },
+                );
             } else {
                 loaded = true;
-                previousData = r;
                 setResult({
-                    data: r,
+                    latest: r,
                     loading: false,
                     error: undefined,
                     state: "ready",
                 });
             }
         } else {
-            setResult({
-                data: undefined,
+            setResult((prev) => ({
+                ...prev, // ??
                 loading: false,
-                error: undefined,
-                state: "unresolved",
-            });
+                state: loaded ? "ready" : "unresolved",
+            }));
         }
+        refreshing.refresh = false;
+        refreshing.info = undefined;
     });
 
-    const resource = createMemo(() => result().data);
+    const resource = createMemo(() => result().latest);
 
     Object.defineProperties(resource, {
         loading: {
@@ -120,39 +136,45 @@ export function createResource<R, P = any>(
         state: {
             get: createMemo(() => result().state),
         },
+        latest: {
+            get: createMemo(() => result().latest),
+        },
     });
 
     return [
-        resource as Resource<R, P>[0],
+        resource as ResourceReturn<R>[0],
         {
             mutate(r?: R) {
-                previousData = r;
                 setResult({
-                    data: r,
+                    latest: r,
                     loading: false,
                     error: undefined,
                     state: "ready",
                 });
+                return r;
             },
-            refetch(p?: P) {
+            refetch(info?: unknown) {
                 setRefresh({
                     refresh: true,
-                    value: p ?? paramValue,
+                    info: info,
                 });
             },
         },
     ];
 }
 
-function createResourceParams<R, P>(
-    source: ValueOrAccessor<FetcherParameter<P>> | ((p: P) => R | Promise<R>),
-    fetcher?: (p: P) => R | Promise<R>,
-) {
-    let params = typeof source === "function" ? source : () => source;
-    let fetch = fetcher;
-    if (fetcher == null) {
-        params = (() => undefined) as () => P;
-        fetch = source as (p: P) => R | Promise<R>;
+export function createResourceParams<R, P>(
+    source: ValueOrAccessor<FetcherParameter<P>> | Fetcher<P, R>,
+    fetcher?: Fetcher<P, R> | ResourceOptions<R>,
+    options?: ResourceOptions<R>,
+): readonly [Accessor<FetcherParameter<P>>, Fetcher<P, R>, ResourceOptions<R>] {
+    if (typeof fetcher === "function") {
+        return [
+            typeof source === "function" ? (source as Accessor<FetcherParameter<P>>) : () => source,
+            fetcher,
+            options ?? {},
+        ] as const;
+    } else {
+        return [() => undefined as P, source as Fetcher<P, R>, fetcher ?? {}] as const;
     }
-    return [params, fetch] as [() => FetcherParameter<P>, (p: P) => R | Promise<R>];
 }
