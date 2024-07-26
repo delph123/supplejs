@@ -58,3 +58,5 @@ export function createSideEffectSpy() {
 
     return [spy, act] as const;
 }
+
+export function noop() {}

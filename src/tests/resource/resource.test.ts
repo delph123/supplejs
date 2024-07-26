@@ -1,25 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
-import { renderHook } from "supplejs-testing-library";
-import { createResource, createSignal, ValueOrAccessor } from "../../core";
-import { Fetcher, FetcherParameter, ResourceOptions, ResourceReturn } from "../../core/resource";
-
-function renderResource<R, P = any>(fetcher: Fetcher<P, R>, options?: ResourceOptions<R>): ResourceReturn<R>;
-function renderResource<R, P = any>(
-    source: ValueOrAccessor<FetcherParameter<P>>,
-    fetcher: Fetcher<P, R>,
-    options?: ResourceOptions<R>,
-): ResourceReturn<R>;
-function renderResource<R, P = any>(
-    source: ValueOrAccessor<FetcherParameter<P>> | Fetcher<P, R>,
-    fetcher?: Fetcher<P, R> | ResourceOptions<R>,
-    options?: ResourceOptions<R>,
-): ResourceReturn<R> {
-    return renderHook(createResource<R, P>, [
-        source as ValueOrAccessor<FetcherParameter<P>>,
-        fetcher as Fetcher<P, R>,
-        options,
-    ]).result;
-}
+import { createSignal, FetcherParameter } from "../../core";
+import { noop } from "../utils";
+import { renderResource } from "./helpers";
 
 describe("createResource", () => {
     it("accepts a fetcher returning a value directly", () => {
@@ -363,5 +345,3 @@ describe("createResource", () => {
         expect(data.latest).toEqual(9);
     });
 });
-
-function noop() {}

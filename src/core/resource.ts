@@ -56,6 +56,7 @@ export function createResource<R, P = any>(
 ): ResourceReturn<R> {
     const [params, fetch, opts] = createResourceParams<R, P>(source, fetcher, options);
 
+    let latestResponse: R | Promise<R>;
     let loaded = opts.initialValue !== undefined;
 
     const [refresh, setRefresh] = createSignal({
@@ -74,40 +75,52 @@ export function createResource<R, P = any>(
         const refreshing = refresh();
         const paramValue = params();
         if (paramValue !== null && paramValue !== false) {
-            const r = fetch(paramValue, {
+            latestResponse = fetch(paramValue, {
                 value: untrack(result).latest,
                 refetching: refreshing.info === undefined ? refreshing.refresh : refreshing.info,
             });
-            if (r instanceof Promise) {
+            if (latestResponse instanceof Promise) {
                 setResult((prev) => ({
                     ...prev,
                     loading: true,
                     state: loaded ? "refreshing" : "pending",
                 }));
-                r.then(
+                // Memorize the promise we are tackling
+                const currentPromise = latestResponse;
+                latestResponse.then(
                     (value) => {
-                        loaded = true;
-                        setResult({
-                            latest: value,
-                            loading: false,
-                            error: undefined,
-                            state: "ready",
-                        });
+                        // bail out if the promise we handle is not the latest response,
+                        // so that the resource only tracks status of last response and
+                        // ignore previous results (especially when the come out of order)
+                        if (currentPromise === latestResponse) {
+                            loaded = true;
+                            setResult({
+                                latest: value,
+                                loading: false,
+                                error: undefined,
+                                state: "ready",
+                            });
+                        }
                     },
                     (error) => {
-                        loaded = true;
-                        setResult((prev) => ({
-                            ...prev,
-                            loading: false,
-                            error: error,
-                            state: "errored",
-                        }));
+                        // bail out if the promise we handle is not the latest response,
+                        // so that the resource only tracks status of last response and
+                        // ignore previous results (especially when the come out of order)
+                        if (currentPromise === latestResponse) {
+                            loaded = true;
+                            setResult((prev) => ({
+                                ...prev,
+                                loading: false,
+                                error: error,
+                                state: "errored",
+                            }));
+                        }
                     },
                 );
             } else {
                 loaded = true;
                 setResult({
-                    latest: r,
+                    latest: latestResponse,
                     loading: false,
                     error: undefined,
                     state: "ready",
