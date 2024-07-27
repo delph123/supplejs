@@ -1,7 +1,7 @@
 import { renderHook } from "supplejs-testing-library";
 import {
     createResource,
-    Fetcher,
+    ResourceFetcher,
     FetcherParameter,
     ResourceOptions,
     ResourceReturn,
@@ -10,22 +10,22 @@ import {
 import { noop } from "../utils";
 
 export function renderResource<R, P = any>(
-    fetcher: Fetcher<P, R>,
+    fetcher: ResourceFetcher<P, R>,
     options?: ResourceOptions<R>,
 ): ResourceReturn<R>;
 export function renderResource<R, P = any>(
     source: ValueOrAccessor<FetcherParameter<P>>,
-    fetcher: Fetcher<P, R>,
+    fetcher: ResourceFetcher<P, R>,
     options?: ResourceOptions<R>,
 ): ResourceReturn<R>;
 export function renderResource<R, P = any>(
-    source: ValueOrAccessor<FetcherParameter<P>> | Fetcher<P, R>,
-    fetcher?: Fetcher<P, R> | ResourceOptions<R>,
+    source: ValueOrAccessor<FetcherParameter<P>> | ResourceFetcher<P, R>,
+    fetcher?: ResourceFetcher<P, R> | ResourceOptions<R>,
     options?: ResourceOptions<R>,
 ): ResourceReturn<R> {
     return renderHook(createResource<R, P>, [
         source as ValueOrAccessor<FetcherParameter<P>>,
-        fetcher as Fetcher<P, R>,
+        fetcher as ResourceFetcher<P, R>,
         options,
     ]).result;
 }
@@ -62,7 +62,7 @@ export function promisator<R>(initializedPromises?: number) {
         createManagedPromise<R>,
     );
     let slotPointer = 0;
-    const fetcher: Fetcher<number | undefined, R> = (p, { refetching }) => {
+    const fetcher: ResourceFetcher<number | undefined, R> = (p, { refetching }) => {
         const slot = typeof refetching === "number" ? refetching : (p ?? slotPointer);
         slotPointer++;
         if (slot >= managedPromises.length || managedPromises[slot] == null) {

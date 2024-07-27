@@ -191,8 +191,8 @@ describe("createResource", () => {
         expect(data.state).toEqual("pending");
 
         mutate(17);
-        expect(data.state).toEqual("ready");
-        expect(data.loading).toBe(false);
+        expect(data.state).toEqual("pending");
+        expect(data.loading).toBe(true);
         expect(data.error).toBeUndefined();
         expect(data.latest).toEqual(17);
         expect(data()).toEqual(17);
@@ -217,6 +217,7 @@ describe("createResource", () => {
         expect(data.latest).toEqual(9);
 
         mutate(11);
+        expect(data.state).toEqual("refreshing");
         expect(data.latest).toEqual(11);
         expect(data()).toEqual(11);
 

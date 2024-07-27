@@ -2,7 +2,7 @@ export type * from "./types";
 export type { Nested } from "./helper";
 export type { CleanupFunction, ErrorHandler, TrackingContext } from "./context";
 export type { EqualsOption } from "./reactivity";
-export type { FetcherParameter, Fetcher, ResourceOptions, ResourceReturn } from "./resource";
+export type { FetcherParameter, ResourceFetcher, ResourceOptions, ResourceReturn } from "./resource";
 export type { ForProps, IndexProps } from "./iterators";
 export type { WhenCondition, MatchProps, ShowProps } from "./controls";
 export type { ChainedListResult } from "./chain";

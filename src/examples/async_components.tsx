@@ -21,13 +21,13 @@ function Dog(): SuppleComponentReturn {
                 } catch (e) {
                     reject(e);
                 }
-            }, 3000);
+            }, 1000);
         });
     });
 
     return () => {
         const errorBlock = () => {
-            if (dog.error || !dog()) {
+            if (dog.error || (dog.state === "ready" && !dog())) {
                 return <p>ERROR!!</p>;
             } else {
                 return null;

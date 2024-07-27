@@ -3,16 +3,16 @@ import { untrack } from "./context";
 import { createComputed, createMemo, createSignal } from "./reactivity";
 
 export type FetcherParameter<P> = P | false | null;
-export type Fetcher<P, R> = (
+export type ResourceFetcher<P, R, I = unknown> = (
     p: P,
-    info: { value: R | undefined; refetching: boolean | unknown },
+    info: { value: R | undefined; refetching: boolean | I },
 ) => R | Promise<R>;
 
 export type ResourceOptions<T> = {
     initialValue?: T;
 };
 
-export type ResourceReturn<R> = [
+export type ResourceReturn<R, I = unknown> = [
     {
         (): R | undefined;
         loading: boolean;
@@ -22,7 +22,7 @@ export type ResourceReturn<R> = [
     },
     {
         mutate: (r?: R) => R | undefined;
-        refetch: (info?: unknown) => void;
+        refetch: (info?: I) => void;
     },
 ];
 
@@ -40,28 +40,28 @@ export type ResourceReturn<R> = [
  * @param source an optional signal for passing parameters to the fetcher
  * @param fetcher the asynchronous fetcher function
  */
-export function createResource<R, P = any>(
-    fetcher: Fetcher<P, R>,
+export function createResource<R, P = any, I = unknown>(
+    fetcher: ResourceFetcher<P, R, I>,
     options?: ResourceOptions<R>,
-): ResourceReturn<R>;
-export function createResource<R, P = any>(
+): ResourceReturn<R, I>;
+export function createResource<R, P = any, I = unknown>(
     source: ValueOrAccessor<FetcherParameter<P>>,
-    fetcher: Fetcher<P, R>,
+    fetcher: ResourceFetcher<P, R, I>,
     options?: ResourceOptions<R>,
-): ResourceReturn<R>;
-export function createResource<R, P = any>(
-    source: ValueOrAccessor<FetcherParameter<P>> | Fetcher<P, R>,
-    fetcher?: Fetcher<P, R> | ResourceOptions<R>,
+): ResourceReturn<R, I>;
+export function createResource<R, P = any, I = unknown>(
+    source: ValueOrAccessor<FetcherParameter<P>> | ResourceFetcher<P, R, I>,
+    fetcher?: ResourceFetcher<P, R, I> | ResourceOptions<R>,
     options?: ResourceOptions<R>,
-): ResourceReturn<R> {
-    const [params, fetch, opts] = createResourceParams<R, P>(source, fetcher, options);
+): ResourceReturn<R, I> {
+    const [params, fetch, opts] = createResourceParams<R, P, I>(source, fetcher, options);
 
     let latestResponse: R | Promise<R>;
     let loaded = opts.initialValue !== undefined;
 
     const [refresh, setRefresh] = createSignal({
         refresh: false,
-        info: undefined as unknown,
+        info: undefined as I | undefined,
     });
 
     const [result, setResult] = createSignal({
@@ -128,9 +128,9 @@ export function createResource<R, P = any>(
             }
         } else {
             setResult((prev) => ({
-                ...prev, // ??
+                ...prev,
                 loading: false,
-                state: loaded ? "ready" : "unresolved",
+                state: loaded ? (prev.error === undefined ? "ready" : "errored") : "unresolved",
             }));
         }
         refreshing.refresh = false;
@@ -158,15 +158,13 @@ export function createResource<R, P = any>(
         resource as ResourceReturn<R>[0],
         {
             mutate(r?: R) {
-                setResult({
+                setResult((prev) => ({
+                    ...prev,
                     latest: r,
-                    loading: false,
-                    error: undefined,
-                    state: "ready",
-                });
+                }));
                 return r;
             },
-            refetch(info?: unknown) {
+            refetch(info?: I) {
                 setRefresh({
                     refresh: true,
                     info: info,
@@ -176,11 +174,11 @@ export function createResource<R, P = any>(
     ];
 }
 
-export function createResourceParams<R, P>(
-    source: ValueOrAccessor<FetcherParameter<P>> | Fetcher<P, R>,
-    fetcher?: Fetcher<P, R> | ResourceOptions<R>,
+export function createResourceParams<R, P, I = unknown>(
+    source: ValueOrAccessor<FetcherParameter<P>> | ResourceFetcher<P, R, I>,
+    fetcher?: ResourceFetcher<P, R, I> | ResourceOptions<R>,
     options?: ResourceOptions<R>,
-): readonly [Accessor<FetcherParameter<P>>, Fetcher<P, R>, ResourceOptions<R>] {
+): readonly [Accessor<FetcherParameter<P>>, ResourceFetcher<P, R, I>, ResourceOptions<R>] {
     if (typeof fetcher === "function") {
         return [
             typeof source === "function" ? (source as Accessor<FetcherParameter<P>>) : () => source,
@@ -188,6 +186,6 @@ export function createResourceParams<R, P>(
             options ?? {},
         ] as const;
     } else {
-        return [() => undefined as P, source as Fetcher<P, R>, fetcher ?? {}] as const;
+        return [() => undefined as P, source as ResourceFetcher<P, R, I>, fetcher ?? {}] as const;
     }
 }
