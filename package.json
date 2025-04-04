@@ -87,7 +87,7 @@
     "typedoc": "^0.26.4",
     "typescript": "^5.5.3",
     "vite": "^5.4.17",
-    "vitest": "^2.0.3"
+    "vitest": "^2.1.9"
   },
   "dependencies": {
     "csstype": "^3.1.3",
