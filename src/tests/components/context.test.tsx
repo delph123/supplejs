@@ -249,7 +249,7 @@ describe("use context with edge case", () => {
 
     it("prints error in the log when no tracking context exists", () => {
         const TestContext = createContext(0);
-        const logSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+        const logSpy = vi.spyOn(console, "error");
         TestContext.Provider({ value: 1 });
         expect(logSpy).toHaveBeenCalledOnce();
         logSpy.mockRestore();
