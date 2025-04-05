@@ -49,7 +49,7 @@ export function h<Props>(
     }
 }
 
-export function Fragment({ children }: { children: SuppleNode }): SuppleNodeEffect {
+export function Fragment({ children }: { children?: SuppleNode }): SuppleNodeEffect {
     return () => children;
 }
 

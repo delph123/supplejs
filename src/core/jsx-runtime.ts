@@ -51,8 +51,9 @@ export function jsx<Props>(
 // For compatibility with react-jsx & react-jsxdev exports
 export { jsx as jsxs, jsx as jsxDEV, Fragment };
 
+/* eslint-disable @typescript-eslint/no-empty-object-type */
+/* eslint-disable @typescript-eslint/no-namespace */
 declare global {
-    // eslint-disable-next-line @typescript-eslint/no-namespace
     namespace JSX {
         export type Element = SuppleNode;
 
