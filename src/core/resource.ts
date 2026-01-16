@@ -1,18 +1,28 @@
-import { ValueOrAccessor } from "./types";
-import { createEffect, createMemo, createSignal } from "./reactivity";
+import { Accessor, ValueOrAccessor } from "./types";
+import { untrack } from "./context";
+import { createComputed, createMemo, createSignal } from "./reactivity";
 
 export type FetcherParameter<P> = P | false | null;
+export type ResourceFetcher<P, R, I = unknown> = (
+    p: P,
+    info: { value: R | undefined; refetching: boolean | I },
+) => R | Promise<R>;
 
-export type Resource<R, P> = [
+export type ResourceOptions<T> = {
+    initialValue?: T;
+};
+
+export type ResourceReturn<R, I = unknown> = [
     {
         (): R | undefined;
         loading: boolean;
         error: any;
         state: "unresolved" | "pending" | "ready" | "refreshing" | "errored";
+        latest: R | undefined;
     },
     {
-        mutate: (r?: R) => void;
-        refetch: (p?: P) => void;
+        mutate: (r?: R) => R | undefined;
+        refetch: (info?: I) => void;
     },
 ];
 
@@ -30,85 +40,104 @@ export type Resource<R, P> = [
  * @param source an optional signal for passing parameters to the fetcher
  * @param fetcher the asynchronous fetcher function
  */
-export function createResource<R, P = any>(fetcher: (p: P) => R | Promise<R>): Resource<R, P>;
-export function createResource<R, P = any>(
+export function createResource<R, P = any, I = unknown>(
+    fetcher: ResourceFetcher<P, R, I>,
+    options?: ResourceOptions<R>,
+): ResourceReturn<R, I>;
+export function createResource<R, P = any, I = unknown>(
     source: ValueOrAccessor<FetcherParameter<P>>,
-    fetcher: (p: P) => R | Promise<R>,
-): Resource<R, P>;
-export function createResource<R, P = any>(
-    source: ValueOrAccessor<FetcherParameter<P>> | ((p: P) => R | Promise<R>),
-    fetcher?: (p: P) => R | Promise<R>,
-): Resource<R, P> {
-    const [params, fetch] = createResourceParams<R, P>(source, fetcher);
+    fetcher: ResourceFetcher<P, R, I>,
+    options?: ResourceOptions<R>,
+): ResourceReturn<R, I>;
+export function createResource<R, P = any, I = unknown>(
+    source: ValueOrAccessor<FetcherParameter<P>> | ResourceFetcher<P, R, I>,
+    fetcher?: ResourceFetcher<P, R, I> | ResourceOptions<R>,
+    options?: ResourceOptions<R>,
+): ResourceReturn<R, I> {
+    const [params, fetch, opts] = createResourceParams<R, P, I>(source, fetcher, options);
 
-    let loaded = false;
-    let previousData: R | undefined = undefined;
-    let paramValue: P | null | false = null;
+    let latestResponse: R | Promise<R>;
+    let loaded = opts.initialValue !== undefined;
 
     const [refresh, setRefresh] = createSignal({
         refresh: false,
-        value: undefined as P | null | false,
+        info: undefined as I | undefined,
     });
 
     const [result, setResult] = createSignal({
-        data: undefined as R | undefined,
+        latest: opts.initialValue,
         loading: false,
         error: undefined as any,
-        state: "unresolved" as "unresolved" | "pending" | "ready" | "refreshing" | "errored",
+        state: "unresolved" as ResourceReturn<R>[0]["state"],
     });
 
-    createEffect(() => {
+    createComputed(() => {
         const refreshing = refresh();
-        paramValue = refreshing.refresh ? refreshing.value : params();
-        refreshing.refresh = false;
+        const paramValue = params();
         if (paramValue !== null && paramValue !== false) {
-            const r = fetch(paramValue);
-            if (r instanceof Promise) {
-                setResult({
-                    loading: !loaded,
-                    data: previousData,
-                    error: undefined,
+            latestResponse = fetch(paramValue, {
+                value: untrack(result).latest,
+                refetching: refreshing.info === undefined ? refreshing.refresh : refreshing.info,
+            });
+            if (latestResponse instanceof Promise) {
+                setResult((prev) => ({
+                    ...prev,
+                    loading: true,
                     state: loaded ? "refreshing" : "pending",
-                });
-                r.then((value) => {
-                    loaded = true;
-                    previousData = value;
-                    setResult({
-                        data: value,
-                        loading: false,
-                        error: undefined,
-                        state: "ready",
-                    });
-                }).catch((error) => {
-                    previousData = undefined;
-                    setResult({
-                        data: undefined,
-                        loading: false,
-                        error: error,
-                        state: "errored",
-                    });
-                });
+                }));
+                // Memorize the promise we are tackling
+                const currentPromise = latestResponse;
+                latestResponse.then(
+                    (value) => {
+                        // bail out if the promise we handle is not the latest response,
+                        // so that the resource only tracks status of last response and
+                        // ignore previous results (especially when the come out of order)
+                        if (currentPromise === latestResponse) {
+                            loaded = true;
+                            setResult({
+                                latest: value,
+                                loading: false,
+                                error: undefined,
+                                state: "ready",
+                            });
+                        }
+                    },
+                    (error) => {
+                        // bail out if the promise we handle is not the latest response,
+                        // so that the resource only tracks status of last response and
+                        // ignore previous results (especially when the come out of order)
+                        if (currentPromise === latestResponse) {
+                            loaded = true;
+                            setResult((prev) => ({
+                                ...prev,
+                                loading: false,
+                                error: error,
+                                state: "errored",
+                            }));
+                        }
+                    },
+                );
             } else {
                 loaded = true;
-                previousData = r;
                 setResult({
-                    data: r,
+                    latest: latestResponse,
                     loading: false,
                     error: undefined,
                     state: "ready",
                 });
             }
         } else {
-            setResult({
-                data: undefined,
+            setResult((prev) => ({
+                ...prev,
                 loading: false,
-                error: undefined,
-                state: "unresolved",
-            });
+                state: loaded ? (prev.error === undefined ? "ready" : "errored") : "unresolved",
+            }));
         }
+        refreshing.refresh = false;
+        refreshing.info = undefined;
     });
 
-    const resource = createMemo(() => result().data);
+    const resource = createMemo(() => result().latest);
 
     Object.defineProperties(resource, {
         loading: {
@@ -120,39 +149,43 @@ export function createResource<R, P = any>(
         state: {
             get: createMemo(() => result().state),
         },
+        latest: {
+            get: createMemo(() => result().latest),
+        },
     });
 
     return [
-        resource as Resource<R, P>[0],
+        resource as ResourceReturn<R>[0],
         {
             mutate(r?: R) {
-                previousData = r;
-                setResult({
-                    data: r,
-                    loading: false,
-                    error: undefined,
-                    state: "ready",
-                });
+                setResult((prev) => ({
+                    ...prev,
+                    latest: r,
+                }));
+                return r;
             },
-            refetch(p?: P) {
+            refetch(info?: I) {
                 setRefresh({
                     refresh: true,
-                    value: p ?? paramValue,
+                    info: info,
                 });
             },
         },
     ];
 }
 
-function createResourceParams<R, P>(
-    source: ValueOrAccessor<FetcherParameter<P>> | ((p: P) => R | Promise<R>),
-    fetcher?: (p: P) => R | Promise<R>,
-) {
-    let params = typeof source === "function" ? source : () => source;
-    let fetch = fetcher;
-    if (fetcher == null) {
-        params = (() => undefined) as () => P;
-        fetch = source as (p: P) => R | Promise<R>;
+export function createResourceParams<R, P, I = unknown>(
+    source: ValueOrAccessor<FetcherParameter<P>> | ResourceFetcher<P, R, I>,
+    fetcher?: ResourceFetcher<P, R, I> | ResourceOptions<R>,
+    options?: ResourceOptions<R>,
+): readonly [Accessor<FetcherParameter<P>>, ResourceFetcher<P, R, I>, ResourceOptions<R>] {
+    if (typeof fetcher === "function") {
+        return [
+            typeof source === "function" ? (source as Accessor<FetcherParameter<P>>) : () => source,
+            fetcher,
+            options ?? {},
+        ] as const;
+    } else {
+        return [() => undefined as P, source as ResourceFetcher<P, R, I>, fetcher ?? {}] as const;
     }
-    return [params, fetch] as [() => FetcherParameter<P>, (p: P) => R | Promise<R>];
 }

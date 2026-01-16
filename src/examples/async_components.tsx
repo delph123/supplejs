@@ -21,13 +21,13 @@ function Dog(): SuppleComponentReturn {
                 } catch (e) {
                     reject(e);
                 }
-            }, 3000);
+            }, 1000);
         });
     });
 
     return () => {
         const errorBlock = () => {
-            if (dog.error || !dog()) {
+            if (dog.error || (dog.state === "ready" && !dog())) {
                 return <p>ERROR!!</p>;
             } else {
                 return null;
@@ -35,8 +35,8 @@ function Dog(): SuppleComponentReturn {
         };
 
         const imgBlock = () => {
-            if (dog()) {
-                return <img alt="a dog" src={dog()} height="100" />;
+            if (dog.latest) {
+                return <img alt="a dog" src={dog.latest} height="100" />;
             } else {
                 return null;
             }
@@ -50,7 +50,7 @@ function Dog(): SuppleComponentReturn {
             }
         };
 
-        if (dog.loading) return "Loading...";
+        if (dog.state === "pending") return "Loading...";
         return (
             <div className="card">
                 {errorBlock}
